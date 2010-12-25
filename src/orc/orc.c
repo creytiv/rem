@@ -56,6 +56,8 @@ typedef union { orc_int64 i; double f; orc_int32 x2[2]; float x2f[2]; orc_int16 
 
 void convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
 
+void vidconv_init (void);
+
 
 /* begin Orc C target preamble */
 #define ORC_CLAMP(x,a,b) ((x)<(a) ? (a) : ((x)>(b) ? (b) : (x)))
@@ -212,6 +214,8 @@ _backup_convert_yuyv_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
   orc_int8 var54;
   orc_int8 var55;
 
+  printf("BACKUP called\n");
+
   for (j = 0; j < m; j++) {
     ptr0 = ORC_PTR_OFFSET(ex->arrays[0], ex->params[0] * j);
     ptr1 = ORC_PTR_OFFSET(ex->arrays[1], ex->params[1] * j);
@@ -265,18 +269,46 @@ _backup_convert_yuyv_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
 
 }
 
+static OrcProgram *_orc_program_convert_yuyv_to_yuv420p;
 void
 convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m)
 {
   OrcExecutor _ex, *ex = &_ex;
-  static int p_inited = 0;
-  static OrcProgram *p = 0;
+  OrcProgram *p = _orc_program_convert_yuyv_to_yuv420p;
   void (*func) (OrcExecutor *);
 
-  if (!p_inited) {
-    orc_once_mutex_lock ();
-    if (!p_inited) {
-      OrcCompileResult result;
+  ex->program = p;
+
+  ex->n = n;
+  ORC_EXECUTOR_M(ex) = m;
+  ex->arrays[ORC_VAR_D1] = d1;
+  ex->params[ORC_VAR_D1] = d1_stride;
+  ex->arrays[ORC_VAR_D2] = d2;
+  ex->params[ORC_VAR_D2] = d2_stride;
+  ex->arrays[ORC_VAR_D3] = d3;
+  ex->params[ORC_VAR_D3] = d3_stride;
+  ex->arrays[ORC_VAR_D4] = d4;
+  ex->params[ORC_VAR_D4] = d4_stride;
+  ex->arrays[ORC_VAR_S1] = (void *)s1;
+  ex->params[ORC_VAR_S1] = s1_stride;
+  ex->arrays[ORC_VAR_S2] = (void *)s2;
+  ex->params[ORC_VAR_S2] = s2_stride;
+
+  func = p->code_exec;
+  func (ex);
+}
+#endif
+
+
+void
+vidconv_init (void)
+{
+#ifndef DISABLE_ORC
+  {
+    /* convert_yuyv_to_yuv420p */
+    OrcProgram *p;
+    OrcCompileResult result;
+    OrcTarget *target_sse;
 
       p = orc_program_new ();
       orc_program_set_2d (p);
@@ -310,31 +342,15 @@ convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2
       orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T6, ORC_VAR_T4, ORC_VAR_D1, ORC_VAR_D1);
       orc_program_append_2 (p, "mergebw", 0, ORC_VAR_D2, ORC_VAR_T5, ORC_VAR_T6, ORC_VAR_D1);
 
+      target_sse = orc_target_get_by_name ("sse");
+
       result = orc_program_compile (p);
-    }
-    p_inited = TRUE;
-    orc_once_mutex_unlock ();
+
+      printf("target sse: res=%d\n", result);
+
+    _orc_program_convert_yuyv_to_yuv420p = p;
   }
-  ex->program = p;
-
-  ex->n = n;
-  ORC_EXECUTOR_M(ex) = m;
-  ex->arrays[ORC_VAR_D1] = d1;
-  ex->params[ORC_VAR_D1] = d1_stride;
-  ex->arrays[ORC_VAR_D2] = d2;
-  ex->params[ORC_VAR_D2] = d2_stride;
-  ex->arrays[ORC_VAR_D3] = d3;
-  ex->params[ORC_VAR_D3] = d3_stride;
-  ex->arrays[ORC_VAR_D4] = d4;
-  ex->params[ORC_VAR_D4] = d4_stride;
-  ex->arrays[ORC_VAR_S1] = (void *)s1;
-  ex->params[ORC_VAR_S1] = s1_stride;
-  ex->arrays[ORC_VAR_S2] = (void *)s2;
-  ex->params[ORC_VAR_S2] = s2_stride;
-
-  func = p->code_exec;
-  func (ex);
-}
 #endif
+}
 
 

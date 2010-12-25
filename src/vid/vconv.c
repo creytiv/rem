@@ -2,6 +2,17 @@
 #include <rem.h>
 #include <rem_vidconv.h>
 #include <rem_orc.h>
+#include <orc/orc.h>
+
+
+int rem_init(void)
+{
+	orc_init();
+
+	orc_debug_set_level(ORC_DEBUG_INFO);
+
+	return 0;
+}
 
 
 /**

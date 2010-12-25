@@ -118,4 +118,4 @@ test$(BIN_SUFFIX): test.o $(SHARED) $(STATIC)
 .PHONY: orc
 orc:	orc/rem.orc
 	orcc --header -o include/rem_orc.h $<
-	orcc -o src/orc/orc.c --implementation $<
+	orcc -o src/orc/orc.c --implementation --init-function vidconv_init $<
