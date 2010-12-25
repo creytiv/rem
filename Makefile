@@ -40,11 +40,14 @@ endif
 INCDIR  := $(PREFIX)/include/rem
 CFLAGS	+= -I$(LIBRE_INC) -Iinclude
 CFLAGS  += -I/usr/local/include/orc-0.4
-CFLAGS  += -DDISABLE_ORC
+CFLAGS  += -I/opt/local/include/orc-0.4
+#CFLAGS  += -DDISABLE_ORC
+CFLAGS  += -arch i386
 
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := librem$(LIB_SUFFIX)
 STATIC	:= librem.a
+LFLAGS  += -arch i386
 
 LIBS += -lorc-0.4
 
@@ -110,7 +113,7 @@ test.o:	test.c
 
 test$(BIN_SUFFIX): test.o $(SHARED) $(STATIC)
 	@echo "  LD      $@"
-	@$(LD) $(LFLAGS) $< -L. -lrem $(LIBS) -o $@
+	@$(LD) $(LFLAGS) $< -L. -lrem -lre $(LIBS) -o $@
 
 .PHONY: orc
 orc:	orc/rem.orc

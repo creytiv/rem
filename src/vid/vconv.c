@@ -1,7 +1,7 @@
 #include <re.h>
 #include <rem.h>
 #include <rem_vidconv.h>
-
+#include <rem_orc.h>
 
 
 /**
@@ -80,4 +80,21 @@ void vidconv_yuyv_to_yuv420p_b(uint16_t *y1, int y1_linesize,
 		u  += u_linesize;
 		v  += v_linesize;
 	}
+}
+
+
+// Convenience wrapper
+void vidconv_yuyv_to_yuv420p_orc(struct vidframe *dst,
+				 const struct vidframe *src)
+{
+	convert_yuyv_to_yuv420p(dst->data[0], dst->linesize[0]*2,
+				dst->data[0] + dst->linesize[0],
+				dst->linesize[0]*2,
+				dst->data[1], dst->linesize[1],
+				dst->data[2], dst->linesize[2],
+				src->data[0], src->linesize[0]*2,
+				src->data[0] + src->linesize[0],
+				src->linesize[0]*2,
+				src->size.w / 2,
+				src->size.h / 2);
 }
