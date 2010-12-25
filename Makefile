@@ -49,7 +49,7 @@ SHARED  := librem$(LIB_SUFFIX)
 STATIC	:= librem.a
 #LFLAGS  += -arch i386
 
-LIBS += -lorc-0.4
+LIBS += -lorc-0.4 -lswscale -lavcodec
 
 
 include $(MODMKS)

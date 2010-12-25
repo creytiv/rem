@@ -3,6 +3,8 @@
 #include <rem_vidconv.h>
 #include <rem_orc.h>
 #include <orc/orc.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 
 
 int rem_init(void)
@@ -114,4 +116,31 @@ void vidconv_yuyv_to_yuv420p_orc(struct vidframe *dst,
 			   src->linesize[0]*2,
 			   src->size.w / 2,
 			   src->size.h / 2);
+}
+
+
+void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
+				 const struct vidframe *src)
+{
+	static struct SwsContext *sws = NULL;
+	AVPicture avdst, avsrc;
+	int i;
+
+	if (!sws) {
+		sws = sws_getContext(src->size.w, src->size.h,
+				     PIX_FMT_YUYV422,
+				     dst->size.w, dst->size.h,
+				     PIX_FMT_YUV420P,
+				     SWS_BICUBIC, NULL, NULL, NULL);
+	}
+
+	for (i=0; i<4; i++) {
+		avsrc.data[i]     = src->data[i];
+		avsrc.linesize[i] = src->linesize[i];
+		avdst.data[i]     = dst->data[i];
+		avdst.linesize[i] = dst->linesize[i];
+	}
+
+	sws_scale(sws, avsrc.data, avsrc.linesize, 0, src->size.h,
+		  avdst.data, avdst.linesize);
 }
