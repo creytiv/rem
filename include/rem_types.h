@@ -1,3 +1,7 @@
+// this header file has conflicting types with baresip
+// temporary use only, to be removed in app
+
+
 struct vidsz {
 	int w, h;
 };

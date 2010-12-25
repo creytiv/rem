@@ -1,5 +1,5 @@
 #include <re.h>
-#include <rem.h>
+#include <rem_types.h>
 #include <rem_vidconv.h>
 #include <rem_orc.h>
 #include <orc/orc.h>
@@ -10,6 +10,8 @@ int rem_init(void)
 	orc_init();
 
 	orc_debug_set_level(ORC_DEBUG_INFO);
+
+	vidconv_init();
 
 	return 0;
 }
@@ -98,14 +100,18 @@ void vidconv_yuyv_to_yuv420p_b(uint16_t *y1, int y1_linesize,
 void vidconv_yuyv_to_yuv420p_orc(struct vidframe *dst,
 				 const struct vidframe *src)
 {
-	convert_yuyv_to_yuv420p(dst->data[0], dst->linesize[0]*2,
-				dst->data[0] + dst->linesize[0],
-				dst->linesize[0]*2,
-				dst->data[1], dst->linesize[1],
-				dst->data[2], dst->linesize[2],
-				src->data[0], src->linesize[0]*2,
-				src->data[0] + src->linesize[0],
-				src->linesize[0]*2,
-				src->size.w / 2,
-				src->size.h / 2);
+	// stride is in "bytes"
+
+	yuyv422_to_yuv420p((uint16_t *)dst->data[0],
+			   dst->linesize[0]*2,
+			   (uint16_t *)(dst->data[0] + dst->linesize[0]),
+			   dst->linesize[0]*2,
+			   dst->data[1], dst->linesize[1],
+			   dst->data[2], dst->linesize[2],
+			   (uint32_t *)src->data[0],
+			   src->linesize[0]*2,
+			   (uint32_t *)(src->data[0] + src->linesize[0]),
+			   src->linesize[0]*2,
+			   src->size.w / 2,
+			   src->size.h / 2);
 }

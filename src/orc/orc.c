@@ -54,7 +54,7 @@ typedef union { orc_int32 i; float f; orc_int16 x2[2]; orc_int8 x4[4]; } orc_uni
 typedef union { orc_int64 i; double f; orc_int32 x2[2]; float x2f[2]; orc_int16 x4[4]; } orc_union64;
 #endif
 
-void convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
+void yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
 
 void vidconv_init (void);
 
@@ -101,10 +101,10 @@ void vidconv_init (void);
 
 
 
-/* convert_yuyv_to_yuv420p */
+/* yuyv422_to_yuv420p */
 #ifdef DISABLE_ORC
 void
-convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m){
+yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m){
   int i;
   int j;
   orc_union16 * ORC_RESTRICT ptr0;
@@ -113,22 +113,22 @@ convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2
   orc_int8 * ORC_RESTRICT ptr3;
   const orc_union32 * ORC_RESTRICT ptr4;
   const orc_union32 * ORC_RESTRICT ptr5;
-  orc_union32 var40;
-  orc_union32 var41;
-  orc_int8 var42;
-  orc_int8 var43;
-  orc_union16 var44;
-  orc_union16 var45;
-  orc_union32 var46;
-  orc_union32 var47;
-  orc_union16 var48;
-  orc_union16 var49;
-  orc_int8 var50;
-  orc_int8 var51;
-  orc_union16 var52;
-  orc_union16 var53;
-  orc_int8 var54;
-  orc_int8 var55;
+  orc_union32 var38;
+  orc_union32 var39;
+  orc_int8 var40;
+  orc_int8 var41;
+  orc_union16 var42;
+  orc_union16 var43;
+  orc_union32 var44;
+  orc_union32 var45;
+  orc_union16 var46;
+  orc_union16 var47;
+  orc_int8 var48;
+  orc_int8 var49;
+  orc_union16 var50;
+  orc_union16 var51;
+  orc_int8 var52;
+  orc_int8 var53;
 
   for (j = 0; j < m; j++) {
     ptr0 = ORC_PTR_OFFSET(d1, d1_stride * j);
@@ -141,43 +141,43 @@ convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2
 
     for (i = 0; i < n; i++) {
       /* 0: loadl */
-      var40 = ptr4[i];
+      var38 = ptr4[i];
       /* 1: swapl */
-      var46.i = ORC_SWAP_L(var40.i);
+      var44.i = ORC_SWAP_L(var38.i);
       /* 2: loadl */
-      var41 = ptr5[i];
+      var39 = ptr5[i];
       /* 3: swapl */
-      var47.i = ORC_SWAP_L(var41.i);
+      var45.i = ORC_SWAP_L(var39.i);
       /* 4: splitlw */
-      var48.i = (var46.i >> 16) & 0xffff;
-    var49.i = var46.i & 0xffff;
+      var46.i = (var44.i >> 16) & 0xffff;
+    var47.i = var44.i & 0xffff;
       /* 5: select1wb */
-      var50 = ((orc_uint16)var48.i >> 8)&0xff;
+      var48 = ((orc_uint16)var46.i >> 8)&0xff;
       /* 6: select0wb */
-      var42 = (orc_uint16)var48.i & 0xff;
+      var40 = (orc_uint16)var46.i & 0xff;
       /* 7: storeb */
-      ptr2[i] = var42;
+      ptr2[i] = var40;
       /* 8: select1wb */
-      var51 = ((orc_uint16)var49.i >> 8)&0xff;
+      var49 = ((orc_uint16)var47.i >> 8)&0xff;
       /* 9: select0wb */
-      var43 = (orc_uint16)var49.i & 0xff;
+      var41 = (orc_uint16)var47.i & 0xff;
       /* 10: storeb */
-      ptr3[i] = var43;
+      ptr3[i] = var41;
       /* 11: mergebw */
-      var44.i = ((orc_uint8)var50 & 0x00ff) | ((orc_uint8)var51 << 8);
+      var42.i = ((orc_uint8)var48 & 0x00ff) | ((orc_uint8)var49 << 8);
       /* 12: storew */
-      ptr0[i] = var44;
+      ptr0[i] = var42;
       /* 13: splitlw */
-      var52.i = (var47.i >> 16) & 0xffff;
-    var53.i = var47.i & 0xffff;
+      var50.i = (var45.i >> 16) & 0xffff;
+    var51.i = var45.i & 0xffff;
       /* 14: select1wb */
-      var54 = ((orc_uint16)var52.i >> 8)&0xff;
+      var52 = ((orc_uint16)var50.i >> 8)&0xff;
       /* 15: select1wb */
-      var55 = ((orc_uint16)var53.i >> 8)&0xff;
+      var53 = ((orc_uint16)var51.i >> 8)&0xff;
       /* 16: mergebw */
-      var45.i = ((orc_uint8)var54 & 0x00ff) | ((orc_uint8)var55 << 8);
+      var43.i = ((orc_uint8)var52 & 0x00ff) | ((orc_uint8)var53 << 8);
       /* 17: storew */
-      ptr1[i] = var45;
+      ptr1[i] = var43;
     }
   }
 
@@ -185,7 +185,7 @@ convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2
 
 #else
 static void
-_backup_convert_yuyv_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
+_backup_yuyv422_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
 {
   int i;
   int j;
@@ -197,24 +197,22 @@ _backup_convert_yuyv_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
   orc_int8 * ORC_RESTRICT ptr3;
   const orc_union32 * ORC_RESTRICT ptr4;
   const orc_union32 * ORC_RESTRICT ptr5;
-  orc_union32 var40;
-  orc_union32 var41;
-  orc_int8 var42;
-  orc_int8 var43;
-  orc_union16 var44;
-  orc_union16 var45;
-  orc_union32 var46;
-  orc_union32 var47;
-  orc_union16 var48;
-  orc_union16 var49;
-  orc_int8 var50;
-  orc_int8 var51;
-  orc_union16 var52;
-  orc_union16 var53;
-  orc_int8 var54;
-  orc_int8 var55;
-
-  printf("BACKUP called\n");
+  orc_union32 var38;
+  orc_union32 var39;
+  orc_int8 var40;
+  orc_int8 var41;
+  orc_union16 var42;
+  orc_union16 var43;
+  orc_union32 var44;
+  orc_union32 var45;
+  orc_union16 var46;
+  orc_union16 var47;
+  orc_int8 var48;
+  orc_int8 var49;
+  orc_union16 var50;
+  orc_union16 var51;
+  orc_int8 var52;
+  orc_int8 var53;
 
   for (j = 0; j < m; j++) {
     ptr0 = ORC_PTR_OFFSET(ex->arrays[0], ex->params[0] * j);
@@ -227,57 +225,58 @@ _backup_convert_yuyv_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
 
     for (i = 0; i < n; i++) {
       /* 0: loadl */
-      var40 = ptr4[i];
+      var38 = ptr4[i];
       /* 1: swapl */
-      var46.i = ORC_SWAP_L(var40.i);
+      var44.i = ORC_SWAP_L(var38.i);
       /* 2: loadl */
-      var41 = ptr5[i];
+      var39 = ptr5[i];
       /* 3: swapl */
-      var47.i = ORC_SWAP_L(var41.i);
+      var45.i = ORC_SWAP_L(var39.i);
       /* 4: splitlw */
-      var48.i = (var46.i >> 16) & 0xffff;
-    var49.i = var46.i & 0xffff;
+      var46.i = (var44.i >> 16) & 0xffff;
+    var47.i = var44.i & 0xffff;
       /* 5: select1wb */
-      var50 = ((orc_uint16)var48.i >> 8)&0xff;
+      var48 = ((orc_uint16)var46.i >> 8)&0xff;
       /* 6: select0wb */
-      var42 = (orc_uint16)var48.i & 0xff;
+      var40 = (orc_uint16)var46.i & 0xff;
       /* 7: storeb */
-      ptr2[i] = var42;
+      ptr2[i] = var40;
       /* 8: select1wb */
-      var51 = ((orc_uint16)var49.i >> 8)&0xff;
+      var49 = ((orc_uint16)var47.i >> 8)&0xff;
       /* 9: select0wb */
-      var43 = (orc_uint16)var49.i & 0xff;
+      var41 = (orc_uint16)var47.i & 0xff;
       /* 10: storeb */
-      ptr3[i] = var43;
+      ptr3[i] = var41;
       /* 11: mergebw */
-      var44.i = ((orc_uint8)var50 & 0x00ff) | ((orc_uint8)var51 << 8);
+      var42.i = ((orc_uint8)var48 & 0x00ff) | ((orc_uint8)var49 << 8);
       /* 12: storew */
-      ptr0[i] = var44;
+      ptr0[i] = var42;
       /* 13: splitlw */
-      var52.i = (var47.i >> 16) & 0xffff;
-    var53.i = var47.i & 0xffff;
+      var50.i = (var45.i >> 16) & 0xffff;
+    var51.i = var45.i & 0xffff;
       /* 14: select1wb */
-      var54 = ((orc_uint16)var52.i >> 8)&0xff;
+      var52 = ((orc_uint16)var50.i >> 8)&0xff;
       /* 15: select1wb */
-      var55 = ((orc_uint16)var53.i >> 8)&0xff;
+      var53 = ((orc_uint16)var51.i >> 8)&0xff;
       /* 16: mergebw */
-      var45.i = ((orc_uint8)var54 & 0x00ff) | ((orc_uint8)var55 << 8);
+      var43.i = ((orc_uint8)var52 & 0x00ff) | ((orc_uint8)var53 << 8);
       /* 17: storew */
-      ptr1[i] = var45;
+      ptr1[i] = var43;
     }
   }
 
 }
 
-static OrcProgram *_orc_program_convert_yuyv_to_yuv420p;
+static OrcCode *_orc_code_yuyv422_to_yuv420p;
 void
-convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m)
+yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m)
 {
   OrcExecutor _ex, *ex = &_ex;
-  OrcProgram *p = _orc_program_convert_yuyv_to_yuv420p;
+  OrcCode *c = _orc_code_yuyv422_to_yuv420p;
   void (*func) (OrcExecutor *);
 
-  ex->program = p;
+  ex->arrays[ORC_VAR_A2] = c;
+  ex->program = 0;
 
   ex->n = n;
   ORC_EXECUTOR_M(ex) = m;
@@ -294,7 +293,7 @@ convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2
   ex->arrays[ORC_VAR_S2] = (void *)s2;
   ex->params[ORC_VAR_S2] = s2_stride;
 
-  func = p->code_exec;
+  func = c->exec;
   func (ex);
 }
 #endif
@@ -305,15 +304,14 @@ vidconv_init (void)
 {
 #ifndef DISABLE_ORC
   {
-    /* convert_yuyv_to_yuv420p */
+    /* yuyv422_to_yuv420p */
     OrcProgram *p;
     OrcCompileResult result;
-    OrcTarget *target_sse;
-
+    
       p = orc_program_new ();
       orc_program_set_2d (p);
-      orc_program_set_name (p, "convert_yuyv_to_yuv420p");
-      orc_program_set_backup_function (p, _backup_convert_yuyv_to_yuv420p);
+      orc_program_set_name (p, "yuyv422_to_yuv420p");
+      orc_program_set_backup_function (p, _backup_yuyv422_to_yuv420p);
       orc_program_add_destination (p, 2, "d1");
       orc_program_add_destination (p, 2, "d2");
       orc_program_add_destination (p, 1, "d3");
@@ -326,8 +324,6 @@ vidconv_init (void)
       orc_program_add_temporary (p, 2, "t4");
       orc_program_add_temporary (p, 1, "t5");
       orc_program_add_temporary (p, 1, "t6");
-      orc_program_add_temporary (p, 2, "t7");
-      orc_program_add_temporary (p, 2, "t8");
 
       orc_program_append_2 (p, "swapl", 0, ORC_VAR_T1, ORC_VAR_S1, ORC_VAR_D1, ORC_VAR_D1);
       orc_program_append_2 (p, "swapl", 0, ORC_VAR_T2, ORC_VAR_S2, ORC_VAR_D1, ORC_VAR_D1);
@@ -342,13 +338,10 @@ vidconv_init (void)
       orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T6, ORC_VAR_T4, ORC_VAR_D1, ORC_VAR_D1);
       orc_program_append_2 (p, "mergebw", 0, ORC_VAR_D2, ORC_VAR_T5, ORC_VAR_T6, ORC_VAR_D1);
 
-      target_sse = orc_target_get_by_name ("sse");
-
       result = orc_program_compile (p);
 
-      printf("target sse: res=%d\n", result);
-
-    _orc_program_convert_yuyv_to_yuv420p = p;
+    _orc_code_yuyv422_to_yuv420p = orc_program_take_code (p);
+    orc_program_free (p);
   }
 #endif
 }

@@ -56,7 +56,7 @@ typedef union { orc_int16 i; orc_int8 x2[2]; } orc_union16;
 typedef union { orc_int32 i; float f; orc_int16 x2[2]; orc_int8 x4[4]; } orc_union32;
 typedef union { orc_int64 i; double f; orc_int32 x2[2]; float x2f[2]; orc_int16 x4[4]; } orc_union64;
 #endif
-void convert_yuyv_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
+void yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 
 
-# Convert from YUYV to YUV420P
-.function convert_yuyv_to_yuv420p
+# Convert from YUYV422 to YUV420P
+.function yuyv422_to_yuv420p
 .flags 2d
 .dest 2 y1
 .dest 2 y2
@@ -16,8 +16,6 @@
 .temp 1 ya
 .temp 1 yb
 
-.temp 2 w1
-.temp 2 w0
 
 #
 #  Ya U  Yb V
