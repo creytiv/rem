@@ -115,3 +115,74 @@ void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
 	sws_scale(sws, SRCSLICE_CAST avsrc.data, avsrc.linesize, 0,
 		  src->size.h, avdst.data, avdst.linesize);
 }
+
+
+#define PREC 8
+
+#define BY ((int)( 0.098*(1<<PREC)+0.5))
+#define BU ((int)( 0.439*(1<<PREC)+0.5))
+#define BV ((int)(-0.071*(1<<PREC)+0.5))
+
+#define GY ((int)( 0.504*(1<<PREC)+0.5))
+#define GU ((int)(-0.291*(1<<PREC)+0.5))
+#define GV ((int)(-0.368*(1<<PREC)+0.5))
+
+#define RY ((int)( 0.257*(1<<PREC)+0.5))
+#define RU ((int)(-0.148*(1<<PREC)+0.5))
+#define RV ((int)( 0.439*(1<<PREC)+0.5))
+
+
+static inline int rgb2y(const uint8_t *p)
+{
+	return ((RY * p[2] + GY * p[1] + BY * p[0]) >> PREC) + 16;
+}
+
+
+static inline int rgb2u(const uint8_t *p)
+{
+	return ((RU * p[2] + GU * p[1] + BU * p[0]) >> PREC) + 128;
+}
+
+
+static inline int rgb2v(const uint8_t *p)
+{
+	return ((RV * p[2] + GV * p[1] + BV * p[0]) >> PREC) + 128;
+}
+
+
+/**
+ * Convert from RGB32 to planar YUV420P
+ */
+void vidconv_rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
+{
+	const uint8_t *p1 = src->data[0];
+	const uint8_t *p2 = src->data[0] + src->linesize[0];
+	uint16_t *y  = (uint16_t *)dst->data[0];
+	uint16_t *y2 = (uint16_t *)(dst->data[0] + dst->linesize[0]);
+	uint8_t *u = dst->data[1], *v = dst->data[2];
+	int h, w, j;
+
+	/* 2 lines */
+	for (h = 0; h < dst->size.h/2; h++) {
+
+		/* 2 pixels */
+		for (w = 0; w < dst->size.w/2; w++) {
+
+			j = w * 8;
+
+			y [w] = rgb2y(&p1[j])<<0 | rgb2y(&p1[j + 4]) << 8;
+			y2[w] = rgb2y(&p2[j])<<0 | rgb2y(&p2[j + 4]) << 8;
+
+			u[w] = rgb2u(&p1[j]);
+			v[w] = rgb2v(&p1[j]);
+		}
+
+		p1 += src->linesize[0] * 2;
+		p2 += src->linesize[0] * 2;
+
+		y  += dst->linesize[0];
+		y2 += dst->linesize[0];
+		u  += dst->linesize[1];
+		v  += dst->linesize[2];
+	}
+}
