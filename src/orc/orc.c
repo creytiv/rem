@@ -55,6 +55,7 @@ typedef union { orc_int64 i; double f; orc_int32 x2[2]; float x2f[2]; orc_int16 
 #endif
 
 void yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int n, int m);
+void rgb32_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int p1, int p2, int p3, int n, int m);
 
 void vidconv_init (void);
 
@@ -299,6 +300,53 @@ yuyv422_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stri
 #endif
 
 
+/* rgb32_to_yuv420p */
+#ifdef DISABLE_ORC
+void
+rgb32_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int p1, int p2, int p3, int n, int m){
+}
+
+#else
+static void
+_backup_rgb32_to_yuv420p (OrcExecutor * ORC_RESTRICT ex)
+{
+}
+
+static OrcCode *_orc_code_rgb32_to_yuv420p;
+void
+rgb32_to_yuv420p (orc_uint16 * d1, int d1_stride, orc_uint16 * d2, int d2_stride, orc_uint8 * d3, int d3_stride, orc_uint8 * d4, int d4_stride, const orc_uint32 * s1, int s1_stride, const orc_uint32 * s2, int s2_stride, int p1, int p2, int p3, int n, int m)
+{
+  OrcExecutor _ex, *ex = &_ex;
+  OrcCode *c = _orc_code_rgb32_to_yuv420p;
+  void (*func) (OrcExecutor *);
+
+  ex->arrays[ORC_VAR_A2] = c;
+  ex->program = 0;
+
+  ex->n = n;
+  ORC_EXECUTOR_M(ex) = m;
+  ex->arrays[ORC_VAR_D1] = d1;
+  ex->params[ORC_VAR_D1] = d1_stride;
+  ex->arrays[ORC_VAR_D2] = d2;
+  ex->params[ORC_VAR_D2] = d2_stride;
+  ex->arrays[ORC_VAR_D3] = d3;
+  ex->params[ORC_VAR_D3] = d3_stride;
+  ex->arrays[ORC_VAR_D4] = d4;
+  ex->params[ORC_VAR_D4] = d4_stride;
+  ex->arrays[ORC_VAR_S1] = (void *)s1;
+  ex->params[ORC_VAR_S1] = s1_stride;
+  ex->arrays[ORC_VAR_S2] = (void *)s2;
+  ex->params[ORC_VAR_S2] = s2_stride;
+  ex->params[ORC_VAR_P1] = p1;
+  ex->params[ORC_VAR_P2] = p2;
+  ex->params[ORC_VAR_P3] = p3;
+
+  func = c->exec;
+  func (ex);
+}
+#endif
+
+
 void
 vidconv_init (void)
 {
@@ -323,27 +371,4 @@ vidconv_init (void)
       orc_program_add_temporary (p, 2, "t3");
       orc_program_add_temporary (p, 2, "t4");
       orc_program_add_temporary (p, 1, "t5");
-      orc_program_add_temporary (p, 1, "t6");
-
-      orc_program_append_2 (p, "swapl", 0, ORC_VAR_T1, ORC_VAR_S1, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "swapl", 0, ORC_VAR_T2, ORC_VAR_S2, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "splitlw", 0, ORC_VAR_T3, ORC_VAR_T4, ORC_VAR_T1, ORC_VAR_D1);
-      orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T5, ORC_VAR_T3, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "select0wb", 0, ORC_VAR_D3, ORC_VAR_T3, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T6, ORC_VAR_T4, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "select0wb", 0, ORC_VAR_D4, ORC_VAR_T4, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "mergebw", 0, ORC_VAR_D1, ORC_VAR_T5, ORC_VAR_T6, ORC_VAR_D1);
-      orc_program_append_2 (p, "splitlw", 0, ORC_VAR_T3, ORC_VAR_T4, ORC_VAR_T2, ORC_VAR_D1);
-      orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T5, ORC_VAR_T3, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "select1wb", 0, ORC_VAR_T6, ORC_VAR_T4, ORC_VAR_D1, ORC_VAR_D1);
-      orc_program_append_2 (p, "mergebw", 0, ORC_VAR_D2, ORC_VAR_T5, ORC_VAR_T6, ORC_VAR_D1);
-
-      result = orc_program_compile (p);
-
-    _orc_code_yuyv422_to_yuv420p = orc_program_take_code (p);
-    orc_program_free (p);
-  }
-#endif
-}
-
-
+      orc_program_add_tempor

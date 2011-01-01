@@ -117,36 +117,21 @@ void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
 }
 
 
-#define PREC 8
-
-#define BY ((int)( 0.098*(1<<PREC)+0.5))
-#define BU ((int)( 0.439*(1<<PREC)+0.5))
-#define BV ((int)(-0.071*(1<<PREC)+0.5))
-
-#define GY ((int)( 0.504*(1<<PREC)+0.5))
-#define GU ((int)(-0.291*(1<<PREC)+0.5))
-#define GV ((int)(-0.368*(1<<PREC)+0.5))
-
-#define RY ((int)( 0.257*(1<<PREC)+0.5))
-#define RU ((int)(-0.148*(1<<PREC)+0.5))
-#define RV ((int)( 0.439*(1<<PREC)+0.5))
-
-
 static inline int rgb2y(const uint8_t *p)
 {
-	return ((RY * p[2] + GY * p[1] + BY * p[0]) >> PREC) + 16;
+	return ( (66 * p[2] + 129 * p[1] + 25 * p[0] + 128) >> 8) + 16;
 }
 
 
 static inline int rgb2u(const uint8_t *p)
 {
-	return ((RU * p[2] + GU * p[1] + BU * p[0]) >> PREC) + 128;
+	return ( (-38*p[2] - 74*p[1] + 112*p[0] + 128) >> 8) + 128;
 }
 
 
 static inline int rgb2v(const uint8_t *p)
 {
-	return ((RV * p[2] + GV * p[1] + BV * p[0]) >> PREC) + 128;
+	return ((112*p[2] - 94*p[1] - 18*p[0] + 128) >> 8) + 128;
 }
 
 
@@ -185,4 +170,26 @@ void vidconv_rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 		u  += dst->linesize[1];
 		v  += dst->linesize[2];
 	}
+}
+
+
+/* Convenience wrapper */
+void vidconv_rgb32_to_yuv420p_orc(struct vidframe *dst,
+				  const struct vidframe *src)
+{
+	/* stride is in "bytes" */
+
+	rgb32_to_yuv420p((uint16_t *)dst->data[0],
+			 dst->linesize[0]*2,
+			 (uint16_t *)(dst->data[0] + dst->linesize[0]),
+			 dst->linesize[0]*2,
+			 dst->data[1], dst->linesize[1],
+			 dst->data[2], dst->linesize[2],
+			 (uint32_t *)src->data[0],
+			 src->linesize[0]*2,
+			 (uint32_t *)(src->data[0] + src->linesize[0]),
+			 src->linesize[0]*2,
+			 0, 0, 0, //
+			 src->size.w / 2,
+			 src->size.h / 2);
 }

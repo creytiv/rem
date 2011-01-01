@@ -41,7 +41,7 @@ INCDIR  := $(PREFIX)/include/rem
 CFLAGS	+= -I$(LIBRE_INC) -Iinclude
 CFLAGS  += -I/usr/local/include/orc-0.4
 CFLAGS  += -I/opt/local/include/orc-0.4
-#CFLAGS  += -DDISABLE_ORC
+CFLAGS  += -DDISABLE_ORC
 #CFLAGS  += -arch i386
 
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
