@@ -55,17 +55,9 @@ mergebw y2, ya, yb
 .temp 1 ya
 .temp 1 yb
 
-.temp 1 r0
-.temp 1 g0
-.temp 1 b0
-
-.temp 2 r
-.temp 2 g
-.temp 2 b
-
-.temp 4 ry0
-.temp 4 gy0
-.temp 4 by0
+.temp 1 r
+.temp 1 g
+.temp 1 b
 
 .temp 2 ry
 .temp 2 gy
@@ -87,20 +79,12 @@ mergebw y2, ya, yb
 
 # Y1
 splitlw hi, lo, p1
-splitwb r0, g0, hi
-splitwb b0, t1, lo
+splitwb r, g, hi
+splitwb b, t1, lo
 
-convubw r, r0
-convubw g, g0
-convubw b, b0
-
-mulswl ry0, r, c66
-mulswl gy0, g, c129
-mulswl by0, b, c25
-
-convssslw ry, ry0
-convssslw gy, gy0
-convssslw by, by0
+mulsbw ry, r, c66
+mulsbw gy, g, c129
+mulsbw by, b, c25
 
 addw t2, ry, gy
 addw t2, t2, by
@@ -112,9 +96,9 @@ mergebw y2, ya, ya
 
 
 # U
-mulswl ry, r, c37n
-mullw gy, g, c73n
-mullw by, b, c112
+mulsbw ry, r, c37n
+mulsbw gy, g, c73n
+mulsbw by, b, c112
 
 addw t2, ry, gy
 addw t2, t2, by
@@ -124,9 +108,9 @@ convsuswb u, t2
 
 
 # V
-mullw ry, r, c112
-mullw gy, g, c93n
-mullw by, b, c17n
+mulsbw ry, r, c112
+mulsbw gy, g, c93n
+mulsbw by, b, c17n
 
 addw t2, ry, gy
 addw t2, t2, by
