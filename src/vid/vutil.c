@@ -82,9 +82,6 @@ struct vidframe *vidframe_alloc(const struct vidsz *sz)
 	if (!sz || !sz->w || !sz->h)
 		return NULL;
 
-	//re_printf("vidframe_alloc: %d x %d ---> %u bytes\n",
-	//		  sz->w, sz->h, sizeof(*vf) + yuv420p_size(sz));
-
 	vf = mem_zalloc(sizeof(*vf) + yuv420p_size(sz), NULL);
 	if (!vf)
 		return NULL;
