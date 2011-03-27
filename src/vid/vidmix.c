@@ -8,8 +8,10 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#ifdef USE_FFMPEG
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#endif
 #include <re.h>
 #include <rem_types.h>
 #include <rem_vidmix.h>
@@ -36,7 +38,11 @@ struct vidmix {
 
 struct vidmix_source {
 	struct le le;
+#ifdef USE_FFMPEG
 	struct SwsContext *sws;
+#else
+	void *sws;
+#endif
 	struct vidmix *mix;
 	vidmix_frame_h *fh;
 	void *arg;
@@ -157,8 +163,10 @@ static void source_destructor(void *data)
 	list_unlink(&src->le);
 	pthread_mutex_unlock(&mix->mutex);
 
+#ifdef USE_FFMPEG
 	if (src->sws)
 		sws_freeContext(src->sws);
+#endif
 
 	rows = calc_rows(list_count(&mix->srcl));
 
@@ -302,13 +310,16 @@ int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *mix,
 
 int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 {
+#ifdef USE_FFMPEG
 	AVPicture pict_src, pict_dst;
-	uint32_t x, y, i, idx, n;
+	uint32_t i;
+	int ret;
+#endif
+	uint32_t x, y, idx, n;
 	struct vidframe *mframe;
 	struct vidmix *mix;
 	struct vidsz sz;
 	struct le *le;
-	int ret;
 
 	if (!src || !frame)
 		return EINVAL;
@@ -324,6 +335,7 @@ int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 	if (!vidsz_cmp(&src->sz_src, &frame->size) ||
 	    !vidsz_cmp(&src->sz_dst, &sz) || !src->sws) {
 
+#ifdef USE_FFMPEG
 		if (src->sws)
 			sws_freeContext(src->sws);
 
@@ -334,15 +346,18 @@ int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 					  SWS_BICUBIC, NULL, NULL, NULL);
 		if (!src->sws)
 			return ENOMEM;
+#endif
 
 		src->sz_src = frame->size;
 		src->sz_dst = sz;
 	}
 
+#ifdef USE_FFMPEG
 	for (i=0; i<4; i++) {
 		pict_src.data[i]     = frame->data[i];
 		pict_src.linesize[i] = frame->linesize[i];
 	}
+#endif
 
 	/* find my place */
 	for (le=mix->srcl.head, idx=0; le; le=le->next, idx++)
@@ -352,6 +367,7 @@ int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 	x = calc_xpos(mix, idx) * mframe->size.w / mix->ncols;
 	y = calc_ypos(mix, idx) * mframe->size.h / mix->nrows;
 
+#ifdef USE_FFMPEG
 	pict_dst.data[0] = mframe->data[0] + x   + y   * mframe->linesize[0];
 	pict_dst.data[1] = mframe->data[1] + x/2 + y/4 * mframe->linesize[0];
 	pict_dst.data[2] = mframe->data[2] + x/2 + y/4 * mframe->linesize[0];
@@ -366,6 +382,9 @@ int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 			pict_dst.data, pict_dst.linesize);
 	if (ret <= 0)
 		return EINVAL;
+#else
+	return ENOSYS;
+#endif
 
 	return 0;
 }

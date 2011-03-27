@@ -16,7 +16,18 @@
 #endif
 
 
-static inline int16_t sadd(int a, int b)
+#ifdef __arm__
+static inline int16_t sadd16(int a, int b)
+{
+	__asm__ __volatile__ ("add %0, %1, %2"   "\n\t"
+			      "ssat %0, #16, %0" "\n\t"
+			      :"+r"(a)
+			      :"r"(a), "r"(b)
+			      );
+	return a;
+}
+#else
+static inline int16_t sadd16(int a, int b)
 {
 	int c = a + b;
 
@@ -27,6 +38,7 @@ static inline int16_t sadd(int a, int b)
 	else
 		return c;
 }
+#endif
 
 
 static inline uint32_t digit2lo(int digit)
@@ -72,7 +84,7 @@ int autone_sine(struct mbuf *mb, uint32_t srate,
 		int16_t s1 = SCALE * l1 / 100.0f * sin(2 * M_PI * d1 * i);
 		int16_t s2 = SCALE * l2 / 100.0f * sin(2 * M_PI * d2 * i);
 
-		err |= mbuf_write_u16(mb, sadd(s1, s2));
+		err |= mbuf_write_u16(mb, sadd16(s1, s2));
 	}
 
 	return err;

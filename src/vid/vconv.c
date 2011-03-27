@@ -1,8 +1,10 @@
 #include <re.h>
 #include <rem_types.h>
 #include <rem_vidconv.h>
+#ifdef USE_FFMPEG
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#endif
 
 
 #if LIBSWSCALE_VERSION_MINOR >= 9
@@ -58,6 +60,7 @@ void vidconv_yuyv_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
 				 const struct vidframe *src)
 {
+#ifdef USE_FFMPEG
 	static struct SwsContext *sws = NULL;
 	AVPicture avdst, avsrc;
 	int i;
@@ -79,6 +82,10 @@ void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
 
 	sws_scale(sws, SRCSLICE_CAST avsrc.data, avsrc.linesize, 0,
 		  src->size.h, avdst.data, avdst.linesize);
+#else
+	(void)dst;
+	(void)src;
+#endif
 }
 
 

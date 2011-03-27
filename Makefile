@@ -44,7 +44,17 @@ MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := librem$(LIB_SUFFIX)
 STATIC	:= librem.a
 
-LIBS += -lswscale -lavcodec
+USE_FFMPEG := $(shell [ -f $(SYSROOT)/include/libavcodec/avcodec.h ] || \
+	[ -f $(SYSROOT)/local/include/libavcodec/avcodec.h ] || \
+	[ -f $(SYSROOT)/include/ffmpeg/libavcodec/avcodec.h ] || \
+	[ -f $(SYSROOT)/include/ffmpeg/avcodec.h ] || \
+	[ -f $(SYSROOT)/local/ffmpeg/avcodec.h ] || \
+	[ -f $(SYSROOT_ALT)/include/libavcodec/avcodec.h ] && echo "yes")
+
+ifneq ($(USE_FFMPEG),)
+CFLAGS	+= -DUSE_FFMPEG
+LIBS	+= -lswscale -lavcodec
+endif
 
 
 include $(MODMKS)
