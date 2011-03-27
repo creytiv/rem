@@ -26,7 +26,7 @@ endif
 include $(LIBRE_MK)
 
 # List of modules
-MODULES += vid
+MODULES += au vid
 
 INSTALL := install
 ifeq ($(DESTDIR),)
