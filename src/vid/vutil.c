@@ -182,7 +182,8 @@ void vidframe_copy_offset(struct vidframe *fd, const struct vidframe *fs,
 		memcpy(y0, fs->linesize[0] * h + fs->data[0], fs->linesize[0]);
 
 		/* Second line */
-		memcpy(y1, fs->linesize[0] * (h+1) + fs->data[0], fs->linesize[0]);
+		memcpy(y1, fs->linesize[0] * (h+1) + fs->data[0],
+		       fs->linesize[0]);
 
 		/* U */
 		memcpy(up, ups, fs->linesize[1]);

@@ -1,86 +1,69 @@
+/**
+ * @file vidmix.c Video Mixer
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
+
+#define _BSD_SOURCE 1
+#include <unistd.h>
+#include <pthread.h>
 #include <string.h>
-#include <math.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
 #include <re.h>
-#include <rem.h>
+#include <rem_types.h>
+#include <rem_vidmix.h>
 
 
-/*
- * TODO: what is the best way of calculating the size of the main frame ?
- */
+#if LIBSWSCALE_VERSION_MINOR >= 9
+#define SRCSLICE_CAST (const uint8_t **)
+#else
+#define SRCSLICE_CAST (uint8_t **)
+#endif
 
 
-/*
- * Video Mixer with alpha-blending
- *
- *   .---------------------.
- *   |          |          |
- *   |  index0  |  index1  |
- *   |          |          |
- *   |----------+----------|
- *   |          |          |
- *   |  index2  |  index3  |
- *   |          |          |
- *   '---------------------'
- *
- */
-
-
-/** YUV420p video mixer */
 struct vidmix {
-	struct list sourcel;  /**< List of video sources */
-	struct vidsz slotsz;
+	pthread_mutex_t mutex;
+	pthread_cond_t cond;
+	struct list srcl;
+	pthread_t thread;
 	struct vidframe *frame;
-	int maxfps;
-	int ncols;
-	int nrows;
-	vidmix_frame_h *fh;
-	void *arg;
+	uint32_t ncols;
+	uint32_t nrows;
+	int fint;
+	int run;
 };
 
 struct vidmix_source {
 	struct le le;
-	struct vidmix *vm;
-	struct tmr tmr;
-	int index;
-	double alpha;
-	bool terminated;
+	struct SwsContext *sws;
+	struct vidmix *mix;
+	vidmix_frame_h *fh;
+	void *arg;
+	struct vidsz sz_src;
+	struct vidsz sz_dst;
 };
 
 
-/**
- * Calculate how many rows is needed to fit N slots
- *
- * N   cols  rows    slots:
- *
- * 1    1     1        1
- * 2    2     2        4
- * 3    2     2        4
- * 4    2     2        4
- * 5    3     3        9
- */
-static inline int calc_rows(int n)
+static inline int calc_rows(uint32_t n)
 {
-	int rows;
+	uint32_t rows;
 
-	for (rows = 1; rows < 10; rows++) {
-
+	for (rows=1;; rows++)
 		if (n <= (rows * rows))
 			return rows;
-	}
-
-	return -1;
 }
 
 
-static inline int calc_xpos(const struct vidmix *vm, int i)
+static inline uint32_t calc_xpos(const struct vidmix *mix, uint32_t idx)
 {
-	return i % vm->ncols;
+	return idx % mix->ncols;
 }
 
 
-static inline int calc_ypos(const struct vidmix *vm, int i)
+static inline uint32_t calc_ypos(const struct vidmix *mix, uint32_t idx)
 {
-	return i / vm->nrows;
+	return idx / mix->nrows;
 }
 
 
@@ -116,9 +99,6 @@ static struct vidframe *frame_alloc(const struct vidsz *sz)
 	if (!f)
 		return NULL;
 
-	re_printf("vidframe_alloc: %d x %d ---> %u bytes\n",
-		  sz->w, sz->h, sizeof(*f) + (sz->w * sz->h * 2));
-
 	f->linesize[0] = sz->w;
 	f->linesize[1] = sz->w / 2;
 	f->linesize[2] = sz->w / 2;
@@ -134,213 +114,258 @@ static struct vidframe *frame_alloc(const struct vidsz *sz)
 }
 
 
-static void update_frame(struct vidmix *vm, int ncols, int nrows)
+static void update_frame(struct vidmix *mix, uint32_t ncols, uint32_t nrows,
+			 bool clear)
 {
-	struct vidsz sz;
-
-	if (vm->ncols == ncols && vm->nrows == nrows)
+	if (mix->ncols == ncols && mix->nrows == nrows && !clear)
 		return;
 
-	vm->ncols = ncols;
-	vm->nrows = nrows;
+	mix->ncols = ncols;
+	mix->nrows = nrows;
 
-	sz.w = vm->slotsz.w * vm->ncols;
-	sz.h = vm->slotsz.h * vm->nrows;
-
-	mem_deref(vm->frame);
-	vm->frame = frame_alloc(&sz);
-	clear_frame(vm->frame);
+	clear_frame(mix->frame);
 }
 
 
 static void destructor(void *data)
 {
-	struct vidmix *vm = data;
-	struct le *le = vm->sourcel.head;
+	struct vidmix *mix = data;
 
-	while (le) {
-		struct vidmix_source *src = le->data;
+	if (mix->run == 2) {
+		re_printf("waiting for vidmix thread to terminate\n");
+		pthread_mutex_lock(&mix->mutex);
+		mix->run = 0;
+		pthread_cond_signal(&mix->cond);
+		pthread_mutex_unlock(&mix->mutex);
 
-		le = le->next;
-
-		src->terminated = true;
-		mem_deref(src);
+		pthread_join(mix->thread, NULL);
+		re_printf("vidmix thread joined\n");
 	}
 
-	mem_deref(vm->frame);
-}
-
-
-static void tmr_handler(void *arg)
-{
-	struct vidmix_source *src = arg;
-	struct vidmix *vm = src->vm;
-
-	if (src->alpha > 0.0f) {
-		int slot_width = vm->frame->size.w / vm->ncols;
-		int slot_height = vm->frame->size.h / vm->nrows;
-		int xpos = calc_xpos(vm, src->index);
-		int ypos = calc_ypos(vm, src->index);
-
-		/* Fade-out frame */
-		src->alpha -= 0.01;
-		vidframe_alphablend_area(vm->frame,
-					 xpos * slot_width,
-					 ypos * slot_height,
-					 slot_width,
-					 slot_height,
-					 src->alpha);
-
-		tmr_start(&src->tmr, 50, tmr_handler, src);
-	}
-	else {
-		mem_deref(src);
-	}
+	list_flush(&mix->srcl);
+	mem_deref(mix->frame);
 }
 
 
 static void source_destructor(void *data)
 {
 	struct vidmix_source *src = data;
-	struct vidmix *vm = src->vm;
-	int n;
+	struct vidmix *mix = src->mix;
+	uint32_t rows;
 
-	re_printf("vidmix: source removed: index=%d\n", src->index);
-
-	if (!src->terminated) {
-		src->terminated = true;
-
-		mem_ref(src);
-
-		tmr_start(&src->tmr, 1, tmr_handler, src);
-		return;
-	}
-
+	pthread_mutex_lock(&mix->mutex);
 	list_unlink(&src->le);
-	tmr_cancel(&src->tmr);
+	pthread_mutex_unlock(&mix->mutex);
 
-	n = list_count(&vm->sourcel);
-	update_frame(vm, calc_rows(n), calc_rows(n));
+	if (src->sws)
+		sws_freeContext(src->sws);
+
+	rows = calc_rows(list_count(&mix->srcl));
+
+	update_frame(mix, rows, rows, true);
 }
 
 
-int vidmix_alloc(struct vidmix **vmp, const struct vidsz *sz, int maxfps,
-		 vidmix_frame_h *fh, void *arg)
+static void *vidmix_thread(void *arg)
 {
-	struct vidmix *vm;
+	struct vidmix *mix = arg;
+	uint64_t ts = 0;
 
-	if (!vmp || !sz || !fh)
-		return EINVAL;
+	re_printf("vidmix thread start\n");
 
-	vm = mem_zalloc(sizeof(*vm), destructor);
-	if (!vm)
-		return ENOMEM;
+	pthread_mutex_lock(&mix->mutex);
 
-	list_init(&vm->sourcel);
+	while (mix->run) {
 
-	vm->slotsz = *sz;
-	vm->maxfps = maxfps;
-	vm->ncols = 1;
-	vm->nrows = 1;
-	vm->fh = fh;
-	vm->arg = arg;
+		struct le *le;
+		uint64_t now;
 
-	vm->frame = frame_alloc(sz);
-	clear_frame(vm->frame);
+		if (!mix->srcl.head) {
+			re_printf("vidmix thread sleep\n");
+			pthread_cond_wait(&mix->cond, &mix->mutex);
+			ts = 0;
+			re_printf("vidmix thread wakeup\n");
+		}
+		else {
+			pthread_mutex_unlock(&mix->mutex);
+			(void)usleep(4000);
+			pthread_mutex_lock(&mix->mutex);
+		}
 
-	*vmp = vm;
+		now = tmr_jiffies();
+		if (!ts)
+			ts = now;
 
-	re_printf("vidmix_alloc: %u x %u\n", sz->w, sz->h);
+		if (ts > now)
+			continue;
 
-	return 0;
-}
+		for (le=mix->srcl.head; le; le=le->next) {
 
+			struct vidmix_source *src = le->data;
 
-static struct vidmix_source *find_source(const struct vidmix *vm, int i)
-{
-	struct le *le;
+			src->fh((uint32_t)ts * 90, mix->frame, src->arg);
+		}
 
-	for (le = vm->sourcel.head; le; le = le->next) {
-		struct vidmix_source *src = le->data;
-
-		if (src->index == i)
-			return src;
+		ts += mix->fint;
 	}
+
+	pthread_mutex_unlock(&mix->mutex);
+
+	re_printf("vidmix thread stop\n");
 
 	return NULL;
 }
 
 
-static int find_free_slot(const struct vidmix *vm)
+int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 {
-	int i;
+	struct vidmix *mix;
+	int err = 0;
 
-	for (i=0; i<(vm->ncols * vm->nrows); i++) {
+	if (!mixp || !sz || !fps)
+		return EINVAL;
 
-		if (!find_source(vm, i))
-			return i;
+	mix = mem_zalloc(sizeof(*mix), destructor);
+	if (!mix)
+		return ENOMEM;
+
+	mix->fint  = 1000/fps;
+	mix->ncols = 1;
+	mix->nrows = 1;
+
+	mix->frame = frame_alloc(sz);
+	if (!mix->frame) {
+		err = ENOMEM;
+		goto out;
 	}
 
-	return -1; /* not found */
+	clear_frame(mix->frame);
+
+	err = pthread_mutex_init(&mix->mutex, NULL);
+	if (err)
+		goto out;
+
+	err = pthread_cond_init(&mix->cond, NULL);
+	if (err)
+		goto out;
+
+	mix->run = 1;
+
+	err = pthread_create(&mix->thread, NULL, vidmix_thread, mix);
+	if (err)
+		goto out;
+
+	pthread_mutex_lock(&mix->mutex);
+	mix->run = 2;
+	pthread_mutex_unlock(&mix->mutex);
+
+ out:
+	if (err)
+		mem_deref(mix);
+	else
+		*mixp = mix;
+
+	return err;
 }
 
 
-int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *vm)
+int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *mix,
+		      vidmix_frame_h *fh, void *arg)
 {
 	struct vidmix_source *src;
-	int n;
+	uint32_t n;
 
-	if (!vm)
+	if (!srcp || !mix || !fh)
 		return EINVAL;
 
 	src = mem_zalloc(sizeof(*src), source_destructor);
 	if (!src)
 		return ENOMEM;
 
-	n = 1 + list_count(&vm->sourcel);
-	update_frame(vm, calc_rows(n), calc_rows(n));
+	src->mix  = mix;
+	src->fh   = fh;
+	src->arg  = arg;
 
-	src->index = find_free_slot(vm);
-	src->vm = vm;
-	src->alpha = 0.0f;
+	pthread_mutex_lock(&mix->mutex);
+	list_append(&mix->srcl, &src->le, src);
+	pthread_cond_signal(&mix->cond);
+	pthread_mutex_unlock(&mix->mutex);
 
-	list_append(&vm->sourcel, &src->le, src);
+	n = list_count(&mix->srcl);
+	update_frame(mix, calc_rows(n), calc_rows(n), false);
 
-	re_printf("vidmix source added: index=%d\n", src->index);
-
-	if (srcp)
-		*srcp = src;
+	*srcp = src;
 
 	return 0;
 }
 
 
-int vidmix_source_put(struct vidmix_source *src, const struct vidframe *fs)
+int vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 {
-	struct vidmix *vm;
-	int xpos, ypos;
+	AVPicture pict_src, pict_dst;
+	uint32_t x, y, i, idx, n;
+	struct vidframe *mframe;
+	struct vidmix *mix;
+	struct vidsz sz;
+	struct le *le;
+	int ret;
 
-	if (!src)
+	if (!src || !frame)
 		return EINVAL;
 
-	vm = src->vm;
-	xpos = calc_xpos(vm, src->index);
-	ypos = calc_ypos(vm, src->index);
+	mix = src->mix;
+	mframe = mix->frame;
 
-	/* Fade-in frame */
-	if (!src->terminated && src->alpha < 1.0f) {
+	n = calc_rows(list_count(&mix->srcl));
 
-		src->alpha += 0.03f;
-		vidframe_alphablend_area(fs, 0, 0, fs->size.w, fs->size.h,
-					 src->alpha);
+	sz.w = mframe->size.w / n;
+	sz.h = mframe->size.h / n;
+
+	if (!vidsz_cmp(&src->sz_src, &frame->size) ||
+	    !vidsz_cmp(&src->sz_dst, &sz) || !src->sws) {
+
+		if (src->sws)
+			sws_freeContext(src->sws);
+
+		src->sws = sws_getContext(frame->size.w, frame->size.h,
+					  PIX_FMT_YUV420P,
+					  sz.w, sz.h,
+					  PIX_FMT_YUV420P,
+					  SWS_BICUBIC, NULL, NULL, NULL);
+		if (!src->sws)
+			return ENOMEM;
+
+		src->sz_src = frame->size;
+		src->sz_dst = sz;
 	}
 
-	vidframe_copy_offset(vm->frame, fs,
-			     xpos * vm->frame->size.w / vm->ncols,
-			     ypos * vm->frame->size.h / vm->nrows);
+	for (i=0; i<4; i++) {
+		pict_src.data[i]     = frame->data[i];
+		pict_src.linesize[i] = frame->linesize[i];
+	}
 
-	// refresh image: todo use maxfps
-	src->vm->fh(vm->frame, vm->arg);
+	/* find my place */
+	for (le=mix->srcl.head, idx=0; le; le=le->next, idx++)
+		if (le->data == src)
+			break;
+
+	x = calc_xpos(mix, idx) * mframe->size.w / mix->ncols;
+	y = calc_ypos(mix, idx) * mframe->size.h / mix->nrows;
+
+	pict_dst.data[0] = mframe->data[0] + x   + y   * mframe->linesize[0];
+	pict_dst.data[1] = mframe->data[1] + x/2 + y/4 * mframe->linesize[0];
+	pict_dst.data[2] = mframe->data[2] + x/2 + y/4 * mframe->linesize[0];
+	pict_dst.data[3] = NULL;
+	pict_dst.linesize[0] = mframe->linesize[0];
+	pict_dst.linesize[1] = mframe->linesize[1];
+	pict_dst.linesize[2] = mframe->linesize[2];
+	pict_dst.linesize[3] = 0;
+
+	ret = sws_scale(src->sws, SRCSLICE_CAST pict_src.data,
+			pict_src.linesize, 0, frame->size.h,
+			pict_dst.data, pict_dst.linesize);
+	if (ret <= 0)
+		return EINVAL;
 
 	return 0;
 }

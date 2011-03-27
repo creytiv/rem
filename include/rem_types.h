@@ -40,3 +40,15 @@ void vidframe_copy_offset(struct vidframe *fd, const struct vidframe *fs,
 			  int x, int y);
 void vidframe_alphablend_area(const struct vidframe *fd, int x, int y,
 			      int width, int height, double alpha);
+
+
+static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)
+{
+	if (!a || !b)
+		return false;
+
+	if (a == b)
+		return true;
+
+	return a->w == b->w && a->h == b->h;
+}
