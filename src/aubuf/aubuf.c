@@ -5,7 +5,7 @@
  */
 #include <string.h>
 #include <re.h>
-#include <rem_au.h>
+#include <rem_aubuf.h>
 
 
 #define AUBUF_DEBUG 0

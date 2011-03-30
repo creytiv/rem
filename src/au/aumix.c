@@ -9,6 +9,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <re.h>
+#include <rem_aubuf.h>
 #include <rem_au.h>
 
 
