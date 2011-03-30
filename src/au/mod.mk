@@ -2,4 +2,4 @@
 # mod.mk
 #
 
-SRCS	+= au/resamp.c
+#SRCS	+= au/au.c

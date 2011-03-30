@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <re.h>
-#include <rem_au.h>
+#include <rem_auresamp.h>
 
 
 enum { FIR_SIZE = 16 };
