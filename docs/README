@@ -1,0 +1,40 @@
+README
+------
+
+librem - "Audio and video processing media library"
+Copyright (C) 2010 - 2011 Creytiv.com
+
+Distributed under BSD license
+
+
+
+
+Audio Modules:
+
+  name:     status:       description:
+
+* aubuf     -             Audio buffer
+* aufile    -             Audio file player/recorder (WAV etc.)
+* aumix     -             Audio mixer
+* auresamp  -             Audio resampler
+* autone    -             Tone/DTMF generator
+* g711      -             G.711 audio codec
+* g722      -             G.722 audio codec
+
+
+
+Video Modules:
+
+  name:     status:       description:
+
+* vidbase   -             Base video types
+* vidconv   -             Colorspace conversion (incl. rotation)
+* viddraw   -             Basic drawing routines
+* vidfilt   -             Video filters (alphablending, blurring, ...)
+* vidmix    -             Video mixer
+
+
+
+External dependencies:
+
+- FFmpeg libswscale (for colorspace conversion)
