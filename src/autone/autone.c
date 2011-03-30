@@ -5,7 +5,7 @@
  */
 #include <math.h>
 #include <re.h>
-#include <rem_au.h>
+#include <rem_autone.h>
 
 
 #define SCALE (32767)
