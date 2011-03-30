@@ -26,7 +26,7 @@ endif
 include $(LIBRE_MK)
 
 # List of modules
-MODULES += au aubuf autone
+MODULES += au aubuf autone aumix
 MODULES += vid
 
 INSTALL := install

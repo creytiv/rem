@@ -10,7 +10,7 @@
 #include <string.h>
 #include <re.h>
 #include <rem_aubuf.h>
-#include <rem_au.h>
+#include <rem_aumix.h>
 
 
 #define FRAME_SIZE (160)
