@@ -116,6 +116,8 @@ int auresamp_process(struct auresamp *ar, struct mbuf *mb)
 	int16_t buf[nsamp_out];
 	size_t pos;
 
+	// todo: alloc new mb->buf and replace
+
 	if (!ar || !mb)
 		return EINVAL;
 

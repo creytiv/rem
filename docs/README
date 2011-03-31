@@ -13,6 +13,7 @@ Audio Modules:
 
   name:     status:       description:
 
+* au        -             Base audio types
 * aubuf     -             Audio buffer
 * aufile    -             Audio file player/recorder (WAV etc.)
 * aumix     -             Audio mixer
@@ -23,15 +24,20 @@ Audio Modules:
 
 
 
+
 Video Modules:
 
   name:     status:       description:
 
-* vidbase   -             Base video types
+* vid       -             Base video types
+* vidbuf    -             Video buffer
 * vidconv   -             Colorspace conversion (incl. rotation)
 * viddraw   -             Basic drawing routines
 * vidfilt   -             Video filters (alphablending, blurring, ...)
 * vidmix    -             Video mixer
+* h263      -             H.263 video codec
+* h264      -             H.264 video codec
+
 
 
 
