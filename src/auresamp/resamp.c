@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <re.h>
 #include <rem_auresamp.h>
+#include "fir.h"
 
 
 enum { FIR_SIZE = 16 };
@@ -11,6 +12,7 @@ struct auresamp {
 	int16_t hist[FIR_SIZE + 2];
 	int channels;
 	double ratio;
+	struct fir fir;
 };
 
 
@@ -103,6 +105,8 @@ int auresamp_alloc(struct auresamp **arp, int channels, double ratio)
 	ar->channels = channels;
 	ar->ratio = ratio;
 
+	fir_init(&ar->fir);
+
 	*arp = ar;
 
 	return 0;
@@ -113,13 +117,16 @@ int auresamp_process(struct auresamp *ar, struct mbuf *mb)
 {
 	const size_t nsamp = mbuf_get_left(mb) / 2;
 	const size_t nsamp_out = nsamp * (ar ? ar->ratio : 0);
-	int16_t buf[nsamp_out];
+	const size_t sz = nsamp_out * sizeof(int16_t);
 	size_t pos;
-
-	// todo: alloc new mb->buf and replace
+	int16_t *buf;
 
 	if (!ar || !mb)
 		return EINVAL;
+
+	buf = mem_alloc(sz, NULL);
+	if (!buf)
+		return ENOMEM;
 
 	pos = mb->pos;
 
@@ -128,10 +135,63 @@ int auresamp_process(struct auresamp *ar, struct mbuf *mb)
 		upsample(ar, buf, (void *)mbuf_buf(mb), nsamp);
 	}
 	else {
+		auresamp_lowpass(ar, mb);
+
+		mb->pos = pos;
+
 		downsample(ar, buf, (void *)mbuf_buf(mb), nsamp);
 	}
 
-	mb->pos = mb->end = pos;
+	/* replace buffer */
+	mem_deref(mb->buf);
+	mb->buf = (void *)buf;
 
-	return mbuf_write_mem(mb, (void *)buf, nsamp_out * 2);
+	mb->pos = pos;
+	mb->end = mb->size = sz;
+
+	return 0;
+}
+
+
+// bandpass filter centred around 1000 Hz
+// sampling rate = 8000 Hz
+// gain at 1000 Hz is about 1.13
+
+#define FILTER_LEN  63
+static const int16_t coeffs[ FILTER_LEN ] = {
+	-1468, 1058,   594,   287,    186,  284,   485,   613,
+	495,   90,  -435,  -762,   -615,   21,   821,  1269,
+	982,    9, -1132, -1721,  -1296,    1,  1445,  2136,
+	1570,    0, -1666, -2413,  -1735,   -2,  1770,  2512,
+	1770,   -2, -1735, -2413,  -1666,    0,  1570,  2136,
+	1445,    1, -1296, -1721,  -1132,    9,   982,  1269,
+	821,   21,  -615,  -762,   -435,   90,   495,   613,
+	485,  284,   186,   287,    594, 1058, -1468
+};
+
+
+int auresamp_lowpass(struct auresamp *ar, struct mbuf *mb)
+{
+	const int16_t *src;
+	int16_t *dst;
+	int nsamp;
+
+	if (!ar || !mb)
+		return EINVAL;
+
+	nsamp = (int)(mbuf_get_left(mb) / sizeof(int16_t));
+	src = dst = (void *)mbuf_buf(mb);
+
+	while (nsamp > 0) {
+
+		int len = min(nsamp, FIR_MAX_INPUT_LEN);
+
+		fir_process(&ar->fir, coeffs, src, dst, len, FILTER_LEN);
+
+		src   += len;
+		dst   += len;
+		nsamp -= len;
+	}
+
+	return 0;
 }
