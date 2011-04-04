@@ -240,18 +240,3 @@ int aubuf_debug(struct re_printf *pf, const struct aubuf *ab)
 
 	return err;
 }
-
-
-size_t aubuf_cur_size(const struct aubuf *ab)
-{
-	size_t sz;
-
-	if (!ab)
-		return 0;
-
-	lock_read_get(ab->lock);
-	sz = ab->cur_sz;
-	lock_rel(ab->lock);
-
-	return sz;
-}
