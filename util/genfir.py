@@ -22,7 +22,7 @@ i = 0
 for c in coeffs:
     v = int(c * 32768.0)
 
-    print " %5d," % (v) ,
+    print " %5d," % (v),
 
     i += 1
     if not (i % 8):
