@@ -25,39 +25,15 @@ static const int16_t fir_lowpass[31] = {
 };
 
 
-static inline int16_t saturate_s16(int32_t a)
-{
-	if (a > INT16_MAX)
-		return INT16_MAX;
-	else if (a < INT16_MIN)
-		return INT16_MIN;
-	else
-		return a;
-}
-
-
-static inline void upsample(struct auresamp *ar, int16_t *dst,
+static inline void resample(struct auresamp *ar, int16_t *dst,
 			    const int16_t *src, size_t nsamp_dst)
 {
-	size_t i;
 	double p = 0;
 
-	for (i=0; i < nsamp_dst; i++) {
+	while (nsamp_dst--) {
 
 		*dst++ = src[(int)p];
 		p += 1/ar->ratio;
-	}
-}
-
-
-static inline void downsample(struct auresamp *ar, int16_t *dst,
-			      const int16_t *src, size_t nsamp)
-{
-	size_t i;
-
-	for (i=0; i<nsamp; i += 1/ar->ratio) {
-
-		*dst++ = src[i];
 	}
 }
 
@@ -70,15 +46,15 @@ int auresamp_alloc(struct auresamp **arp, int channels,
 	if (!arp || channels != 1 || !srate_in || !srate_out)
 		return EINVAL;
 
-	re_printf("allocate resampler: %uHz ---> %uHz\n",
-		  srate_in, srate_out);
-
 	ar = mem_zalloc(sizeof(*ar), NULL);
 	if (!ar)
 		return ENOMEM;
 
 	ar->channels = channels;
 	ar->ratio = 1.0 * srate_out / srate_in;
+
+	re_printf("allocate resampler: %uHz ---> %uHz (ratio=%f)\n",
+		  srate_in, srate_out, ar->ratio);
 
 	fir_init(&ar->fir);
 
@@ -121,7 +97,7 @@ int auresamp_process(struct auresamp *ar, struct mbuf *mb)
 
 	if (ar->ratio > 1) {
 
-		upsample(ar, buf, (void *)mbuf_buf(mb), nsamp_out);
+		resample(ar, buf, (void *)mbuf_buf(mb), nsamp_out);
 
 		mb->pos = pos;
 
@@ -134,7 +110,7 @@ int auresamp_process(struct auresamp *ar, struct mbuf *mb)
 
 		mb->pos = pos;
 
-		downsample(ar, buf, (void *)mbuf_buf(mb), nsamp);
+		resample(ar, buf, (void *)mbuf_buf(mb), nsamp_out);
 	}
 
 	/* replace buffer */
