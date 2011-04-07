@@ -13,22 +13,22 @@
 #include <rem_aumix.h>
 
 
-#define FRAME_SIZE (160)
-#define SRATE (8000)
-#define PTIME (FRAME_SIZE / (SRATE / 1000))
-
-
 struct aumix {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
 	struct list srcl;
 	pthread_t thread;
 	int run;
+	uint32_t srate;
+	int ch;
+	uint32_t ptime;
+	uint32_t frame_size;
+	int16_t *frame;
 };
 
 struct aumix_source {
 	struct le le;
-	int16_t frame[FRAME_SIZE];
+	int16_t *frame;
 	struct aubuf *aubuf;
 	struct aumix *mix;
 	aumix_frame_h *fh;
@@ -62,6 +62,7 @@ static void destructor(void *arg)
 	}
 
 	list_flush(&mix->srcl);
+	mem_deref(mix->frame);
 }
 
 
@@ -74,6 +75,7 @@ static void source_destructor(void *arg)
 	pthread_mutex_unlock(&src->mix->mutex);
 
 	mem_deref(src->aubuf);
+	mem_deref(src->frame);
 }
 
 
@@ -121,10 +123,9 @@ static void *aumix_thread(void *arg)
 		for (le=mix->srcl.head; le; le=le->next) {
 
 			struct aumix_source *src = le->data;
-			int16_t frame[FRAME_SIZE];
 			struct le *cle;
 
-			memset(frame, 0, sizeof(frame));
+			memset(mix->frame, 0, sizeof(mix->frame));
 
 			for (cle=mix->srcl.head; cle; cle=cle->next) {
 
@@ -135,15 +136,16 @@ static void *aumix_thread(void *arg)
 				if (csrc == src)
 					continue;
 #endif
-				for (i=0; i<FRAME_SIZE; i++)
-					frame[i] += csrc->frame[i];
+				for (i=0; i<mix->frame_size; i++)
+					mix->frame[i] += csrc->frame[i];
 			}
 
-			src->fh((uint32_t)ts * (SRATE/1000), (uint8_t *)frame,
-				sizeof(frame), src->arg);
+			src->fh((uint32_t)ts * (mix->srate/1000),
+				(uint8_t *)mix->frame, sizeof(mix->frame),
+				src->arg);
 		}
 
-		ts += PTIME;
+		ts += mix->ptime;
 	}
 
 	pthread_mutex_unlock(&mix->mutex);
@@ -154,17 +156,28 @@ static void *aumix_thread(void *arg)
 }
 
 
-int aumix_alloc(struct aumix **mixp)
+int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 {
 	struct aumix *mix;
 	int err;
 
-	if (!mixp)
+	if (!mixp || !srate || !ch || !ptime)
 		return EINVAL;
 
 	mix = mem_zalloc(sizeof(*mix), destructor);
 	if (!mix)
 		return ENOMEM;
+
+	mix->srate      = srate;
+	mix->ch         = ch;
+	mix->ptime      = ptime;
+	mix->frame_size = srate * ch * ptime / 1000;
+
+	mix->frame = mem_alloc(mix->frame_size * sizeof(int16_t), NULL);
+	if (!mix->frame) {
+		err = ENOMEM;
+		goto out;
+	}
 
 	err = pthread_mutex_init(&mix->mutex, NULL);
 	if (err)
@@ -210,6 +223,12 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 	src->mix = mix;
 	src->fh  = fh ? fh : dummy_frame_handler;
 	src->arg = arg;
+
+	src->frame = mem_alloc(mix->frame_size * sizeof(int16_t), NULL);
+	if (!src->frame) {
+		err = ENOMEM;
+		goto out;
+	}
 
 	err = aubuf_alloc(&src->aubuf, 320 * 5, 320 * 10);
 	if (err)
