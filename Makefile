@@ -27,7 +27,7 @@ include $(LIBRE_MK)
 
 # List of modules
 MODULES += aubuf autone aumix auresamp
-MODULES += vid vidmix
+MODULES += vid vidmix vidconv
 
 INSTALL := install
 ifeq ($(DESTDIR),)
