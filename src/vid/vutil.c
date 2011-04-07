@@ -5,7 +5,7 @@
  */
 #include <string.h>
 #include <re.h>
-#include <rem.h>
+#include <rem_types.h>
 
 
 /**
