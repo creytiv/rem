@@ -13,7 +13,7 @@
 #include <libswscale/swscale.h>
 #endif
 #include <re.h>
-#include <rem_types.h>
+#include <rem_vid.h>
 #include <rem_vidmix.h>
 
 
@@ -73,50 +73,9 @@ static inline uint32_t calc_ypos(const struct vidmix *mix, uint32_t idx)
 }
 
 
-static void frame_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
-{
-#define PREC 8
-#define RGB2Y(r, g, b) (((66 * (r) + 129 * (g) + 25 * (b)) >> PREC) + 16)
-#define RGB2U(r, g, b) (((-37 * (r) + -73 * (g) + 112 * (b)) >> PREC) + 128)
-#define RGB2V(r, g, b) (((112 * (r) + -93 * (g) + -17 * (b)) >> PREC) + 128)
-
-	/* Y */
-	memset(vf->data[0], RGB2Y(r, g, b), vf->size.h * vf->linesize[0]);
-	/* U */
-	memset(vf->data[1], RGB2U(r, g, b),(vf->size.h/2) * vf->linesize[1]);
-	/* V */
-	memset(vf->data[2], RGB2V(r, g, b), (vf->size.h/2) * vf->linesize[2]);
-
-	vf->valid = true;
-}
-
-
 static void clear_frame(struct vidframe *vf)
 {
-	frame_fill(vf, 0, 0, 0);
-}
-
-
-static struct vidframe *frame_alloc(const struct vidsz *sz)
-{
-	struct vidframe *f;
-
-	f = mem_zalloc(sizeof(*f) + (sz->w * sz->h * 2), NULL);
-	if (!f)
-		return NULL;
-
-	f->linesize[0] = sz->w;
-	f->linesize[1] = sz->w / 2;
-	f->linesize[2] = sz->w / 2;
-
-	f->data[0] = sizeof(*f) + (uint8_t *)f;
-	f->data[1] = f->data[0] + f->linesize[0] * sz->h;
-	f->data[2] = f->data[1] + f->linesize[1] * sz->h;
-
-	f->size = *sz;
-	f->valid = true;
-
-	return f;
+	vidframe_fill(vf, 0, 0, 0);
 }
 
 
@@ -241,11 +200,9 @@ int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 	mix->ncols = 1;
 	mix->nrows = 1;
 
-	mix->frame = frame_alloc(sz);
-	if (!mix->frame) {
-		err = ENOMEM;
+	err = vidframe_alloc(&mix->frame, sz, VID_FMT_YUV420P);
+	if (err)
 		goto out;
-	}
 
 	clear_frame(mix->frame);
 

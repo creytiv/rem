@@ -2,4 +2,4 @@
 # mod.mk
 #
 
-SRCS	+= vid/vutil.c
+SRCS	+= vid/frame.c

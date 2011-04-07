@@ -1,5 +1,5 @@
 #include <re.h>
-#include <rem_types.h>
+#include <rem_vid.h>
 #include <rem_vidconv.h>
 #ifdef USE_FFMPEG
 #include <libavcodec/avcodec.h>
