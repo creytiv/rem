@@ -1,5 +1,5 @@
 /**
- * @file autone.c  Audio Tones
+ * @file tone.c  Audio Tones
  *
  * Copyright (C) 2010 Creytiv.com
  */

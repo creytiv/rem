@@ -2,4 +2,4 @@
 # mod.mk
 #
 
-SRCS	+= autone/autone.c
+SRCS	+= autone/tone.c
