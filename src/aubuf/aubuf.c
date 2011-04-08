@@ -147,7 +147,7 @@ void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 
 	lock_write_get(ab->lock);
 
-	if (ab->cur_sz <= (ab->filling ? ab->wish_sz : 0)) {
+	if (ab->cur_sz < (ab->filling ? ab->wish_sz : sz)) {
 #if AUBUF_DEBUG
 		++ab->stats.ur;
 		(void)re_printf("aubuf: %p underrun filling=%d\n",
