@@ -1,23 +1,13 @@
 #include <re.h>
 #include <rem_vid.h>
 #include <rem_vidconv.h>
-#ifdef USE_FFMPEG
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#endif
-
-
-#if LIBSWSCALE_VERSION_MINOR >= 9
-#define SRCSLICE_CAST (const uint8_t **)
-#else
-#define SRCSLICE_CAST (uint8_t **)
-#endif
+#include "vconv.h"
 
 
 /**
  * Convert from packed YUYV422 to planar YUV420P
  */
-void vidconv_yuyv_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
+static void yuyv_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 {
 	const uint32_t *p1 = (uint32_t *)src->data[0];
 	const uint32_t *p2 = (uint32_t *)(src->data[0] + src->linesize[0]);
@@ -57,38 +47,6 @@ void vidconv_yuyv_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 }
 
 
-void vidconv_yuyv_to_yuv420p_sws(struct vidframe *dst,
-				 const struct vidframe *src)
-{
-#ifdef USE_FFMPEG
-	static struct SwsContext *sws = NULL;
-	AVPicture avdst, avsrc;
-	int i;
-
-	if (!sws) {
-		sws = sws_getContext(src->size.w, src->size.h,
-				     PIX_FMT_YUYV422,
-				     dst->size.w, dst->size.h,
-				     PIX_FMT_YUV420P,
-				     SWS_BICUBIC, NULL, NULL, NULL);
-	}
-
-	for (i=0; i<4; i++) {
-		avsrc.data[i]     = src->data[i];
-		avsrc.linesize[i] = src->linesize[i];
-		avdst.data[i]     = dst->data[i];
-		avdst.linesize[i] = dst->linesize[i];
-	}
-
-	sws_scale(sws, SRCSLICE_CAST avsrc.data, avsrc.linesize, 0,
-		  src->size.h, avdst.data, avdst.linesize);
-#else
-	(void)dst;
-	(void)src;
-#endif
-}
-
-
 static inline int rgb2y(const uint8_t *p)
 {
 	return ( (66 * p[2] + 129 * p[1] + 25 * p[0] + 128) >> 8) + 16;
@@ -110,7 +68,7 @@ static inline int rgb2v(const uint8_t *p)
 /**
  * Convert from RGB32 to planar YUV420P
  */
-void vidconv_rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
+static void rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 {
 	const uint8_t *p1 = src->data[0];
 	const uint8_t *p2 = src->data[0] + src->linesize[0];
@@ -142,4 +100,26 @@ void vidconv_rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 		u  += dst->linesize[1];
 		v  += dst->linesize[2];
 	}
+}
+
+
+void vidconv_process(struct vidframe *dst, const struct vidframe *src,
+		     int rotate, bool hflip, bool vflip)
+{
+	if (!dst || !src)
+		return;
+
+	/* unused for now */
+	(void)rotate;
+	(void)hflip;
+	(void)vflip;
+
+	if (src->fmt == VID_FMT_RGB32 && dst->fmt == VID_FMT_YUV420P)
+		rgb32_to_yuv420p(dst, src);
+	else if (src->fmt == VID_FMT_YUYV422 && dst->fmt == VID_FMT_YUV420P)
+		yuyv_to_yuv420p(dst, src);
+#ifdef USE_FFMPEG
+	else
+		vidconv_sws(dst, src);
+#endif
 }

@@ -3,6 +3,7 @@
 enum vidfmt {
 	VID_FMT_NONE    = -1,
 	VID_FMT_YUV420P =  0,
+	VID_FMT_YUYV422,
 	VID_FMT_RGB32
 };
 

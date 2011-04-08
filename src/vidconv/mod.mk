@@ -5,3 +5,7 @@
 #
 
 SRCS	+= vidconv/vconv.c
+
+ifneq ($(USE_FFMPEG),)
+SRCS	+= vidconv/sws.c
+endif
