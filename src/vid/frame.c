@@ -36,7 +36,7 @@ void vidframe_init(struct vidframe *vf, const struct vidsz *sz,
 
 
 void vidframe_init_buf(struct vidframe *vf, const struct vidsz *sz,
-		       enum vidfmt fmt, void *buf)
+		       enum vidfmt fmt, uint8_t *buf)
 {
 	int w, h;
 
@@ -86,7 +86,7 @@ int vidframe_alloc(struct vidframe **vfp, const struct vidsz *sz,
 	if (!vf)
 		return ENOMEM;
 
-	vidframe_init_buf(vf, sz, fmt, vf + 1);
+	vidframe_init_buf(vf, sz, fmt, (uint8_t *)(vf + 1));
 
 	*vfp = vf;
 

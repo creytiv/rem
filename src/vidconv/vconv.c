@@ -4,6 +4,21 @@
 #include "vconv.h"
 
 
+static const char *vidfmt_name(enum vidfmt fmt)
+{
+	switch (fmt) {
+
+	case VID_FMT_NONE:    return "(NONE)";
+	case VID_FMT_YUV420P: return "YUV420P";
+	case VID_FMT_UYVY422: return "UYVY422";
+	case VID_FMT_YUYV422: return "YUYV422";
+	case VID_FMT_RGB32:   return "RGB32";
+	case VID_FMT_ARGB:    return "ARGB";
+	default:              return "???";
+	}
+}
+
+
 /**
  * Convert from packed YUYV422 to planar YUV420P
  */
@@ -114,12 +129,29 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 	(void)hflip;
 	(void)vflip;
 
-	if (src->fmt == VID_FMT_RGB32 && dst->fmt == VID_FMT_YUV420P)
+	re_printf("vidconv: %s:%dx%d ---> %s:%dx%d\n",
+		  vidfmt_name(src->fmt), src->size.w, src->size.h,
+		  vidfmt_name(dst->fmt), dst->size.w, dst->size.h);
+
+	if (src->fmt == dst->fmt) {
+
+		int i;
+
+		for (i=0; i<4; i++) {
+			dst->data[i]     = src->data[i];
+			dst->linesize[i] = src->linesize[i];
+		}
+	}
+	else if (src->fmt == VID_FMT_RGB32 && dst->fmt == VID_FMT_YUV420P)
 		rgb32_to_yuv420p(dst, src);
 	else if (src->fmt == VID_FMT_YUYV422 && dst->fmt == VID_FMT_YUV420P)
 		yuyv_to_yuv420p(dst, src);
+	else {
 #ifdef USE_FFMPEG
-	else
+		printf("vidconv: using swscale\n");
 		vidconv_sws(dst, src);
+#else
+		printf("unsupported pixelformat\n");
 #endif
+	}
 }
