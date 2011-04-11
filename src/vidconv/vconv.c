@@ -62,24 +62,6 @@ static void yuyv_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 }
 
 
-static inline int rgb2y(const uint8_t *p)
-{
-	return ( (66 * p[2] + 129 * p[1] + 25 * p[0] + 128) >> 8) + 16;
-}
-
-
-static inline int rgb2u(const uint8_t *p)
-{
-	return ( (-38*p[2] - 74*p[1] + 112*p[0] + 128) >> 8) + 128;
-}
-
-
-static inline int rgb2v(const uint8_t *p)
-{
-	return ((112*p[2] - 94*p[1] - 18*p[0] + 128) >> 8) + 128;
-}
-
-
 /**
  * Convert from RGB32 to planar YUV420P
  */
@@ -100,11 +82,14 @@ static void rgb32_to_yuv420p(struct vidframe *dst, const struct vidframe *src)
 
 			j = w * 8;
 
-			y [w] = rgb2y(&p1[j])<<0 | rgb2y(&p1[j + 4]) << 8;
-			y2[w] = rgb2y(&p2[j])<<0 | rgb2y(&p2[j + 4]) << 8;
+			y [w]  = rgb2y(p1[j+2], p1[j+1], p1[j+0]) << 0;
+			y [w] |= rgb2y(p1[j+6], p1[j+5], p1[j+4]) << 8;
 
-			u[w] = rgb2u(&p1[j]);
-			v[w] = rgb2v(&p1[j]);
+			y2[w]  = rgb2y(p2[j+2], p2[j+1], p2[j+0]) << 0;
+			y2[w] |= rgb2y(p2[j+6], p2[j+5], p2[j+4]) << 8;
+
+			u[w] = rgb2u(p1[j+2], p1[j+1], p1[j+0]);
+			v[w] = rgb2v(p1[j+2], p1[j+1], p1[j+0]);
 		}
 
 		p1 += src->linesize[0] * 2;

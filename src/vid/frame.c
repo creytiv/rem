@@ -107,14 +107,9 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 	case VID_FMT_YUV420P:
 		h = vf->size.h;
 
-#define PREC 8
-#define RGB2Y(r, g, b) (((66 * (r) + 129 * (g) + 25 * (b)) >> PREC) + 16)
-#define RGB2U(r, g, b) (((-37 * (r) + -73 * (g) + 112 * (b)) >> PREC) + 128)
-#define RGB2V(r, g, b) (((112 * (r) + -93 * (g) + -17 * (b)) >> PREC) + 128)
-
-		memset(vf->data[0], RGB2Y(r, g, b), h * vf->linesize[0]);
-		memset(vf->data[1], RGB2U(r, g, b), h/2 * vf->linesize[1]);
-		memset(vf->data[2], RGB2V(r, g, b), h/2 * vf->linesize[2]);
+		memset(vf->data[0], rgb2y(r, g, b), h * vf->linesize[0]);
+		memset(vf->data[1], rgb2u(r, g, b), h/2 * vf->linesize[1]);
+		memset(vf->data[2], rgb2v(r, g, b), h/2 * vf->linesize[2]);
 		break;
 
 	case VID_FMT_RGB32:
