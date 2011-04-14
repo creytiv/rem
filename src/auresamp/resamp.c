@@ -75,75 +75,58 @@ int auresamp_alloc(struct auresamp **arp, int channels,
 }
 
 
-int auresamp_process(struct auresamp *ar, struct mbuf *mb)
+int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 {
-	const size_t nsamp = mbuf_get_left(mb) / 2;
+	const size_t nsamp = mbuf_get_left(src) / 2;
 	const size_t nsamp_out = nsamp * (ar ? ar->ratio : 0);
 	const size_t sz = nsamp_out * sizeof(int16_t);
-	size_t pos;
-	int16_t *buf;
+	int16_t *s, *d;
 
-	if (!ar || !mb)
+	if (!ar || !dst || !src)
 		return EINVAL;
 
-	if (ar->ratio == 1)
-		return 0;
+	if (mbuf_get_space(dst) < sz) {
 
-	buf = mem_alloc(sz, NULL);
-	if (!buf)
-		return ENOMEM;
+		int err;
 
-	pos = mb->pos;
+		re_printf("resamp: dst resize %u -> %u\n",
+			  dst->size, dst->pos + sz);
+
+		err = mbuf_resize(dst, dst->pos + sz);
+		if (err)
+			return err;
+	}
+
+	s = (void *)mbuf_buf(src);
+	d = (void *)mbuf_buf(dst);
 
 	if (ar->ratio > 1) {
 
-		resample(ar, buf, (void *)mbuf_buf(mb), nsamp_out);
-
-		mb->pos = pos;
-
-		auresamp_lowpass(ar, mb);
+		resample(ar, d, s, nsamp_out);
+		auresamp_lowpass(ar, d, nsamp_out);
 	}
 	else {
 		/* decimation: low-pass filter, then downsample */
 
-		auresamp_lowpass(ar, mb);
-
-		mb->pos = pos;
-
-		resample(ar, buf, (void *)mbuf_buf(mb), nsamp_out);
+		auresamp_lowpass(ar, s, nsamp);
+		resample(ar, d, s, nsamp_out);
 	}
 
-	/* replace buffer */
-	mem_deref(mb->buf);
-	mb->buf = (void *)buf;
-
-	mb->pos = pos;
-	mb->end = mb->size = sz;
+	dst->end = dst->pos += sz;
 
 	return 0;
 }
 
 
-int auresamp_lowpass(struct auresamp *ar, struct mbuf *mb)
+int auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp)
 {
-	const int16_t *src;
-	int16_t *dst;
-	int nsamp;
-
-	if (!ar || !mb)
-		return EINVAL;
-
-	nsamp = (int)(mbuf_get_left(mb) / sizeof(int16_t));
-	src = dst = (void *)mbuf_buf(mb);
-
 	while (nsamp > 0) {
 
 		int len = min(nsamp, FIR_MAX_INPUT_LEN);
 
-		fir_process(&ar->fir, ar->coeffv, src, dst, len, ar->coeffn);
+		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn);
 
-		src   += len;
-		dst   += len;
+		buf   += len;
 		nsamp -= len;
 	}
 
