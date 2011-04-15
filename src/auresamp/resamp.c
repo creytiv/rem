@@ -1,15 +1,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <re.h>
+#include <rem_fir.h>
 #include <rem_auresamp.h>
-#include "fir.h"
 
 
 struct auresamp {
 	struct fir fir;
 	const int16_t *coeffv;
 	int coeffn;
-	int channels;
 	double ratio;
 };
 
@@ -38,19 +37,19 @@ static inline void resample(struct auresamp *ar, int16_t *dst,
 }
 
 
-int auresamp_alloc(struct auresamp **arp, int channels,
-		   uint32_t srate_in, uint32_t srate_out)
+/* todo: handle channel resampling */
+int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
+		   uint32_t srate_out)
 {
 	struct auresamp *ar;
 
-	if (!arp || channels != 1 || !srate_in || !srate_out)
+	if (!arp || !srate_in || !srate_out)
 		return EINVAL;
 
 	ar = mem_zalloc(sizeof(*ar), NULL);
 	if (!ar)
 		return ENOMEM;
 
-	ar->channels = channels;
 	ar->ratio = 1.0 * srate_out / srate_in;
 
 	re_printf("allocate resampler: %uHz ---> %uHz (ratio=%f)\n",
@@ -77,13 +76,15 @@ int auresamp_alloc(struct auresamp **arp, int channels,
 
 int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 {
-	const size_t nsamp = mbuf_get_left(src) / 2;
-	const size_t nsamp_out = nsamp * (ar ? ar->ratio : 0);
-	const size_t sz = nsamp_out * sizeof(int16_t);
+	size_t ns, nd, sz;
 	int16_t *s, *d;
 
 	if (!ar || !dst || !src)
 		return EINVAL;
+
+	ns = mbuf_get_left(src) / 2;
+	nd = ns * ar->ratio;
+	sz = nd * 2;
 
 	if (mbuf_get_space(dst) < sz) {
 
@@ -102,14 +103,14 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 
 	if (ar->ratio > 1) {
 
-		resample(ar, d, s, nsamp_out);
-		auresamp_lowpass(ar, d, nsamp_out);
+		resample(ar, d, s, nd);
+		auresamp_lowpass(ar, d, nd);
 	}
 	else {
 		/* decimation: low-pass filter, then downsample */
 
-		auresamp_lowpass(ar, s, nsamp);
-		resample(ar, d, s, nsamp_out);
+		auresamp_lowpass(ar, s, ns);
+		resample(ar, d, s, nd);
 	}
 
 	dst->end = dst->pos += sz;
@@ -122,7 +123,7 @@ int auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp)
 {
 	while (nsamp > 0) {
 
-		int len = min(nsamp, FIR_MAX_INPUT_LEN);
+		size_t len = min(nsamp, FIR_MAX_INPUT_LEN);
 
 		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn);
 

@@ -1,8 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <re.h>
-#include <rem_auresamp.h>
-#include "fir.h"
+#include <rem_fir.h>
 
 
 /*
@@ -22,12 +21,12 @@ void fir_init(struct fir *fir)
 
 void fir_process(struct fir *fir, const int16_t *coeffs,
 		 const int16_t *input, int16_t *output,
-		 int length, int filterLength)
+		 size_t length, int filterLength)
 {
 	int32_t acc;
 	const int16_t *coeffp;
 	int16_t *inputp;
-	int n;
+	size_t n;
 	int k;
 
 	/* put the new samples at the high end of the buffer */

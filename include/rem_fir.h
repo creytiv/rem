@@ -16,4 +16,4 @@ struct fir {
 void fir_init(struct fir *fir);
 void fir_process(struct fir *fir, const int16_t *coeffs,
 		 const int16_t *input, int16_t *output,
-		 int length, int filterLength);
+		 size_t length, int filterLength);
