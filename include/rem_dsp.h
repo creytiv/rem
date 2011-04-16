@@ -1,6 +1,12 @@
 /* DSP routines */
 
 
+static inline uint8_t saturate_u8(int a)
+{
+	return ((a > 255) ? 255 : ((a < 0) ? 0 : a));
+}
+
+
 static inline int16_t saturate_s16(int32_t a)
 {
 	if (a > INT16_MAX)
