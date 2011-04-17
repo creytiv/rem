@@ -12,6 +12,7 @@ enum {
 
 struct vidconv_ctx {
 	bool inited;
+	void *sws;
 
 	int16_t CRV[256];
 	int16_t CGU[256];

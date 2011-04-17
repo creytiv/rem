@@ -5,6 +5,7 @@
 #
 
 SRCS	+= vidconv/vconv.c
+SRCS	+= vidconv/pack2yuv.c
 
 ifneq ($(USE_FFMPEG),)
 SRCS	+= vidconv/sws.c

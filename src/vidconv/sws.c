@@ -23,23 +23,27 @@ static inline enum PixelFormat vidfmt2ffmpeg(enum vidfmt fmt)
 	case VID_FMT_NONE:     return PIX_FMT_NONE;
 	case VID_FMT_YUV420P:  return PIX_FMT_YUV420P;
 	case VID_FMT_YUYV422:  return PIX_FMT_YUYV422;
+	case VID_FMT_UYVY422:  return PIX_FMT_UYVY422;
 	case VID_FMT_RGB32:    return PIX_FMT_RGB32;
+
 	}
 }
 
 
-void vidconv_sws(struct vidframe *dst, const struct vidframe *src)
+void vidconv_sws(struct vidconv_ctx *ctx, struct vidframe *dst,
+		 const struct vidframe *src)
 {
-	static struct SwsContext *sws = NULL;  // todo: ahem!
 	AVPicture avdst, avsrc;
 	int i;
 
-	if (!sws) {
-		sws = sws_getContext(src->size.w, src->size.h,
-				     vidfmt2ffmpeg(src->fmt),
-				     dst->size.w, dst->size.h,
-				     vidfmt2ffmpeg(dst->fmt),
-				     SWS_BICUBIC, NULL, NULL, NULL);
+	if (!ctx->sws) {
+		ctx->sws = sws_getContext(src->size.w, src->size.h,
+					  vidfmt2ffmpeg(src->fmt),
+					  dst->size.w, dst->size.h,
+					  vidfmt2ffmpeg(dst->fmt),
+					  SWS_BICUBIC, NULL, NULL, NULL);
+		if (!ctx->sws)
+			return;
 	}
 
 	for (i=0; i<4; i++) {
@@ -49,6 +53,6 @@ void vidconv_sws(struct vidframe *dst, const struct vidframe *src)
 		avdst.linesize[i] = dst->linesize[i];
 	}
 
-	sws_scale(sws, SRCSLICE_CAST avsrc.data, avsrc.linesize, 0,
+	sws_scale(ctx->sws, SRCSLICE_CAST avsrc.data, avsrc.linesize, 0,
 		  src->size.h, avdst.data, avdst.linesize);
 }
