@@ -1,13 +1,15 @@
 /* Basic video types */
 
+
+/** Pixel format */
 enum vidfmt {
 	VID_FMT_NONE    = -1,
-	VID_FMT_YUV420P =  0,
-	VID_FMT_YUYV422,
-	VID_FMT_UYVY422,
-	VID_FMT_RGB32,        /* native endian */
-	VID_FMT_ARGB,         /* big endian */
-	VID_FMT_RGB565        /* packed RGB 5:6:5, 16bpp, native endian */
+	VID_FMT_YUV420P =  0, /* planar YUV  4:2:0   12bpp                 */
+	VID_FMT_YUYV422,      /* packed YUV  4:2:2   16bpp                 */
+	VID_FMT_UYVY422,      /* packed YUV  4:2:2   16bpp                 */
+	VID_FMT_RGB32,        /* packed RGBA 8:8:8:8 32bpp (native endian) */
+	VID_FMT_ARGB,         /* packed RGBA 8:8:8:8 32bpp (big endian)    */
+	VID_FMT_RGB565        /* packed RGB  5:6:5   16bpp (native endian) */
 };
 
 struct vidsz {
