@@ -14,6 +14,18 @@ static inline void yuv2rgb(uint8_t *rgb, uint8_t y, int ruv, int guv, int buv)
 }
 
 
+/* native endian */
+static inline void yuv2rgb565(uint8_t *rgb, uint8_t y,
+			      int ruv, int guv, int buv)
+{
+	uint16_t *p = (uint16_t *)rgb;
+
+	*p  = (saturate_u8(y + ruv) & 0xf8) << 8;
+	*p |= (saturate_u8(y + guv) & 0xfc) << 3;
+	*p |=  saturate_u8(y + buv) >> 3;
+}
+
+
 /**
  * Convert from Planar YUV420P to generic Packed format
  */
@@ -25,8 +37,6 @@ void vidconv_yuv420p_to_packed(struct vidconv_ctx *ctx, struct vidframe *dst,
 	const uint8_t *u = src->data[1], *v = src->data[2];
 	uint8_t *p0, *p1;
 	int px, h, w;
-
-	re_printf("YUV420P to packed %s\n", vidfmt_name(dst->fmt));
 
 	/* vertical flip -- read source in opposite direction */
 	if (flags & VIDCONV_VFLIP) {
@@ -69,6 +79,23 @@ void vidconv_yuv420p_to_packed(struct vidconv_ctx *ctx, struct vidframe *dst,
 				yuv2rgb(&p1[pw + 4], y1[2*w+1], ruv, guv, buv);
 
 				pw += 8; /* STEP */
+				break;
+
+			case VID_FMT_RGB565:
+
+				_u = u[w];
+				_v = v[w];
+
+				ruv = ctx->CRV[_v];
+				guv = ctx->CGV[_v] + ctx->CGU[_u];
+				buv = ctx->CBU[_u];
+
+				yuv2rgb565(&p0[pw+0], y0[2*w], ruv, guv, buv);
+				yuv2rgb565(&p0[pw+2], y0[2*w+1],ruv, guv, buv);
+				yuv2rgb565(&p1[pw+0], y1[2*w], ruv, guv, buv);
+				yuv2rgb565(&p1[pw+2], y1[2*w+1],ruv, guv, buv);
+
+				pw += 4; /* STEP */
 				break;
 
 			default:

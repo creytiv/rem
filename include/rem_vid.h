@@ -7,6 +7,7 @@ enum vidfmt {
 	VID_FMT_UYVY422,
 	VID_FMT_RGB32,        /* native endian */
 	VID_FMT_ARGB,         /* big endian */
+	VID_FMT_RGB565        /* packed RGB 5:6:5, 16bpp, native endian */
 };
 
 struct vidsz {

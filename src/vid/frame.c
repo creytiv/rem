@@ -12,7 +12,10 @@ static uint32_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
 
 	case VID_FMT_YUV420P: return sz->w * sz->h * 3 / 2;
 	case VID_FMT_RGB32:   return sz->w * sz->h * 4;
-	default:              return 0;
+	case VID_FMT_RGB565:  return sz->w * sz->h * 2;
+	default:
+		re_printf("vidsize: no fmt %s\n", vidfmt_name(fmt));
+		return 0;
 	}
 }
 
@@ -65,7 +68,13 @@ void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		vf->data[0] = buf;
 		break;
 
+	case VID_FMT_RGB565:
+		vf->linesize[0] = sz->w * 2;
+		vf->data[0] = buf;
+		break;
+
 	default:
+		re_printf("no fmt %s\n", vidfmt_name(fmt));
 		return;
 	}
 
@@ -123,6 +132,7 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 		break;
 
 	default:
+		re_printf("fill: no fmt %s\n", vidfmt_name(vf->fmt));
 		break;
 	}
 }
@@ -132,12 +142,13 @@ const char *vidfmt_name(enum vidfmt fmt)
 {
 	switch (fmt) {
 
-	case VID_FMT_NONE:    return "(NONE)";
-	case VID_FMT_YUV420P: return "YUV420P";
-	case VID_FMT_UYVY422: return "UYVY422";
-	case VID_FMT_YUYV422: return "YUYV422";
-	case VID_FMT_RGB32:   return "RGB32";
-	case VID_FMT_ARGB:    return "ARGB";
-	default:              return "???";
+	case VID_FMT_NONE:     return "(NONE)";
+	case VID_FMT_YUV420P:  return "YUV420P";
+	case VID_FMT_UYVY422:  return "UYVY422";
+	case VID_FMT_YUYV422:  return "YUYV422";
+	case VID_FMT_RGB32:    return "RGB32";
+	case VID_FMT_ARGB:     return "ARGB";
+	case VID_FMT_RGB565:   return "RGB565";
+	default:               return "???";
 	}
 }

@@ -41,6 +41,11 @@ void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 	if (!ctx || !dst || !src)
 		return;
 
+	if (!dst->data[0]) {
+		re_printf("vidconv: invalid dst frame\n");
+		return;
+	}
+
 	/* unused for now */
 	if (rotate) {
 		re_printf("vidconv: rotate not added yet!\n");
