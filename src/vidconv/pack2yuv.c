@@ -77,7 +77,7 @@ void vidconv_packed_to_yuv420p(struct vidframe *dst,
 	uint8_t *u = dst->data[1], *v = dst->data[2];
 	int px, h, w;
 
-	re_printf("packed %s to YUV420P\n", vidfmt_name(src->fmt));
+	//re_printf("packed %s to YUV420P\n", vidfmt_name(src->fmt));
 
 	/* vertical flip -- read source in opposite direction */
 	if (flags & VIDCONV_VFLIP) {

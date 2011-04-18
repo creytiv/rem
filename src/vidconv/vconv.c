@@ -35,82 +35,9 @@ static void init_table(struct vidconv_ctx *ctx)
 }
 
 
-static inline void yuv2rgb(uint8_t *rgb, uint8_t y, int ruv, int guv, int buv)
-{
-	*rgb++ = saturate_u8(y + buv);
-	*rgb++ = saturate_u8(y + guv);
-	*rgb++ = saturate_u8(y + ruv);
-	*rgb++ = 0;
-}
-
-
-static void yuv420p_to_rgb32(struct vidconv_ctx *ctx, struct vidframe *dst,
-			     const struct vidframe *src, bool vflip)
-{
-	const uint16_t *y  = (uint16_t *)src->data[0];
-	const uint16_t *y2 = (uint16_t *)(src->data[0] + src->linesize[0]);
-	const uint8_t *u = src->data[1], *v = src->data[2];
-	uint8_t *p, *p1, *p2;
-	int pinc;
-	int h, w, j;
-
-	p = dst->data[0];
-
-	if (vflip)
-		pinc = -dst->linesize[0] * 2;
-	else
-		pinc = dst->linesize[0] * 2;
-
-	/* vertical flip -- read source in opposite direction */
-	if (vflip) {
-		p1 = (p + dst->linesize[0] * (dst->size.h - 1));
-		p2 = (p + dst->linesize[0] * (dst->size.h - 2));
-	}
-	else {
-		p1 = p;
-		p2 = p + dst->linesize[0];
-	}
-
-	/* 2 lines */
-	for (h = 0; h < dst->size.h/2; h++) {
-
-		int _u, _v;
-		int ruv, guv, buv;
-
-		/* 2 pixels */
-		for (w = 0; w < dst->size.w/2; w++) {
-
-			j = w * 8;
-
-			_u = u[w];
-			_v = v[w];
-
-			ruv = ctx->CRV[_v];
-			guv = ctx->CGV[_v] + ctx->CGU[_u];
-			buv = ctx->CBU[_u];
-
-			yuv2rgb(&p1[j + 0], y[w] >> 8, ruv, guv, buv);
-			yuv2rgb(&p1[j + 4], y[w] & 0xff, ruv, guv, buv);
-			yuv2rgb(&p2[j + 0], y2[w] >> 8, ruv, guv, buv);
-			yuv2rgb(&p2[j + 4], y2[w] & 0xff, ruv, guv, buv);
-		}
-
-		y  += src->linesize[0];
-		y2 += src->linesize[0];
-		u  += src->linesize[1];
-		v  += src->linesize[2];
-
-		p1 += pinc;
-		p2 += pinc;
-	}
-}
-
-
 void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 		     const struct vidframe *src, int rotate, int flags)
 {
-	bool hflip, vflip;
-
 	if (!ctx || !dst || !src)
 		return;
 
@@ -119,9 +46,6 @@ void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 		re_printf("vidconv: rotate not added yet!\n");
 		return;
 	}
-
-	hflip = !!(flags & VIDCONV_HFLIP);
-	vflip = !!(flags & VIDCONV_VFLIP);
 
 	if (!ctx->inited) {
 
@@ -132,7 +56,8 @@ void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 			  " (hflip=%d vflip=%d)\n",
 			  vidfmt_name(src->fmt), src->size.w, src->size.h,
 			  vidfmt_name(dst->fmt), dst->size.w, dst->size.h,
-			  hflip, vflip);
+			  !!(flags & VIDCONV_HFLIP),
+			  !!(flags & VIDCONV_VFLIP));
 #endif
 		ctx->inited = true;
 	}
@@ -149,9 +74,9 @@ void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 			}
 		}
 	}
-	else if (src->fmt == VID_FMT_YUV420P && dst->fmt == VID_FMT_RGB32) {
+	else if (src->fmt == VID_FMT_YUV420P) {
 
-		yuv420p_to_rgb32(ctx, dst, src, vflip);
+		vidconv_yuv420p_to_packed(ctx, dst, src, flags);
 	}
 	else if (dst->fmt == VID_FMT_YUV420P) {
 
