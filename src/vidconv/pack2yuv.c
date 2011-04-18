@@ -31,6 +31,27 @@ static inline void copy2x2_uyvy422(uint8_t *y0, uint8_t *y1,
 }
 
 
+/* native endian */
+static inline void copy2x2_rgb32(uint8_t *y0, uint8_t *y1,
+				 uint8_t *u, uint8_t *v,
+				 const uint8_t *p0, const uint8_t *p1)
+{
+	uint32_t x0 = ((uint32_t *)p0)[0];
+	uint32_t x1 = ((uint32_t *)p0)[1];
+	uint32_t x2 = ((uint32_t *)p1)[0];
+	uint32_t x3 = ((uint32_t *)p1)[1];
+
+	/* Alpha-value is ignored */
+
+	y0[0] = rgb2y(x0 >> 16, x0 >> 8, x0);
+	y0[1] = rgb2y(x1 >> 16, x1 >> 8, x1);
+	y1[0] = rgb2y(x2 >> 16, x2 >> 8, x2);
+	y1[1] = rgb2y(x3 >> 16, x3 >> 8, x3);
+	u[0]  = rgb2u(x0 >> 16, x0 >> 8, x0);
+	v[0]  = rgb2v(x0 >> 16, x0 >> 8, x0);
+}
+
+
 static inline void copy2x2_argb(uint8_t *y0, uint8_t *y1,
 				uint8_t *u, uint8_t *v,
 				const uint8_t *p0, const uint8_t *p1)
@@ -106,6 +127,14 @@ void vidconv_packed_to_yuv420p(struct vidframe *dst,
 						&p0[pw], &p1[pw]);
 
 				pw += 4;
+				break;
+
+			case VID_FMT_RGB32:
+
+				copy2x2_rgb32(&y0[2*w], &y1[2*w], &u[w], &v[w],
+					      &p0[pw], &p1[pw]);
+
+				pw += 8; /* STEP */
 				break;
 
 			case VID_FMT_ARGB:

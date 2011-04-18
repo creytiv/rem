@@ -200,7 +200,7 @@ int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 	mix->ncols = 1;
 	mix->nrows = 1;
 
-	err = vidframe_alloc(&mix->frame, sz, VID_FMT_YUV420P);
+	err = vidframe_alloc(&mix->frame, VID_FMT_YUV420P, sz);
 	if (err)
 		goto out;
 

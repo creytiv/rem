@@ -5,8 +5,8 @@ enum vidfmt {
 	VID_FMT_YUV420P =  0,
 	VID_FMT_YUYV422,
 	VID_FMT_UYVY422,
-	VID_FMT_RGB32,
-	VID_FMT_ARGB,
+	VID_FMT_RGB32,        /* native endian */
+	VID_FMT_ARGB,         /* big endian */
 };
 
 struct vidsz {
@@ -61,12 +61,12 @@ static inline int rgb2v(uint8_t r, uint8_t g, uint8_t b)
 }
 
 
-void vidframe_init(struct vidframe *vf, const struct vidsz *sz,
-		   enum vidfmt fmt, void *data[4], int linesize[4]);
-void vidframe_init_buf(struct vidframe *vf, const struct vidsz *sz,
-		       enum vidfmt fmt, uint8_t *buf);
-int  vidframe_alloc(struct vidframe **vfp, const struct vidsz *sz,
-		    enum vidfmt fmt);
+void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
+		   const struct vidsz *sz, void *data[4], int linesize[4]);
+void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
+		       const struct vidsz *sz, uint8_t *buf);
+int  vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
+		    const struct vidsz *sz);
 void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b);
 
 

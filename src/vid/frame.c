@@ -17,8 +17,8 @@ static uint32_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
 }
 
 
-void vidframe_init(struct vidframe *vf, const struct vidsz *sz,
-		   enum vidfmt fmt, void *data[4], int linesize[4])
+void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
+		   const struct vidsz *sz, void *data[4], int linesize[4])
 {
 	int i;
 
@@ -35,8 +35,8 @@ void vidframe_init(struct vidframe *vf, const struct vidsz *sz,
 }
 
 
-void vidframe_init_buf(struct vidframe *vf, const struct vidsz *sz,
-		       enum vidfmt fmt, uint8_t *buf)
+void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
+		       const struct vidsz *sz, uint8_t *buf)
 {
 	int w, h;
 
@@ -74,8 +74,8 @@ void vidframe_init_buf(struct vidframe *vf, const struct vidsz *sz,
 }
 
 
-int vidframe_alloc(struct vidframe **vfp, const struct vidsz *sz,
-		   enum vidfmt fmt)
+int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
+		   const struct vidsz *sz)
 {
 	struct vidframe *vf;
 
@@ -86,7 +86,7 @@ int vidframe_alloc(struct vidframe **vfp, const struct vidsz *sz,
 	if (!vf)
 		return ENOMEM;
 
-	vidframe_init_buf(vf, sz, fmt, (uint8_t *)(vf + 1));
+	vidframe_init_buf(vf, fmt, sz, (uint8_t *)(vf + 1));
 
 	*vfp = vf;
 

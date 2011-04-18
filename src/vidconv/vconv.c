@@ -1,3 +1,4 @@
+#include <string.h>
 #include <re.h>
 #include <rem_vid.h>
 #include <rem_dsp.h>
@@ -141,8 +142,11 @@ void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 		int i;
 
 		for (i=0; i<4; i++) {
-			dst->data[i]     = src->data[i];
-			dst->linesize[i] = src->linesize[i];
+
+			if (dst->data[i] && src->data[i]) {
+				memcpy(dst->data[i], src->data[i],
+				       dst->linesize[i] * dst->size.h);
+			}
 		}
 	}
 	else if (src->fmt == VID_FMT_YUV420P && dst->fmt == VID_FMT_RGB32) {
