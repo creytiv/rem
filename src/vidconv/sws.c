@@ -25,6 +25,7 @@ static inline enum PixelFormat vidfmt2ffmpeg(enum vidfmt fmt)
 	case VID_FMT_UYVY422:  return PIX_FMT_UYVY422;
 	case VID_FMT_RGB32:    return PIX_FMT_RGB32;
 	case VID_FMT_RGB565:   return PIX_FMT_RGB565LE;  // XXX
+	case VID_FMT_NV12:     return PIX_FMT_NV12;
 
 	default:
 		re_printf("sws: no fmt %s\n", vidfmt_name(fmt));

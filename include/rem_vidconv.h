@@ -6,8 +6,10 @@
 
 
 enum {
-	VIDCONV_HFLIP = 1<<0,
-	VIDCONV_VFLIP = 1<<1,
+	VIDCONV_HFLIP     = 1<<0,
+	VIDCONV_VFLIP     = 1<<1,
+	VIDCONV_ROTATE90  = 1<<2,
+	VIDCONV_ROTATE270 = 1<<3
 };
 
 struct vidconv_ctx {
@@ -22,7 +24,7 @@ struct vidconv_ctx {
 
 
 void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
-		     const struct vidframe *src, int rotate, int flags);
+		     const struct vidframe *src, int flags);
 
 
 void vidconv_rotate(struct vidframe *dst, const struct vidframe *src,

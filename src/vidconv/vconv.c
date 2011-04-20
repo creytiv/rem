@@ -36,19 +36,13 @@ static void init_table(struct vidconv_ctx *ctx)
 
 
 void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
-		     const struct vidframe *src, int rotate, int flags)
+		     const struct vidframe *src, int flags)
 {
 	if (!ctx || !dst || !src)
 		return;
 
 	if (!dst->data[0]) {
 		re_printf("vidconv: invalid dst frame\n");
-		return;
-	}
-
-	/* unused for now */
-	if (rotate) {
-		re_printf("vidconv: rotate not added yet!\n");
 		return;
 	}
 

@@ -99,7 +99,7 @@ void vidconv_yuv420p_to_packed(struct vidconv_ctx *ctx, struct vidframe *dst,
 				break;
 
 			default:
-				re_printf("no fmt %d\n", src->fmt);
+				re_printf("yuv2pack: no fmt %d\n", dst->fmt);
 				return;
 			}
 		}

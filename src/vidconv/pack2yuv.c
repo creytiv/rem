@@ -65,30 +65,48 @@ static inline void copy2x2_argb(uint8_t *y0, uint8_t *y1,
 }
 
 
+static inline void copy2x2_nv12(uint8_t *y0, uint8_t *y1,
+				uint8_t *u, uint8_t *v,
+				const uint8_t *p0, const uint8_t *p1,
+				const uint8_t *puv)
+{
+	y0[0] = p0[0];
+	y0[1] = p0[1];
+	y1[0] = p1[0];
+	y1[1] = p1[1];
+	u [0] = puv[0];
+	v [0] = puv[1];
+}
+
+
 /**
  * Convert from generic Packed format to Planar YUV420P
  */
 void vidconv_packed_to_yuv420p(struct vidframe *dst,
 			       const struct vidframe *src, int flags)
 {
-	const uint8_t *p0, *p1;
+	const uint8_t *p0, *p1, *puv;
 	uint8_t *y0 = dst->data[0];
 	uint8_t *y1 = dst->data[0] + dst->linesize[0];
 	uint8_t *u = dst->data[1], *v = dst->data[2];
-	int px, h, w;
-
-	//re_printf("packed %s to YUV420P\n", vidfmt_name(src->fmt));
+	int px, puvx, h, w;
 
 	/* vertical flip -- read source in opposite direction */
 	if (flags & VIDCONV_VFLIP) {
-		p0 = (src->data[0] + src->linesize[0] * (dst->size.h - 1));
-		p1 = (src->data[0] + src->linesize[0] * (dst->size.h - 2));
-		px = -src->linesize[0] * 2;
+		p0  = src->data[0] + src->linesize[0] * (dst->size.h - 1);
+		p1  = src->data[0] + src->linesize[0] * (dst->size.h - 2);
+		puv = src->data[1] + src->linesize[1] * (dst->size.h/2 - 1);
+
+		px   = -src->linesize[0] * 2;
+		puvx = -src->linesize[1];
 	}
 	else {
-		p0 = src->data[0];
-		p1 = src->data[0] + src->linesize[0];
-		px = src->linesize[0] * 2;
+		p0  = src->data[0];
+		p1  = src->data[0] + src->linesize[0];
+		puv = src->data[1];
+
+		px   = src->linesize[0] * 2;
+		puvx = src->linesize[1];
 	}
 
 	/* 2 lines */
@@ -145,14 +163,24 @@ void vidconv_packed_to_yuv420p(struct vidframe *dst,
 				pw += 8; /* STEP */
 				break;
 
+			case VID_FMT_NV12:
+
+				copy2x2_nv12(&y0[2*w], &y1[2*w],
+					     &u[w], &v[w],
+					     &p0[pw], &p1[pw], &puv[pw]);
+
+				pw += 2;
+				break;
+
 			default:
-				re_printf("no fmt %d\n", src->fmt);
+				re_printf("pack2yuv: no fmt %d\n", src->fmt);
 				return;
 			}
 		}
 
-		p0 += px;
-		p1 += px;
+		p0  += px;
+		p1  += px;
+		puv += puvx;
 
 		y0 += (dst->linesize[0] * 2);
 		y1 += (dst->linesize[0] * 2);
