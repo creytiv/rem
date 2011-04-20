@@ -23,3 +23,7 @@ struct vidconv_ctx {
 
 void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
 		     const struct vidframe *src, int rotate, int flags);
+
+
+void vidconv_rotate(struct vidframe *dst, const struct vidframe *src,
+		    int degrees);
