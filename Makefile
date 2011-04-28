@@ -26,8 +26,12 @@ endif
 include $(LIBRE_MK)
 
 # List of modules
-MODULES += aubuf autone aumix auresamp fir
+MODULES += auresamp fir
+
+ifneq ($(TEST),)
+MODULES += aubuf autone aumix
 MODULES += vid vidmix vidconv
+endif
 
 INSTALL := install
 ifeq ($(DESTDIR),)

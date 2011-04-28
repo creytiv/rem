@@ -19,7 +19,6 @@ static inline enum PixelFormat vidfmt2ffmpeg(enum vidfmt fmt)
 {
 	switch (fmt) {
 
-	case VID_FMT_NONE:     return PIX_FMT_NONE;
 	case VID_FMT_YUV420P:  return PIX_FMT_YUV420P;
 	case VID_FMT_YUYV422:  return PIX_FMT_YUYV422;
 	case VID_FMT_UYVY422:  return PIX_FMT_UYVY422;
