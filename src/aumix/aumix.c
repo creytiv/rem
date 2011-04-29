@@ -36,10 +36,8 @@ struct aumix_source {
 };
 
 
-static void dummy_frame_handler(uint32_t ts, const uint8_t *buf, size_t sz,
-				void *arg)
+static void dummy_frame_handler(const uint8_t *buf, size_t sz, void *arg)
 {
-	(void)ts;
 	(void)buf;
 	(void)sz;
 	(void)arg;
@@ -140,8 +138,7 @@ static void *aumix_thread(void *arg)
 					mix->frame[i] += csrc->frame[i];
 			}
 
-			src->fh((uint32_t)ts * (mix->srate/1000),
-				(uint8_t *)mix->frame, sizeof(mix->frame),
+			src->fh((uint8_t *)mix->frame, sizeof(mix->frame),
 				src->arg);
 		}
 
@@ -211,6 +208,7 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 		     aumix_frame_h *fh, void *arg)
 {
 	struct aumix_source *src;
+	size_t sz;
 	int err;
 
 	if (!srcp || !mix)
@@ -224,13 +222,15 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 	src->fh  = fh ? fh : dummy_frame_handler;
 	src->arg = arg;
 
-	src->frame = mem_alloc(mix->frame_size * sizeof(int16_t), NULL);
+	sz = mix->frame_size * sizeof(int16_t);
+
+	src->frame = mem_alloc(sz, NULL);
 	if (!src->frame) {
 		err = ENOMEM;
 		goto out;
 	}
 
-	err = aubuf_alloc(&src->aubuf, 320 * 5, 320 * 10);
+	err = aubuf_alloc(&src->aubuf, sz * 6, sz * 12);
 	if (err)
 		goto out;
 
