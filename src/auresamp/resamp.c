@@ -14,13 +14,24 @@ struct auresamp {
 
 
 /*
- * FIR filter with cutoff 8000Hz, samplerate 16000Hz
+ * FIR filter with cutoff 4000Hz, samplerate 48000Hz
  */
-static const int16_t fir_lowpass[31] = {
-	-55,      0,     96,      0,   -220,      0,    461,      0,
-	-877,      0,   1608,      0,  -3176,      0,  10342,  16410,
-	10342,      0,  -3176,      0,   1608,      0,   -877,      0,
-	461,      0,   -220,      0,     96,      0,    -55,
+static const int16_t fir_lowpass_48_4[31] = {
+	-42,    -35,    -26,      0,     61,    173,    349,    595,
+	907,   1271,   1663,   2052,   2403,   2683,   2864,   2927,
+       2864,   2683,   2403,   2052,   1663,   1271,    907,    595,
+	349,    173,     61,      0,    -26,    -35,    -42,
+};
+
+
+/*
+ * FIR filter with cutoff 8000Hz, samplerate 48000Hz
+ */
+static const int16_t fir_lowpass_48_8[31] = {
+	55,     57,     47,      0,   -109,   -279,   -459,   -553,
+      -436,      0,    800,   1908,   3161,   4323,   5146,   5443,
+      5146,   4323,   3161,   1908,    800,      0,   -436,   -553,
+      -459,   -279,   -109,      0,     47,     57,     55,
 };
 
 
@@ -52,20 +63,24 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 
 	ar->ratio = 1.0 * srate_out / srate_in;
 
-	re_printf("allocate resampler: %uHz ---> %uHz (ratio=%f)\n",
+	re_printf("auresamp: %uHz ---> %uHz (ratio=%f)\n",
 		  srate_in, srate_out, ar->ratio);
 
 	fir_init(&ar->fir);
 
-	if (ar->ratio < 1) {
+	if (srate_in == 8000 || srate_out == 8000) {
 
-		ar->coeffv = fir_lowpass;
-		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass);
+		ar->coeffv = fir_lowpass_48_4;
+		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_4);
+
+		re_printf("auresamp: using 4000 Hz cutoff\n");
 	}
-	else if (ar->ratio > 1) {
+	else {
 
-		ar->coeffv = fir_lowpass;
-		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass);
+		ar->coeffv = fir_lowpass_48_8;
+		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_8);
+
+		re_printf("auresamp: using 8000 Hz cutoff\n");
 	}
 
 	*arp = ar;
