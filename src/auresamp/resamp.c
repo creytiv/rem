@@ -48,6 +48,20 @@ static inline void resample(struct auresamp *ar, int16_t *dst,
 }
 
 
+static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp)
+{
+	while (nsamp > 0) {
+
+		size_t len = min(nsamp, FIR_MAX_INPUT_LEN);
+
+		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn);
+
+		buf   += len;
+		nsamp -= len;
+	}
+}
+
+
 /* todo: handle channel resampling */
 int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 		   uint32_t srate_out)
@@ -129,22 +143,6 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 	}
 
 	dst->end = dst->pos += sz;
-
-	return 0;
-}
-
-
-int auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp)
-{
-	while (nsamp > 0) {
-
-		size_t len = min(nsamp, FIR_MAX_INPUT_LEN);
-
-		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn);
-
-		buf   += len;
-		nsamp -= len;
-	}
 
 	return 0;
 }
