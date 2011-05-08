@@ -1,3 +1,4 @@
+#include <string.h>
 #include <re.h>
 #include <rem_vid.h>
 #include <rem_dsp.h>
@@ -186,5 +187,120 @@ void vidconv_packed_to_yuv420p(struct vidframe *dst,
 		y1 += (dst->linesize[0] * 2);
 		u  += dst->linesize[1];
 		v  += dst->linesize[2];
+	}
+}
+
+
+void vidconv_packed_to_yuv420p_test(struct vidframe *dst,
+				    const struct vidframe *src, int flags)
+{
+	uint8_t *ydst, *udst, *vdst;
+	const uint8_t *psrc;
+	int bandl, bandr, bandt, bandb;
+	int px, w, h;
+
+	re_printf("packed test: %d x %d   ---->   %d x %d\n",
+		  src->size.w, src->size.h,
+		  dst->size.w, dst->size.h);
+
+	ydst = dst->data[0];
+	udst = dst->data[1];
+	vdst = dst->data[2];
+
+	/* vertical flip -- read source in opposite direction */
+	if (flags & VIDCONV_VFLIP) {
+		psrc = src->data[0] + src->linesize[0] * (src->size.h - 1);
+		px   = -src->linesize[0];
+	}
+	else {
+		psrc = src->data[0];
+		px   = src->linesize[0];
+	}
+
+	/* calculate band offsets */
+	bandl = (dst->size.w - src->size.w) / 2;
+	bandr = dst->size.w - bandl;
+	bandt = (dst->size.h - src->size.h) / 2;
+	bandb = dst->size.h - bandt;
+
+	re_printf("bands: left=%d right=%d top=%d bottom=%d\n",
+		  bandl, bandr, bandt, bandb);
+
+	/* for-loop operates on the destination frame */
+
+	for (h = 0; h < dst->size.h; h++) {
+
+		int sw;
+
+		if (flags & VIDCONV_HFLIP)
+			sw = src->linesize[0]; // XXX use dst instead?
+		else
+			sw = 0;
+
+		if (h < bandt || h >= bandb) {
+
+			/* clear pixels */
+			memset(ydst, rgb2y(0, 0, 0), dst->linesize[0]);
+
+			if (!(h & 1)) {
+				memset(udst, rgb2u(0, 0, 0), dst->linesize[1]);
+				memset(vdst, rgb2v(0, 0, 0), dst->linesize[2]);
+			}
+
+			goto next;
+		}
+
+		for (w = 0; w < dst->size.w; w++) {
+
+			int step;
+
+			if (w < bandl || w >= bandr) {
+
+				/* clear pixel */
+
+				ydst[w] = rgb2y(0x00, 0x00, 0x00);
+
+				if (!(h & 1) && !(w & 1)) {
+					udst[w/2] = rgb2u(0x00, 0x00, 0x00);
+					vdst[w/2] = rgb2v(0x00, 0x00, 0x00);
+				}
+
+				continue;
+			}
+
+			switch (src->fmt) {
+
+			case VID_FMT_YUYV422:
+
+				ydst[w] = psrc[sw];
+
+				if (!(h & 1) && !(w & 1)) {
+					udst[w/2] = psrc[sw + 1];
+					vdst[w/2] = psrc[sw + 3];
+				}
+
+				step = 2;
+				break;
+
+			default:
+				re_printf("no src fmt %d\n", src->fmt);
+				break;
+			}
+
+			if (flags & VIDCONV_HFLIP)
+				sw -= step;
+			else
+				sw += step;
+		}
+
+		psrc += px;
+
+	next:
+		ydst += dst->linesize[0];
+
+		if (h & 1) {
+			udst += dst->linesize[1];
+			vdst += dst->linesize[2];
+		}
 	}
 }
