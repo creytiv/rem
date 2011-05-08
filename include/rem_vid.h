@@ -9,7 +9,21 @@ enum vidfmt {
 	VID_FMT_RGB32,        /* packed RGBA 8:8:8:8 32bpp (native endian) */
 	VID_FMT_ARGB,         /* packed RGBA 8:8:8:8 32bpp (big endian)    */
 	VID_FMT_RGB565,       /* packed RGB  5:6:5   16bpp (native endian) */
-	VID_FMT_NV12          /* planar YUV  4:2:0   12bpp UV-interleaved  */
+	VID_FMT_NV12,         /* planar YUV  4:2:0   12bpp UV-interleaved  */
+	/* marker */
+	VID_FMT_N
+};
+
+struct vidfmt_compdesc {
+	unsigned plane_index:2;
+	unsigned step:3;
+};
+
+struct vidfmt_desc {
+	const char *name;
+	uint8_t planes;
+	uint8_t compn;
+	struct vidfmt_compdesc compv[4];
 };
 
 enum vidorient {
@@ -81,3 +95,6 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b);
 
 
 const char *vidfmt_name(enum vidfmt fmt);
+
+
+extern const struct vidfmt_desc vidfmt_descv[VID_FMT_N];
