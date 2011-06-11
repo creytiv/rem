@@ -97,4 +97,10 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b);
 const char *vidfmt_name(enum vidfmt fmt);
 
 
+static inline bool vidframe_isvalid(const struct vidframe *f)
+{
+	return f ? f->data[0] != NULL : false;
+}
+
+
 extern const struct vidfmt_desc vidfmt_descv[VID_FMT_N];

@@ -14,16 +14,6 @@ enum {
 	VIDCONV_ROTATE270 = VIDCONV_ROTATE180 | VIDCONV_ROTATE90
 };
 
-struct vidconv_ctx {
-	void *sws;        // todo: temp
-};
 
-
-void vidconv_process(struct vidconv_ctx *ctx, struct vidframe *dst,
-		     const struct vidframe *src, int flags);
-
-
-// todo: temp
-void vidconv_rotate(struct vidframe *dst, const struct vidframe *src,
-		    int degrees);
-void vidconv_cropping(struct vidframe *dst, const struct vidframe *src);
+void vidconv_process(struct vidframe *dst, const struct vidframe *src,
+		     int flags);
