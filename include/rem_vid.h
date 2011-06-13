@@ -51,9 +51,12 @@ struct vidpt {
 };
 
 struct vidrect {
+#if 0
 	struct vidpt origin;
 	struct vidsz size;
 	int r;
+#endif
+	unsigned x, y, w, h;
 };
 
 static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)

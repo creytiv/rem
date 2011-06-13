@@ -17,3 +17,7 @@ enum {
 
 void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		     int flags);
+
+
+void vidscale(struct vidframe *dst, const struct vidframe *src,
+	      struct vidrect *r);
