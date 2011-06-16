@@ -6,6 +6,7 @@
 #include "vconv.h"
 
 
+#if 0
 void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		     int flags)
 {
@@ -42,6 +43,7 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 			  vidfmt_name(src->fmt), vidfmt_name(dst->fmt));
 	}
 }
+#endif
 
 
 /*
@@ -52,8 +54,8 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
  *
  */
 
-void vidscale(struct vidframe *dst, const struct vidframe *src,
-	      struct vidrect *r)
+void vidconv_process(struct vidframe *dst, const struct vidframe *src,
+		     struct vidrect *r)
 {
 	struct vidrect rdst;
 	unsigned x, y, xd, yd, xs, ys, xs2, ys2, lsd, lss;
@@ -89,8 +91,9 @@ void vidscale(struct vidframe *dst, const struct vidframe *src,
 	lsd = dst->linesize[0];
 	lss = src->linesize[0];
 
-	if (r->x%2==1) r->x--;
-	if (r->y%2==1) r->y--;
+	/* align 2 pixels */
+	r->x &= ~1;
+	r->y &= ~1;
 
 	for (y=0; y<r->h; y+=2) {
 
@@ -128,8 +131,9 @@ void vidscale(struct vidframe *dst, const struct vidframe *src,
 				break;
 			}
 
-			if (xs%2==1) xs--;
-			if (ys%2==1) ys--;
+			/* align 2 pixels */
+			xs &= ~1;
+			ys &= ~1;
 
 			id = xd/2 + yd*lsd/4;
 			is = xs/2 + ys*lss/4;
