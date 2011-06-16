@@ -6,44 +6,55 @@
 #include "vconv.h"
 
 
-#if 0
-void vidconv_process(struct vidframe *dst, const struct vidframe *src,
-		     int flags)
+typedef void (block_h)(uint8_t *d0, uint8_t *d1, uint8_t *d2, int lsd,
+		       const uint8_t *s0, const uint8_t *s1,
+		       const uint8_t *s2, int lss);
+
+
+static void yuv420p_to_yuv420p(uint8_t *d0, uint8_t *d1, uint8_t *d2, int lsd,
+			       const uint8_t *s0, const uint8_t *s1,
+			       const uint8_t *s2, int lss)
 {
-	if (!dst || !src)
-		return;
+	/* Y */
+	d0[0]     = s0[0];
+	d0[1]     = s0[1];
+	d0[lsd  ] = s0[lss  ];
+	d0[lsd+1] = s0[lss+1];
 
-	if (!dst->data[0]) {
-		re_printf("vidconv: invalid dst frame\n");
-		return;
-	}
+	/* U */
+	d1[0] = s1[0];
 
-	if (src->fmt == dst->fmt) {
-
-		int i;
-
-		for (i=0; i<4; i++) {
-
-			if (dst->data[i] && src->data[i]) {
-				memcpy(dst->data[i], src->data[i],
-				       dst->linesize[i] * dst->size.h);
-			}
-		}
-	}
-	else if (src->fmt == VID_FMT_YUV420P) {
-
-		vidconv_yuv420p_to_packed(dst, src, flags);
-	}
-	else if (dst->fmt == VID_FMT_YUV420P) {
-
-		vidconv_packed_to_yuv420p(dst, src, flags);
-	}
-	else {
-		re_printf("vidconv: unsupported %s -> %s\n",
-			  vidfmt_name(src->fmt), vidfmt_name(dst->fmt));
-	}
+	/* V */
+	d2[0] = s2[0];
 }
-#endif
+
+
+static void yuyv422_to_yuv420p(uint8_t *d0, uint8_t *d1, uint8_t *d2, int lsd,
+			       const uint8_t *s0, const uint8_t *s1,
+			       const uint8_t *s2, int lss)
+{
+	(void)s1;
+	(void)s2;
+
+	/* Y */
+	d0[0]     = s0[0];
+	d0[1]     = s0[2];
+	d0[lsd  ] = s0[lss  ];
+	d0[lsd+1] = s0[lss+2];
+
+	/* U */
+	d1[0] = s0[1];
+
+	/* V */
+	d2[0] = s0[3];
+}
+
+
+/** Pixel conversion table:  [src][dst] */
+static block_h *conv_table[2][2] = {
+	{yuv420p_to_yuv420p, NULL},
+	{yuyv422_to_yuv420p, NULL}
+};
 
 
 /*
@@ -61,14 +72,10 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 	unsigned x, y, xd, yd, xs, ys, xs2, ys2, lsd, lss;
 	unsigned id, is;
 	double rw, rh;
+	block_h *blockh;
 
 	if (!dst || !src)
 		return;
-
-#if 1
-	if (dst->fmt != VID_FMT_YUV420P)
-		return;
-#endif
 
 	if (r) {
 		if ((int)(r->w - r->x) > dst->size.w ||
@@ -85,6 +92,15 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		r = &rdst;
 	}
 
+	/* Lookup conversion function */
+	blockh = conv_table[src->fmt][dst->fmt];
+	if (!blockh) {
+		re_printf("vidconv: no pixel block handler found for"
+			  " %s -> %s\n", vidfmt_name(src->fmt),
+			  vidfmt_name(dst->fmt));
+		return;
+	}
+
 	rw = (double)src->size.w / (double)r->w;
 	rh = (double)src->size.h / (double)r->h;
 
@@ -97,7 +113,10 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 
 	for (y=0; y<r->h; y+=2) {
 
-		yd = y + r->y;
+		yd  = y + r->y;
+
+		ys  = (unsigned)(y * rh);
+		ys2 = (unsigned)((y+1) * rh);
 
 		for (x=0; x<r->w; x+=2) {
 
@@ -105,54 +124,22 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 
 			xs  = (unsigned)(x * rw);
 			xs2 = (unsigned)((x+1) * rw);
-			ys  = (unsigned)(y * rh);
-			ys2 = (unsigned)((y+1) * rh);
 
-			id = xd + yd*lsd;
+			// todo: hack, different steps for each format
+			if (src->fmt == VID_FMT_YUYV422)
+				xs *= 2;
 
-			switch (src->fmt) {
+			id = xd/2        + yd*lsd/4;
+			is = (xs & ~1)/2 + (ys & ~1)*lss/4;
 
-			case VID_FMT_YUV420P:
-				dst->data[0][id]         = src->data[0][xs  + ys*lss];
-				dst->data[0][id+1]       = src->data[0][xs2 + ys*lss];
-				dst->data[0][id + lsd]   = src->data[0][xs  + ys2*lss];
-				dst->data[0][id+1 + lsd] = src->data[0][xs2 + ys2*lss];
-				break;
-
-			case VID_FMT_YUYV422:
-				dst->data[0][id]         = src->data[0][2*xs  + ys*lss];
-				dst->data[0][id+1]       = src->data[0][2*xs  + ys*lss + 2];
-				dst->data[0][id + lsd]   = src->data[0][2*xs  + ys2*lss];
-				dst->data[0][id+1 + lsd] = src->data[0][2*xs  + ys2*lss + 2];
-				break;
-
-			default:
-				re_printf("no src fmt %d\n", src->fmt);
-				break;
-			}
-
-			/* align 2 pixels */
-			xs &= ~1;
-			ys &= ~1;
-
-			id = xd/2 + yd*lsd/4;
-			is = xs/2 + ys*lss/4;
-
-			switch (src->fmt) {
-
-			case VID_FMT_YUV420P:
-				dst->data[1][id] = src->data[1][is];
-				dst->data[2][id] = src->data[2][is];
-				break;
-
-			case VID_FMT_YUYV422:
-				dst->data[1][id] = src->data[0][2*xs  + ys*lss + 1];
-				dst->data[2][id] = src->data[0][2*xs  + ys*lss + 3];
-				break;
-
-			default:
-				break;
-			}
+			blockh(&dst->data[0][xd + yd*lsd],
+			       &dst->data[1][id],
+			       &dst->data[2][id],
+			       lsd,
+			       &src->data[0][xs + ys*lss],
+			       &src->data[1][is],
+			       &src->data[2][is],
+			       lss);
 		}
 	}
 }
