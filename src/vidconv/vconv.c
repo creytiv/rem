@@ -24,13 +24,14 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
+	double xsf = 0, xs2f = 1;
 
 	for (x=0; x<width; x+=2) {
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)(x * rw);
-		xs2 = (unsigned)((x+1) * rw);
+		xs  = (unsigned)xsf;
+		xs2 = (unsigned)xs2f;
 
 		id = xd + yd*lsd;
 
@@ -44,6 +45,9 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		dd1[id] = ds1[is];
 		dd2[id] = ds2[is];
+
+		xsf  += 2*rw;
+		xs2f += 2*rw;
 	}
 }
 
@@ -81,8 +85,8 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 		id = xd/2 + yd*lsd/4;
 		is = xs/2 + ys*lss/4;
 
-		dd1[id] = sd0[is + 1];
-		dd2[id] = sd0[is + 3];
+		dd1[id] = sd0[xs  + ys*lss + 1];
+		dd2[id] = sd0[xs  + ys*lss + 3];
 	}
 }
 
