@@ -60,8 +60,9 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 			       const uint8_t *sd2, int lss
 			       )
 {
-	unsigned x, xd, xs, xs2;
-	unsigned id, is;
+	unsigned x, xd, xs;
+	unsigned id, is, is2;
+	double xsf = 0, xs2f = 1;
 
 	(void)sd1;
 	(void)sd2;
@@ -70,23 +71,24 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)(x * rw);
-		xs2 = (unsigned)((x+1) * rw);
+		xs  = (unsigned)(xsf * 2);
 
-		xs *= 2;
+		id  = xd + yd*lsd;
+		is  = xs + ys*lss;
+		is2 = xs  + ys2*lss;
 
-		id = xd + yd*lsd;
-
-		dd0[id]         = sd0[xs  + ys*lss];
-		dd0[id+1]       = sd0[xs  + ys*lss + 2];
-		dd0[id + lsd]   = sd0[xs  + ys2*lss];
-		dd0[id+1 + lsd] = sd0[xs  + ys2*lss + 2];
+		dd0[id]         = sd0[is];
+		dd0[id+1]       = sd0[is + 2];
+		dd0[id + lsd]   = sd0[is2];
+		dd0[id+1 + lsd] = sd0[is2 + 2];
 
 		id = xd/2 + yd*lsd/4;
-		is = xs/2 + ys*lss/4;
 
-		dd1[id] = sd0[xs  + ys*lss + 1];
-		dd2[id] = sd0[xs  + ys*lss + 3];
+		dd1[id] = sd0[is + 1];
+		dd2[id] = sd0[is + 3];
+
+		xsf  += 2*rw;
+		xs2f += 2*rw;
 	}
 }
 
