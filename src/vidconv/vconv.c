@@ -62,7 +62,7 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs;
 	unsigned id, is, is2;
-	double xsf = 0, xs2f = 1;
+	double xsf = 0;
 
 	(void)sd1;
 	(void)sd2;
@@ -88,7 +88,6 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 		dd2[id] = sd0[is + 3];
 
 		xsf  += 2*rw;
-		xs2f += 2*rw;
 	}
 }
 
