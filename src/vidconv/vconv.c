@@ -24,7 +24,7 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
-	double xsf = 0, xs2f = 1;
+	double xsf = 0, xs2f = rw;
 
 	for (x=0; x<width; x+=2) {
 
