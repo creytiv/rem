@@ -41,7 +41,7 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
 
 		id = xd/2    + yd*lsd/4;
-		is = (xs>>1) + (ys>>2)*lss;
+		is = (xs>>1) + (ys>>1)*lss/2;
 
 		dd1[id] = ds1[is];
 		dd2[id] = ds2[is];
@@ -235,7 +235,7 @@ void vidconv_scale(struct vidframe *dst, const struct vidframe *src,
 			dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
 
 			id = xd/2    + yd*lsd/4;
-			is = (xs>>1) + (ys>>2)*lss;
+			is = (xs>>1) + (ys>>1)*lss/2;
 
 			dd1[id] = ds1[is];
 			dd2[id] = ds2[is];
