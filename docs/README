@@ -43,4 +43,4 @@ Video Modules:
 
 External dependencies:
 
-- FFmpeg libswscale (for colorspace conversion)
+None

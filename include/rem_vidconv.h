@@ -21,3 +21,5 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 
 void vidconv_scale(struct vidframe *dst, const struct vidframe *src,
 		   struct vidrect *r);
+void vidscale_aspect(struct vidframe *dst, const struct vidframe *src,
+		     struct vidrect *r);

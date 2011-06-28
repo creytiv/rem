@@ -241,3 +241,26 @@ void vidconv_scale(struct vidframe *dst, const struct vidframe *src,
 		}
 	}
 }
+
+
+/*
+ * Maintain source aspect ratio within bounds of r
+ */
+void vidscale_aspect(struct vidframe *dst, const struct vidframe *src,
+		     struct vidrect *r)
+{
+	struct vidsz asz;
+	double ar;
+
+	ar = (double)src->size.w / (double)src->size.h;
+
+	asz.w = r->w;
+	asz.h = r->h;
+
+	r->w = (int)min((double)asz.w, (double)asz.h * ar);
+	r->h = (int)min((double)asz.h, (double)asz.w / ar);
+	r->x = r->x + (asz.w - r->w) / 2;
+	r->y = r->y + (asz.h - r->h) / 2;
+
+	vidconv_scale(dst, src, r);
+}
