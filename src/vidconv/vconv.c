@@ -92,10 +92,62 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
+static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
+			     int yd, int ys, int ys2,
+			     uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			     int lsd,
+			     const uint8_t *ds0, const uint8_t *ds1,
+			     const uint8_t *ds2, int lss
+			     )
+{
+	unsigned x, xd, xs, xs2;
+	unsigned id;
+	double xsf = 0, xs2f = rw;
+
+	(void)ds1;
+	(void)ds2;
+
+	for (x=0; x<width; x+=2) {
+
+		uint32_t x0;
+		uint32_t x1;
+		uint32_t x2;
+		uint32_t x3;
+
+		xd  = x + xoffs;
+
+		xs  = (unsigned)(xsf * 4);
+		xs2 = (unsigned)(xs2f * 4);
+
+		id = xd + yd*lsd;
+
+		x0 = *(uint32_t *)&ds0[xs  + ys*lss];
+		x1 = *(uint32_t *)&ds0[xs2 + ys*lss];
+		x2 = *(uint32_t *)&ds0[xs  + ys2*lss];
+		x3 = *(uint32_t *)&ds0[xs2 + ys2*lss];
+
+		dd0[id]         = rgb2y(x0 >> 16, x0 >> 8, x0);
+		dd0[id+1]       = rgb2y(x1 >> 16, x1 >> 8, x1);
+		dd0[id + lsd]   = rgb2y(x2 >> 16, x2 >> 8, x2);
+		dd0[id+1 + lsd] = rgb2y(x3 >> 16, x3 >> 8, x3);
+
+		id = xd/2    + yd*lsd/4;
+
+		dd1[id] = rgb2u(x0 >> 16, x0 >> 8, x0);
+		dd2[id] = rgb2v(x0 >> 16, x0 >> 8, x0);
+
+		xsf  += 2*rw;
+		xs2f += 2*rw;
+	}
+}
+
+
 /** Pixel conversion table:  [src][dst] */
-static line_h *conv_table[2][2] = {
+static line_h *conv_table[4][2] = {
 	{yuv420p_to_yuv420p,      NULL},
-	{yuyv422_to_yuv420p,      NULL}
+	{yuyv422_to_yuv420p,      NULL},
+	{NULL,                    NULL},
+	{rgb32_to_yuv420p,        NULL},
 };
 
 
