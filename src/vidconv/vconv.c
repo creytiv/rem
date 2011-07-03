@@ -141,9 +141,11 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 	}
 }
 
+#define MAX_SRC 4
+#define MAX_DST 2
 
 /** Pixel conversion table:  [src][dst] */
-static line_h *conv_table[4][2] = {
+static line_h *conv_table[MAX_SRC][MAX_DST] = {
 	{yuv420p_to_yuv420p,      NULL},
 	{yuyv422_to_yuv420p,      NULL},
 	{NULL,                    NULL},
@@ -167,7 +169,7 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 	const uint8_t *ds0, *ds1, *ds2;
 	uint8_t *dd0, *dd1, *dd2;
 	double rw, rh;
-	line_h *lineh;
+	line_h *lineh = NULL;
 
 	if (!dst || !src)
 		return;
@@ -187,8 +189,11 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		r = &rdst;
 	}
 
-	/* Lookup conversion function */
-	lineh = conv_table[src->fmt][dst->fmt];
+	if (src->fmt < MAX_SRC && dst->fmt < MAX_DST) {
+
+		/* Lookup conversion function */
+		lineh = conv_table[src->fmt][dst->fmt];
+	}
 	if (!lineh) {
 		re_printf("vidconv: no pixel handler found for"
 			  " %s -> %s\n", vidfmt_name(src->fmt),
