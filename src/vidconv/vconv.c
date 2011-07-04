@@ -92,6 +92,46 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
+static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
+			       int yd, int ys, int ys2,
+			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			       int lsd,
+			       const uint8_t *sd0, const uint8_t *sd1,
+			       const uint8_t *sd2, int lss
+			       )
+{
+	unsigned x, xd, xs;
+	unsigned id, is, is2;
+	double xsf = 0;
+
+	(void)sd1;
+	(void)sd2;
+
+	for (x=0; x<width; x+=2) {
+
+		xd  = x + xoffs;
+
+		xs  = (unsigned)(xsf * 2);
+
+		id  = xd + yd*lsd;
+		is  = xs + ys*lss;
+		is2 = xs  + ys2*lss;
+
+		dd0[id]         = sd0[is + 1];
+		dd0[id+1]       = sd0[is + 3];
+		dd0[id + lsd]   = sd0[is2 + 1];
+		dd0[id+1 + lsd] = sd0[is2 + 3];
+
+		id = xd/2 + yd*lsd/4;
+
+		dd1[id] = sd0[is + 0];
+		dd2[id] = sd0[is + 2];
+
+		xsf  += 2*rw;
+	}
+}
+
+
 static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 			     int yd, int ys, int ys2,
 			     uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
@@ -144,11 +184,15 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 #define MAX_SRC 4
 #define MAX_DST 2
 
-/** Pixel conversion table:  [src][dst] */
+/**
+ * Pixel conversion table:  [src][dst]
+ *
+ * @note Index must be aligned to values in enum vidfmt
+ */
 static line_h *conv_table[MAX_SRC][MAX_DST] = {
 	{yuv420p_to_yuv420p,      NULL},
 	{yuyv422_to_yuv420p,      NULL},
-	{NULL,                    NULL},
+	{uyvy422_to_yuv420p,      NULL},
 	{rgb32_to_yuv420p,        NULL},
 };
 
