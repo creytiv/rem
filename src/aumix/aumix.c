@@ -18,12 +18,10 @@ struct aumix {
 	pthread_cond_t cond;
 	struct list srcl;
 	pthread_t thread;
-	int run;
-	uint32_t srate;
-	int ch;
+	int16_t *frame;
 	uint32_t ptime;
 	uint32_t frame_size;
-	int16_t *frame;
+	bool run;
 };
 
 struct aumix_source {
@@ -48,10 +46,10 @@ static void destructor(void *arg)
 {
 	struct aumix *mix = arg;
 
-	if (mix->run == 2) {
+	if (mix->run) {
 		re_printf("waiting for aumix thread to terminate\n");
 		pthread_mutex_lock(&mix->mutex);
-		mix->run = 0;
+		mix->run = false;
 		pthread_cond_signal(&mix->cond);
 		pthread_mutex_unlock(&mix->mutex);
 
@@ -138,7 +136,7 @@ static void *aumix_thread(void *arg)
 					mix->frame[i] += csrc->frame[i];
 			}
 
-			src->fh((uint8_t *)mix->frame, sizeof(mix->frame),
+			src->fh((uint8_t *)mix->frame, mix->frame_size*2,
 				src->arg);
 		}
 
@@ -165,8 +163,6 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 	if (!mix)
 		return ENOMEM;
 
-	mix->srate      = srate;
-	mix->ch         = ch;
 	mix->ptime      = ptime;
 	mix->frame_size = srate * ch * ptime / 1000;
 
@@ -184,15 +180,13 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 	if (err)
 		goto out;
 
-	mix->run = 1;
+	mix->run = true;
 
 	err = pthread_create(&mix->thread, NULL, aumix_thread, mix);
-	if (err)
+	if (err) {
+		mix->run = false;
 		goto out;
-
-	pthread_mutex_lock(&mix->mutex);
-	mix->run = 2;
-	pthread_mutex_unlock(&mix->mutex);
+	}
 
  out:
 	if (err)
