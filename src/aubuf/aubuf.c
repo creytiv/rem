@@ -105,7 +105,7 @@ int aubuf_append(struct aubuf *ab, struct mbuf *mb)
 	if (ab->max_sz && ab->cur_sz > ab->max_sz) {
 #if AUBUF_DEBUG
 		++ab->stats.or;
-		(void)re_printf("aubuf: %p overrun (cur=%u)\n",
+		(void)re_printf("aubuf: %p overrun (cur=%zu)\n",
 				ab, ab->cur_sz);
 #endif
 		af = list_ledata(ab->afl.head);
@@ -149,9 +149,11 @@ void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 
 	if (ab->cur_sz < (ab->filling ? ab->wish_sz : sz)) {
 #if AUBUF_DEBUG
-		++ab->stats.ur;
-		(void)re_printf("aubuf: %p underrun filling=%d\n",
-				ab, ab->filling);
+		if (!ab->filling) {
+			++ab->stats.ur;
+			(void)re_printf("aubuf: %p underrun (cur=%zu)\n",
+					ab, ab->cur_sz);
+		}
 #endif
 		ab->filling = true;
 		memset(p, 0, sz);
@@ -220,6 +222,22 @@ int aubuf_get(struct aubuf *ab, uint32_t ptime, uint8_t *p, size_t sz)
 }
 
 
+void aubuf_flush(struct aubuf *ab)
+{
+	if (!ab)
+		return;
+
+	lock_write_get(ab->lock);
+
+	list_flush(&ab->afl);
+	ab->filling = true;
+	ab->cur_sz  = 0;
+	ab->ts      = 0;
+
+	lock_rel(ab->lock);
+}
+
+
 int aubuf_debug(struct re_printf *pf, const struct aubuf *ab)
 {
 	int err;
@@ -232,11 +250,26 @@ int aubuf_debug(struct re_printf *pf, const struct aubuf *ab)
 			 ab->wish_sz, ab->cur_sz, ab->filling);
 
 #if AUBUF_DEBUG
-	err |= re_hprintf(pf, " [overrun=%u underrun=%u]",
+	err |= re_hprintf(pf, " [overrun=%zu underrun=%zu]",
 			  ab->stats.or, ab->stats.ur);
 #endif
 
 	lock_rel(ab->lock);
 
 	return err;
+}
+
+
+size_t aubuf_cur_size(const struct aubuf *ab)
+{
+	size_t sz;
+
+	if (!ab)
+		return 0;
+
+	lock_read_get(ab->lock);
+	sz = ab->cur_sz;
+	lock_rel(ab->lock);
+
+	return sz;
 }
