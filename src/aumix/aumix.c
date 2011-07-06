@@ -113,7 +113,7 @@ static void *aumix_thread(void *arg)
 			struct aumix_source *src = le->data;
 
 			aubuf_read(src->aubuf, (uint8_t *)src->frame,
-				   sizeof(src->frame));
+				   mix->frame_size*2);
 		}
 
 		for (le=mix->srcl.head; le; le=le->next) {
@@ -121,7 +121,7 @@ static void *aumix_thread(void *arg)
 			struct aumix_source *src = le->data;
 			struct le *cle;
 
-			memset(mix->frame, 0, sizeof(mix->frame));
+			memset(mix->frame, 0, mix->frame_size*2);
 
 			for (cle=mix->srcl.head; cle; cle=cle->next) {
 
@@ -166,7 +166,7 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 	mix->ptime      = ptime;
 	mix->frame_size = srate * ch * ptime / 1000;
 
-	mix->frame = mem_alloc(mix->frame_size * sizeof(int16_t), NULL);
+	mix->frame = mem_alloc(mix->frame_size*2, NULL);
 	if (!mix->frame) {
 		err = ENOMEM;
 		goto out;
@@ -216,7 +216,7 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 	src->fh  = fh ? fh : dummy_frame_handler;
 	src->arg = arg;
 
-	sz = mix->frame_size * sizeof(int16_t);
+	sz = mix->frame_size*2;
 
 	src->frame = mem_alloc(sz, NULL);
 	if (!src->frame) {
