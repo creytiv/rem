@@ -73,8 +73,8 @@ static void source_destructor(void *arg)
 }
 
 
-static void source_mix(struct vidmix_source *src, unsigned rows, unsigned idx,
-		       bool focus)
+static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
+		       unsigned idx, bool focus)
 {
 	struct vidframe *mframe, frame;
 	struct vidrect rect;
@@ -88,24 +88,38 @@ static void source_mix(struct vidmix_source *src, unsigned rows, unsigned idx,
 
 	mframe = src->mix->frame;
 
-	rect.w = mframe->size.w / rows;
-	rect.h = mframe->size.h / rows;
-	rect.x = rect.w * (idx % rows);
-	rect.y = rect.h * (idx / rows);
+	if (focus) {
 
-	if (focus && rows == 2) {
+		n = max((n+1), 6)/2;
+
 		if (src->focus) {
-			rect.x /= 2;
-			rect.y /= 2;
-			rect.h = rect.h * 3 / 2;
-			rect.w = rect.w * 3 / 2;
+			rect.w = mframe->size.w * (n-1) / n;
+			rect.h = mframe->size.h * (n-1) / n;
+			rect.x = 0;
+			rect.y = 0;
 		}
 		else {
-			rect.x = rect.x * 3 / 2;
-			rect.y = rect.y * 3 / 2;
-			rect.h /= 2;
-			rect.w /= 2;
+			rect.w = mframe->size.w / n;
+			rect.h = mframe->size.h / n;
+
+			if (idx < n) {
+				rect.x = mframe->size.w - rect.w;
+				rect.y = rect.h * idx;
+			}
+			else if (idx < (n*2 - 1)) {
+				rect.x = rect.w * (n*2 - 2 - idx);
+				rect.y = mframe->size.h - rect.h;
+			}
+			else {
+				return;
+			}
 		}
+	}
+	else {
+		rect.w = mframe->size.w / rows;
+		rect.h = mframe->size.h / rows;
+		rect.x = rect.w * (idx % rows);
+		rect.y = rect.h * (idx / rows);
 	}
 
 	vidscale_aspect(mframe, &frame, &rect);
@@ -131,7 +145,7 @@ static void *vidmix_thread(void *arg)
 
 	while (mix->run) {
 
-		unsigned rows, idx;
+		unsigned n, rows, idx;
 		struct le *le;
 		uint64_t now;
 
@@ -157,13 +171,17 @@ static void *vidmix_thread(void *arg)
 			mix->clear = false;
 		}
 
-		rows = calc_rows(list_count(&mix->srcl));
+		n = list_count(&mix->srcl);
+		rows = calc_rows(n);
 
-		for (le=mix->srcl.head, idx=0; le; le=le->next, idx++) {
+		for (le=mix->srcl.head, idx=0; le; le=le->next) {
 
 			struct vidmix_source *src = le->data;
 
-			source_mix(src, rows, idx, mix->focus);
+			source_mix(src, n, rows, idx, mix->focus);
+
+			if (!src->focus)
+				++idx;
 		}
 
 		for (le=mix->srcl.head; le; le=le->next) {
@@ -197,10 +215,8 @@ int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 	mix->fint = 1000/fps;
 
 	err = vidframe_alloc(&mix->frame, VID_FMT_YUV420P, sz);
-	if (err) {
-		err = ENOMEM;
+	if (err)
 		goto out;
-	}
 
 	clear_frame(mix->frame);
 
@@ -273,6 +289,7 @@ void vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 		return;
 
 	pthread_mutex_lock(&src->mutex);
+	/* todo: this crash if codec state is destroyed before source */
 	src->frame = *frame;
 	pthread_mutex_unlock(&src->mutex);
 }
