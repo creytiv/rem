@@ -33,6 +33,8 @@ MODULES += aubuf autone aumix
 MODULES += vid vidmix vidconv
 endif
 
+LIBS    += -lm
+
 INSTALL := install
 ifeq ($(DESTDIR),)
 PREFIX  := /usr/local
