@@ -27,11 +27,8 @@ include $(LIBRE_MK)
 
 # List of modules
 MODULES += auresamp fir
-
-ifneq ($(TEST),)
 MODULES += aubuf autone aumix
 MODULES += vid vidmix vidconv
-endif
 
 LIBS    += -lm
 
