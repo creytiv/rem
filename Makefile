@@ -27,8 +27,12 @@ include $(LIBRE_MK)
 
 # List of modules
 MODULES += auresamp fir
-MODULES += aubuf autone aumix
-MODULES += vid vidmix vidconv
+MODULES += aubuf autone
+MODULES += vid vidconv
+
+ifneq ($(HAVE_LIBPTHREAD),)
+MODULES += aumix vidmix
+endif
 
 LIBS    += -lm
 
