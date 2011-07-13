@@ -14,11 +14,11 @@ Audio Modules:
   name:     status:       description:
 
 * au        -             Base audio types
-* aubuf     -             Audio buffer
+* aubuf     unstable      Audio buffer
 * aufile    -             Audio file player/recorder (WAV etc.)
-* aumix     -             Audio mixer
+* aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
-* autone    -             Tone/DTMF generator
+* autone    unstable      Tone/DTMF generator
 * g711      -             G.711 audio codec
 * g722      -             G.722 audio codec
 
@@ -31,10 +31,10 @@ Video Modules:
 
 * vid       -             Base video types
 * vidbuf    -             Video buffer
-* vidconv   -             Colorspace conversion and scaling
+* vidconv   unstable      Colorspace conversion and scaling
 * viddraw   -             Basic drawing routines
 * vidfilt   -             Video filters (alphablending, blurring, ...)
-* vidmix    -             Video mixer
+* vidmix    unstable      Video mixer
 * h263      -             H.263 video codec
 * h264      -             H.264 video codec
 
