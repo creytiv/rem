@@ -221,8 +221,8 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 	if (r) {
 		if ((int)(r->w - r->x) > dst->size.w ||
 		    (int)(r->h - r->y) > dst->size.h) {
-			re_printf("rect out of bounds (%u x %u)\n",
-				  dst->size.w, dst->size.h);
+			(void)re_printf("vidconv: out of bounds (%u x %u)\n",
+					dst->size.w, dst->size.h);
 			return;
 		}
 	}
@@ -239,9 +239,9 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		lineh = conv_table[src->fmt][dst->fmt];
 	}
 	if (!lineh) {
-		re_printf("vidconv: no pixel handler found for"
-			  " %s -> %s\n", vidfmt_name(src->fmt),
-			  vidfmt_name(dst->fmt));
+		(void)re_printf("vidconv: no pixel converter found for"
+				" %s -> %s\n", vidfmt_name(src->fmt),
+				vidfmt_name(dst->fmt));
 		return;
 	}
 

@@ -47,14 +47,13 @@ static void destructor(void *arg)
 	struct aumix *mix = arg;
 
 	if (mix->run) {
-		re_printf("waiting for aumix thread to terminate\n");
+
 		pthread_mutex_lock(&mix->mutex);
 		mix->run = false;
 		pthread_cond_signal(&mix->cond);
 		pthread_mutex_unlock(&mix->mutex);
 
 		pthread_join(mix->thread, NULL);
-		re_printf("aumix thread joined\n");
 	}
 
 	list_flush(&mix->srcl);
@@ -81,8 +80,6 @@ static void *aumix_thread(void *arg)
 	struct aumix *mix = arg;
 	uint64_t ts = 0;
 
-	re_printf("aumix thread start\n");
-
 	frame     = mem_alloc(mix->frame_size*2, NULL);
 	mix_frame = mem_alloc(mix->frame_size*2, NULL);
 
@@ -97,10 +94,8 @@ static void *aumix_thread(void *arg)
 		uint64_t now;
 
 		if (!mix->srcl.head) {
-			re_printf("aumix thread sleep\n");
 			pthread_cond_wait(&mix->cond, &mix->mutex);
 			ts = 0;
-			re_printf("aumix thread wakeup\n");
 		}
 		else {
 			pthread_mutex_unlock(&mix->mutex);
@@ -155,8 +150,6 @@ static void *aumix_thread(void *arg)
 	pthread_mutex_unlock(&mix->mutex);
 
  out:
-	re_printf("aumix thread stop\n");
-
 	mem_deref(mix_frame);
 	mem_deref(frame);
 

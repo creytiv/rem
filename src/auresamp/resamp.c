@@ -77,9 +77,6 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 
 	ar->ratio = 1.0 * srate_out / srate_in;
 
-	re_printf("auresamp: %uHz ---> %uHz (ratio=%f)\n",
-		  srate_in, srate_out, ar->ratio);
-
 	fir_init(&ar->fir);
 
 	if (srate_in == 8000 || srate_out == 8000) {
@@ -87,14 +84,14 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 		ar->coeffv = fir_lowpass_48_4;
 		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_4);
 
-		re_printf("auresamp: using 4000 Hz cutoff\n");
+		(void)re_printf("auresamp: using 4000 Hz cutoff\n");
 	}
 	else {
 
 		ar->coeffv = fir_lowpass_48_8;
 		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_8);
 
-		re_printf("auresamp: using 8000 Hz cutoff\n");
+		(void)re_printf("auresamp: using 8000 Hz cutoff\n");
 	}
 
 	*arp = ar;
@@ -118,9 +115,6 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 	if (mbuf_get_space(dst) < sz) {
 
 		int err;
-
-		re_printf("resamp: dst resize %u -> %u\n",
-			  dst->size, dst->pos + sz);
 
 		err = mbuf_resize(dst, dst->pos + sz);
 		if (err)
