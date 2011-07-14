@@ -1,3 +1,9 @@
+/**
+ * @file vconv.c Video Conversion
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
+
 #include <string.h>
 #include <re.h>
 #include <rem_vid.h>

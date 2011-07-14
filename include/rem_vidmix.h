@@ -1,8 +1,9 @@
-
-
-/*
- * Video Mixer
+/**
+ * @file rem_vidmix.h  Video Mixer
+ *
+ * Copyright (C) 2010 Creytiv.com
  */
+
 
 struct vidmix;
 struct vidmix_source;

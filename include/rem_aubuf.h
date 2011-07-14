@@ -1,5 +1,7 @@
-/*
- * Audio Buffer
+/**
+ * @file rem_aubuf.h Audio Buffer
+ *
+ * Copyright (C) 2010 Creytiv.com
  */
 
 struct aubuf;

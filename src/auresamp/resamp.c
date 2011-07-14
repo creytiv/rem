@@ -1,3 +1,9 @@
+/**
+ * @file resamp.c Audio Resampler
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <re.h>

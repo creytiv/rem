@@ -1,7 +1,7 @@
-
-
-/*
- * Audio Mixer
+/**
+ * @file rem_aumix.h Audio Mixer
+ *
+ * Copyright (C) 2010 Creytiv.com
  */
 
 struct aumix;

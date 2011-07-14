@@ -1,4 +1,8 @@
-/* DSP routines */
+/**
+ * @file rem_dsp.h DSP routines
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
 
 
 #ifndef INT16_MAX

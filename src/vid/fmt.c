@@ -1,3 +1,9 @@
+/**
+ * @file fmt.c Video Formats
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
+
 #include <re.h>
 #include <rem_vid.h>
 

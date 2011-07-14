@@ -1,3 +1,9 @@
+/**
+ * @file fir.c FIR -- Finite Impulse Response
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
+
 #include <string.h>
 #include <stdlib.h>
 #include <re.h>

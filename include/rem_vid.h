@@ -1,4 +1,8 @@
-/* Basic video types */
+/**
+ * @file rem_vid.h Basic video types
+ *
+ * Copyright (C) 2010 Creytiv.com
+ */
 
 
 /** Pixel format */
@@ -50,11 +54,6 @@ struct vidpt {
 };
 
 struct vidrect {
-#if 0
-	struct vidpt origin;
-	struct vidsz size;
-	int r;
-#endif
 	unsigned x, y, w, h;
 };
 
