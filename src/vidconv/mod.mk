@@ -5,5 +5,3 @@
 #
 
 SRCS	+= vidconv/vconv.c
-#SRCS	+= vidconv/pack2yuv.c
-#SRCS	+= vidconv/yuv2pack.c
