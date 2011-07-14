@@ -11,6 +11,7 @@ VER_PATCH := 0
 
 PROJECT   := rem
 VERSION   := 0.1.0
+OPT_SPEED := 1
 
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
 	echo "../re/mk/re.mk")
