@@ -69,6 +69,19 @@ static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)
 }
 
 
+static inline bool vidrect_cmp(const struct vidrect *a,
+			       const struct vidrect *b)
+{
+	if (!a || !b)
+		return false;
+
+	if (a == b)
+		return true;
+
+	return a->x == b->x && a->y == b->y && a->w == b->w && a->h == b->h;
+}
+
+
 static inline int rgb2y(uint8_t r, uint8_t g, uint8_t b)
 {
 	return ((66 * r + 129 * g + 25 * b + 128) >> 8) + 16;
