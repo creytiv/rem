@@ -31,7 +31,9 @@ static inline int16_t saturate_s16(int32_t a)
 }
 
 
-#if defined __arm__ && !defined __SYMBIAN32__
+/* todo: check which preprocessor macros to use */
+
+#if defined (HAVE_ARMV6) || defined (HAVE_NEON)
 static inline int16_t sadd16(int a, int b)
 {
 	__asm__ __volatile__ ("add %0, %1, %2"   "\n\t"
