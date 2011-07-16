@@ -107,6 +107,7 @@ void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 int  vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 		    const struct vidsz *sz);
 void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b);
+size_t vidframe_size(const struct vidframe *vf);
 
 
 const char *vidfmt_name(enum vidfmt fmt);

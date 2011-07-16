@@ -9,7 +9,7 @@
 #include <rem_vid.h>
 
 
-static uint32_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
+static size_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
 {
 	if (!sz)
 		return 0;
@@ -140,4 +140,13 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 		(void)re_printf("vidfill: no fmt %s\n", vidfmt_name(vf->fmt));
 		break;
 	}
+}
+
+
+size_t vidframe_size(const struct vidframe *vf)
+{
+	if (!vf)
+		return 0;
+
+	return vidsize(&vf->size, vf->fmt);
 }
