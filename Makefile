@@ -49,6 +49,16 @@ endif
 INCDIR  := $(PREFIX)/include/rem
 CFLAGS	+= -I$(LIBRE_INC) -Iinclude
 
+
+# XXX
+ifneq ($(HAVE_ARMV6),)
+CFLAGS		+= -DHAVE_ARMV6=1
+endif
+ifneq ($(HAVE_NEON),)
+CFLAGS		+= -DHAVE_NEON=1
+endif
+
+
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := librem$(LIB_SUFFIX)
 STATIC	:= librem.a

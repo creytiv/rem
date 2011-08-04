@@ -60,7 +60,7 @@ int autone_sine(struct mbuf *mb, uint32_t srate,
 		int16_t s1 = SCALE * l1 / 100.0f * sin(2 * M_PI * d1 * i);
 		int16_t s2 = SCALE * l2 / 100.0f * sin(2 * M_PI * d2 * i);
 
-		err |= mbuf_write_u16(mb, sadd16(s1, s2));
+		err |= mbuf_write_u16(mb, saturate_add16(s1, s2));
 	}
 
 	return err;
