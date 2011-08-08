@@ -376,7 +376,47 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 }
 
 
-#define MAX_SRC 4
+static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
+			    int yd, int ys, int ys2,
+			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			    int lsd,
+			    const uint8_t *ds0, const uint8_t *ds1,
+			    const uint8_t *ds2, int lss
+			    )
+{
+	unsigned x, xd, xs, xs2;
+	unsigned id, is;
+	double xsf = 0, xs2f = rw;
+
+	(void)ds2;
+
+	for (x=0; x<width; x+=2) {
+
+		xd  = x + xoffs;
+
+		xs  = (unsigned)xsf;
+		xs2 = (unsigned)xs2f;
+
+		id = xd + yd*lsd;
+
+		dd0[id]         = ds0[xs  + ys*lss];
+		dd0[id+1]       = ds0[xs2 + ys*lss];
+		dd0[id + lsd]   = ds0[xs  + ys2*lss];
+		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
+
+		id = xd/2    + yd*lsd/4;
+		is = (xs>>1) + (ys>>1)*lss/2;
+
+		dd1[id] = ds1[2*is];
+		dd2[id] = ds1[2*is+1];
+
+		xsf  += 2*rw;
+		xs2f += 2*rw;
+	}
+}
+
+
+#define MAX_SRC 8
 #define MAX_DST 4
 
 /**
@@ -393,6 +433,10 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
 	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL            },
 	{uyvy422_to_yuv420p,  NULL,     NULL,     NULL            },
 	{rgb32_to_yuv420p,    NULL,     NULL,     NULL            },
+	{rgb32_to_yuv420p,    NULL,     NULL,     NULL            },
+	{NULL,                NULL,     NULL,     NULL            },
+	{NULL,                NULL,     NULL,     NULL            },
+	{nv12_to_yuv420p,     NULL,     NULL,     NULL            },
 };
 
 
@@ -414,7 +458,7 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 	double rw, rh;
 	line_h *lineh = NULL;
 
-	if (!dst || !src)
+	if (!vidframe_isvalid(dst) || !vidframe_isvalid(src))
 		return;
 
 	if (r) {
