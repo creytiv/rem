@@ -13,14 +13,12 @@ Audio Modules:
 
   name:     status:       description:
 
-* au        -             Base audio types
+* au        unstable      Base audio types
 * aubuf     unstable      Audio buffer
-* aufile    -             Audio file player/recorder (WAV etc.)
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
 * autone    unstable      Tone/DTMF generator
 * g711      -             G.711 audio codec
-* g722      -             G.722 audio codec
 
 
 
@@ -29,20 +27,16 @@ Video Modules:
 
   name:     status:       description:
 
-* vid       -             Base video types
-* vidbuf    -             Video buffer
+* vid       unstable      Base video types
 * vidconv   unstable      Colorspace conversion and scaling
-* viddraw   -             Basic drawing routines
-* vidfilt   -             Video filters (alphablending, blurring, ...)
 * vidmix    unstable      Video mixer
-* h263      -             H.263 video codec
-* h264      -             H.264 video codec
 
 
 
 
 Generic modules:
 
+* dsp       unstable      DSP routines
 * fir       unstable      FIR (Finite Impulse Response) filter
 
 
@@ -51,3 +45,10 @@ Generic modules:
 External dependencies:
 
 libre
+
+
+
+
+Feedback:
+
+- Please send feedback to <libre@creytiv.com>
