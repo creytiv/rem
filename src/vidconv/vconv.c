@@ -452,7 +452,8 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 		     struct vidrect *r)
 {
 	struct vidrect rdst;
-	unsigned y, yd, ys, ys2, lsd, lss;
+	unsigned yd, ys, ys2, lsd, lss;
+	int y;
 	const uint8_t *ds0, *ds1, *ds2;
 	uint8_t *dd0, *dd1, *dd2;
 	double rw, rh;
@@ -533,7 +534,8 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 void vidconv_scale(struct vidframe *dst, const struct vidframe *src,
 		   struct vidrect *r)
 {
-	unsigned x, y, xd, yd, xs, ys, xs2, ys2, lsd, lss;
+	unsigned xd, yd, xs, ys, xs2, ys2, lsd, lss;
+	int x, y;
 	const uint8_t *ds0, *ds1, *ds2;
 	uint8_t *dd0, *dd1, *dd2;
 	unsigned id, is;

@@ -55,7 +55,7 @@ struct vidpt {
 };
 
 struct vidrect {
-	unsigned x, y, w, h;
+	int x, y, w, h;
 };
 
 static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)
