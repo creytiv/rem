@@ -246,6 +246,30 @@ int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 }
 
 
+void vidmix_focus(struct vidmix *mix, unsigned fidx)
+{
+	struct le *le;
+	unsigned idx;
+
+	if (!mix)
+		return;
+
+	pthread_mutex_lock(&mix->mutex);
+
+	for (le=mix->srcl.head, idx=1; le; le=le->next, idx++) {
+
+		struct vidmix_source *src = le->data;
+
+		src->focus = (idx == fidx);
+	}
+
+	mix->focus = (fidx > 0);
+	mix->clear = true;
+
+	pthread_mutex_unlock(&mix->mutex);
+}
+
+
 int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *mix,
 		      vidmix_frame_h *fh, void *arg)
 {
@@ -292,31 +316,4 @@ void vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 	/* todo: this crash if codec state is destroyed before source */
 	src->frame = *frame;
 	pthread_mutex_unlock(&src->mutex);
-}
-
-
-void vidmix_source_focus(struct vidmix_source *src, unsigned fidx)
-{
-	struct vidmix *mix;
-	struct le *le;
-	unsigned idx;
-
-	if (!src)
-		return;
-
-	mix = src->mix;
-
-	pthread_mutex_lock(&mix->mutex);
-
-	for (le=mix->srcl.head, idx=1; le; le=le->next, idx++) {
-
-		struct vidmix_source *lsrc = le->data;
-
-		lsrc->focus = (idx == fidx);
-	}
-
-	mix->focus = (fidx > 0);
-	mix->clear = true;
-
-	pthread_mutex_unlock(&mix->mutex);
 }
