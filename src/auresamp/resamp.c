@@ -11,11 +11,18 @@
 #include <rem_auresamp.h>
 
 
+typedef void (resample_h)(struct auresamp *ar, int16_t *dst,
+			  const int16_t *src, size_t nsamp_dst);
+
+
 struct auresamp {
 	struct fir fir;
 	const int16_t *coeffv;
 	int coeffn;
 	double ratio;
+	uint8_t ch_in;
+	uint8_t ch_out;
+	resample_h *resample;
 };
 
 
@@ -49,30 +56,83 @@ static inline void resample(struct auresamp *ar, int16_t *dst,
 	while (nsamp_dst--) {
 
 		*dst++ = src[(int)p];
+
 		p += 1/ar->ratio;
 	}
 }
 
 
-static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp)
+static inline void resample_mono2stereo(struct auresamp *ar, int16_t *dst,
+					const int16_t *src, size_t nsamp_dst)
+{
+	double p = 0;
+
+	while (nsamp_dst--) {
+
+		const int i = (int)p;
+
+		*dst++ = src[i];  /* Left channel */
+		*dst++ = src[i];  /* Right channel */
+
+		p += 1/ar->ratio;
+	}
+}
+
+
+static inline void resample_stereo2mono(struct auresamp *ar, int16_t *dst,
+					const int16_t *src, size_t nsamp_dst)
+{
+	double p = 0;
+
+	while (nsamp_dst--) {
+
+		const int i = ((int)p) & ~1;
+
+		*dst++ = (src[i] + src[i+1]) / 2;
+
+		p += 1/ar->ratio * 2;
+	}
+}
+
+
+static inline void resample_stereo(struct auresamp *ar, int16_t *dst,
+				   const int16_t *src, size_t nsamp_dst)
+{
+	double p = 0;
+
+	while (nsamp_dst--) {
+
+		const int i = ((int)p) & ~1;
+
+		*dst++ = src[i];    /* Left channel */
+		*dst++ = src[i+1];  /* Right channel */
+
+		p += 1/ar->ratio * 2;
+	}
+}
+
+
+static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp,
+			     int channels)
 {
 	while (nsamp > 0) {
 
 		size_t len = min(nsamp, FIR_MAX_INPUT_LEN);
 
-		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn);
+		fir_process(&ar->fir, ar->coeffv, buf, buf, len, ar->coeffn,
+			    channels);
 
-		buf   += len;
+		buf   += (len*channels);
 		nsamp -= len;
 	}
 }
 
 
-/* todo: handle channel resampling */
-int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
-		   uint32_t srate_out)
+int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
+		   uint32_t srate_out, uint8_t ch_out)
 {
 	struct auresamp *ar;
+	int err = 0;
 
 	if (!arp || !srate_in || !srate_out)
 		return EINVAL;
@@ -82,8 +142,23 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 		return ENOMEM;
 
 	ar->ratio = 1.0 * srate_out / srate_in;
+	ar->ch_in = ch_in;
+	ar->ch_out = ch_out;
 
 	fir_init(&ar->fir);
+
+	if (ch_in == 1 && ch_out == 1)
+		ar->resample = resample;
+	else if (ch_in == 1 && ch_out == 2)
+		ar->resample = resample_mono2stereo;
+	else if (ch_in == 2 && ch_out == 1)
+		ar->resample = resample_stereo2mono;
+	else if (ch_in == 2 && ch_out == 2)
+		ar->resample = resample_stereo;
+	else {
+		err = EINVAL;
+		goto out;
+	}
 
 	if (srate_in == 8000 || srate_out == 8000) {
 
@@ -100,9 +175,13 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in,
 		(void)re_printf("auresamp: using 8000 Hz cutoff\n");
 	}
 
-	*arp = ar;
+ out:
+	if (err)
+		mem_deref(ar);
+	else
+		*arp = ar;
 
-	return 0;
+	return err;
 }
 
 
@@ -114,9 +193,9 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 	if (!ar || !dst || !src)
 		return EINVAL;
 
-	ns = mbuf_get_left(src) / 2;
+	ns = mbuf_get_left(src) / 2 / ar->ch_in;
 	nd = ns * ar->ratio;
-	sz = nd * 2;
+	sz = nd * 2 * ar->ch_out;
 
 	if (mbuf_get_space(dst) < sz) {
 
@@ -132,14 +211,18 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 
 	if (ar->ratio > 1) {
 
-		resample(ar, d, s, nd);
-		auresamp_lowpass(ar, d, nd);
+		ar->resample(ar, d, s, nd);
+		auresamp_lowpass(ar, d, nd, ar->ch_out);
 	}
-	else {
+	else if (ar->ratio < 1) {
+
 		/* decimation: low-pass filter, then downsample */
 
-		auresamp_lowpass(ar, s, ns);
-		resample(ar, d, s, nd);
+		auresamp_lowpass(ar, s, ns, ar->ch_in);
+		ar->resample(ar, d, s, nd);
+	}
+	else {
+		ar->resample(ar, d, s, nd);
 	}
 
 	dst->end = dst->pos += sz;
