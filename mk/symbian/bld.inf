@@ -14,6 +14,7 @@ PRJ_EXPORTS
 ..\..\include\rem_autone.h     \epoc32\include\rem\rem_autone.h
 ..\..\include\rem_dsp.h        \epoc32\include\rem\rem_dsp.h
 ..\..\include\rem_fir.h        \epoc32\include\rem\rem_fir.h
+..\..\include\rem_g711.h       \epoc32\include\rem\rem_g711.h
 ..\..\include\rem_vid.h        \epoc32\include\rem\rem_vid.h
 ..\..\include\rem_vidconv.h    \epoc32\include\rem\rem_vidconv.h
 ..\..\include\rem_video.h      \epoc32\include\rem\rem_video.h

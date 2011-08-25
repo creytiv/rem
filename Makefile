@@ -27,13 +27,15 @@ endif
 include $(LIBRE_MK)
 
 # List of modules
-MODULES += auresamp fir
-MODULES += aubuf autone
-MODULES += vid vidconv
+MODULES += fir
+MODULES += g711
+MODULES += aubuf auresamp autone
 
 ifneq ($(HAVE_LIBPTHREAD),)
 MODULES += aumix vidmix
 endif
+
+MODULES += vid vidconv
 
 LIBS    += -lm
 

@@ -18,7 +18,7 @@ Audio Modules:
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
 * autone    unstable      Tone/DTMF generator
-* g711      -             G.711 audio codec
+* g711      stable        G.711 audio codec
 
 
 

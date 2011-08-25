@@ -31,6 +31,9 @@ SOURCE        resamp.c
 SOURCEPATH    ..\..\src\autone
 SOURCE        tone.c
 
+SOURCEPATH    ..\..\src\g711
+SOURCE        g711.c
+
 SOURCEPATH    ..\..\src\fir
 SOURCE        fir.c
 
