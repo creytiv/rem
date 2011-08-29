@@ -194,7 +194,7 @@ int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 		return EINVAL;
 
 	ns = mbuf_get_left(src) / 2 / ar->ch_in;
-	nd = ns * ar->ratio;
+	nd = (size_t)(ns * ar->ratio);
 	sz = nd * 2 * ar->ch_out;
 
 	if (mbuf_get_space(dst) < sz) {
