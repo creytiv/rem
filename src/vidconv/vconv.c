@@ -311,17 +311,17 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		id = xd + yd*lsd;
 
-		x0 = *(uint32_t *)&ds0[xs  + ys*lss];
-		x1 = *(uint32_t *)&ds0[xs2 + ys*lss];
-		x2 = *(uint32_t *)&ds0[xs  + ys2*lss];
-		x3 = *(uint32_t *)&ds0[xs2 + ys2*lss];
+		x0 = *(uint32_t *)(void *)&ds0[xs  + ys*lss];
+		x1 = *(uint32_t *)(void *)&ds0[xs2 + ys*lss];
+		x2 = *(uint32_t *)(void *)&ds0[xs  + ys2*lss];
+		x3 = *(uint32_t *)(void *)&ds0[xs2 + ys2*lss];
 
 		dd0[id]         = rgb2y(x0 >> 16, x0 >> 8, x0);
 		dd0[id+1]       = rgb2y(x1 >> 16, x1 >> 8, x1);
 		dd0[id + lsd]   = rgb2y(x2 >> 16, x2 >> 8, x2);
 		dd0[id+1 + lsd] = rgb2y(x3 >> 16, x3 >> 8, x3);
 
-		id = xd/2    + yd*lsd/4;
+		id = xd/2 + yd*lsd/4;
 
 		dd1[id] = rgb2u(x0 >> 16, x0 >> 8, x0);
 		dd2[id] = rgb2v(x0 >> 16, x0 >> 8, x0);
