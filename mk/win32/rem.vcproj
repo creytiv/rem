@@ -20,7 +20,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="0"
-				AdditionalIncludeDirectories="..\..\include"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\re\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;HAVE_SELECT;HAVE_IO_H;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -133,7 +133,7 @@
 				Name="g711"
 				Filter="">
 				<File
-					RelativePath="..\..\src\g711.c">
+					RelativePath="..\..\src\g711\g711.c">
 				</File>
 			</Filter>
 			<Filter
