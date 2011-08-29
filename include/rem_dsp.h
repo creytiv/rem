@@ -79,7 +79,7 @@ static inline int16_t saturate_sub16(int32_t a, int32_t b)
 
 static inline uint8_t saturate_u8(int32_t a)
 {
-	return (a > UINT8_MAX) ? UINT8_MAX : ((a < 0) ? 0 : a);
+	return (a > (int32_t)UINT8_MAX) ? UINT8_MAX : ((a < 0) ? 0 : a);
 }
 
 static inline int16_t saturate_s15(int32_t a)
