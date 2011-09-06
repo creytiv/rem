@@ -122,7 +122,7 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 		rect.y = rect.h * (idx / rows);
 	}
 
-	vidscale_aspect(mframe, &frame, &rect);
+	vidconv_aspect(mframe, &frame, &rect);
 }
 
 

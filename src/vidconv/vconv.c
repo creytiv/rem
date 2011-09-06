@@ -174,14 +174,13 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
-	double xsf = 0, xs2f = rw;
 
 	for (x=0; x<width; x+=2) {
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)xsf;
-		xs2 = (unsigned)xs2f;
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
 
 		id = xd + yd*lsd;
 
@@ -195,9 +194,6 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		dd1[id] = ds1[is];
 		dd2[id] = ds2[is];
-
-		xsf  += 2*rw;
-		xs2f += 2*rw;
 	}
 }
 
@@ -212,7 +208,6 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs;
 	unsigned id, is, is2;
-	double xsf = 0;
 
 	(void)sd1;
 	(void)sd2;
@@ -221,7 +216,7 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)(xsf * 2);
+		xs  = ((unsigned)(x * rw * 2)) & ~3;
 
 		id  = xd + yd*lsd;
 		is  = xs + ys*lss;
@@ -236,8 +231,6 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		dd1[id] = sd0[is + 1];
 		dd2[id] = sd0[is + 3];
-
-		xsf  += 2*rw;
 	}
 }
 
@@ -252,7 +245,6 @@ static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs;
 	unsigned id, is, is2;
-	double xsf = 0;
 
 	(void)sd1;
 	(void)sd2;
@@ -261,7 +253,7 @@ static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)(xsf * 2);
+		xs  = ((unsigned)(x * rw * 2)) & ~3;
 
 		id  = xd + yd*lsd;
 		is  = xs + ys*lss;
@@ -276,8 +268,6 @@ static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		dd1[id] = sd0[is + 0];
 		dd2[id] = sd0[is + 2];
-
-		xsf  += 2*rw;
 	}
 }
 
@@ -292,7 +282,6 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id;
-	double xsf = 0, xs2f = rw;
 
 	(void)ds1;
 	(void)ds2;
@@ -306,8 +295,8 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)(xsf * 4);
-		xs2 = (unsigned)(xs2f * 4);
+		xs  = 4 * ((unsigned)( x    * rw));
+		xs2 = 4 * ((unsigned)((x+1) * rw));
 
 		id = xd + yd*lsd;
 
@@ -325,9 +314,6 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		dd1[id] = rgb2u(x0 >> 16, x0 >> 8, x0);
 		dd2[id] = rgb2v(x0 >> 16, x0 >> 8, x0);
-
-		xsf  += 2*rw;
-		xs2f += 2*rw;
 	}
 }
 
@@ -341,7 +327,6 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
-	double xsf = 0, xs2f = rw;
 
 	(void)dd1;
 	(void)dd2;
@@ -352,8 +337,8 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 
 		xd  = (x + xoffs) * 4;
 
-		xs  = (unsigned)xsf;
-		xs2 = (unsigned)xs2f;
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
 
 		id = (xd + yd*lsd);
 		is  = (xs>>1) + (ys>>1)*lss/2;
@@ -369,9 +354,6 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 		yuv2rgb(&dd0[id+4],       ds0[xs2 + ys*lss],  ruv, guv, buv);
 		yuv2rgb(&dd0[id   + lsd], ds0[xs  + ys2*lss], ruv, guv, buv);
 		yuv2rgb(&dd0[id+4 + lsd], ds0[xs2 + ys2*lss], ruv, guv, buv);
-
-		xsf  += 2*rw;
-		xs2f += 2*rw;
 	}
 }
 
@@ -386,7 +368,6 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
-	double xsf = 0, xs2f = rw;
 
 	(void)ds2;
 
@@ -394,8 +375,8 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 
 		xd  = x + xoffs;
 
-		xs  = (unsigned)xsf;
-		xs2 = (unsigned)xs2f;
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
 
 		id = xd + yd*lsd;
 
@@ -405,13 +386,10 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
 
 		id = xd/2    + yd*lsd/4;
-		is = (xs>>1) + (ys>>1)*lss/2;
+		is = ((xs>>1) + (ys>>1)*lss/2) & ~1;
 
 		dd1[id] = ds1[2*is];
 		dd2[id] = ds1[2*is+1];
-
-		xsf  += 2*rw;
-		xs2f += 2*rw;
 	}
 }
 
@@ -448,8 +426,8 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
  *
  */
 
-void vidconv_process(struct vidframe *dst, const struct vidframe *src,
-		     struct vidrect *r)
+void vidconv(struct vidframe *dst, const struct vidframe *src,
+	     struct vidrect *r)
 {
 	struct vidrect rdst;
 	unsigned yd, ys, ys2, lsd, lss;
@@ -522,77 +500,9 @@ void vidconv_process(struct vidframe *dst, const struct vidframe *src,
 
 
 /*
- *
- * Speed matches swscale: SWS_BILINEAR
- *
- * todo: optimize (check out SWS_FAST_BILINEAR)
- *
- *
- * TODO: reference function from rendezvous, to be removed
- */
-
-void vidconv_scale(struct vidframe *dst, const struct vidframe *src,
-		   struct vidrect *r)
-{
-	unsigned xd, yd, xs, ys, xs2, ys2, lsd, lss;
-	int x, y;
-	const uint8_t *ds0, *ds1, *ds2;
-	uint8_t *dd0, *dd1, *dd2;
-	unsigned id, is;
-	double rw, rh;
-
-	rw = (double)src->size.w / (double)r->w;
-	rh = (double)src->size.h / (double)r->h;
-
-	lsd = dst->linesize[0];
-	lss = src->linesize[0];
-
-	dd0 = dst->data[0];
-	dd1 = dst->data[1];
-	dd2 = dst->data[2];
-
-	ds0 = src->data[0];
-	ds1 = src->data[1];
-	ds2 = src->data[2];
-
-	r->x &= ~1;
-	r->y &= ~1;
-
-	for (y=0; y<r->h; y+=2) {
-
-		yd  = y + r->y;
-
-		ys  = (unsigned)(y * rh);
-		ys2 = (unsigned)((y+1) * rh);
-
-		for (x=0; x<r->w; x+=2) {
-
-			xd  = x + r->x;
-
-			xs  = (unsigned)(x * rw);
-			xs2 = (unsigned)((x+1) * rw);
-
-			id = xd + yd*lsd;
-
-			dd0[id]         = ds0[xs  + ys*lss];
-			dd0[id+1]       = ds0[xs2 + ys*lss];
-			dd0[id + lsd]   = ds0[xs  + ys2*lss];
-			dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
-
-			id = xd/2    + yd*lsd/4;
-			is = (xs>>1) + (ys>>1)*lss/2;
-
-			dd1[id] = ds1[is];
-			dd2[id] = ds2[is];
-		}
-	}
-}
-
-
-/*
  * Maintain source aspect ratio within bounds of r
  */
-void vidscale_aspect(struct vidframe *dst, const struct vidframe *src,
+void vidconv_aspect(struct vidframe *dst, const struct vidframe *src,
 		     struct vidrect *r)
 {
 	struct vidsz asz;
@@ -608,5 +518,5 @@ void vidscale_aspect(struct vidframe *dst, const struct vidframe *src,
 	r->x = r->x + (asz.w - r->w) / 2;
 	r->y = r->y + (asz.h - r->h) / 2;
 
-	vidconv_scale(dst, src, r);
+	vidconv(dst, src, r);
 }
