@@ -112,7 +112,7 @@ clean:
 
 
 install: $(SHARED) $(STATIC)
-	@mkdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(INCDIR) $(DESTDIR)$(MKDIR)
+	@mkdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(INCDIR)
 	$(INSTALL) -m 0644 $(shell find include -name "*.h") \
 		$(DESTDIR)$(INCDIR)
 	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)
