@@ -118,6 +118,12 @@ install: $(SHARED) $(STATIC)
 	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0755 $(STATIC) $(DESTDIR)$(LIBDIR)
 
+.PHONY: uninstall
+uninstall:
+	@rm -rf $(DESTDIR)$(INCDIR)
+	@rm -f $(DESTDIR)$(LIBDIR)/$(SHARED)
+	@rm -f $(DESTDIR)$(LIBDIR)/$(STATIC)
+
 -include test.d
 
 test.o:	test.c
