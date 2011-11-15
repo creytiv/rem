@@ -156,6 +156,17 @@ static inline void yuv2rgb(uint8_t *rgb, uint8_t y, int ruv, int guv, int buv)
 }
 
 
+static inline void yuv2rgb565(uint8_t *rgb, uint8_t y,
+			      int ruv, int guv, int buv)
+{
+	int r = saturate_u8(y + ruv) >> 3;
+	int g = saturate_u8(y + guv) >> 2;
+	int b = saturate_u8(y + buv) >> 3;
+
+	*(uint16_t *)rgb = r << 11 | g << 5 | b << 0;
+}
+
+
 typedef void (line_h)(int xoffs, unsigned width, double rw,
 		      int yd, int ys, int ys2,
 		      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
@@ -358,6 +369,46 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 }
 
 
+static void yuv420p_to_rgb565(int xoffs, unsigned width, double rw,
+			      int yd, int ys, int ys2,
+			      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			      int lsd,
+			      const uint8_t *ds0, const uint8_t *ds1,
+			      const uint8_t *ds2, int lss)
+{
+	unsigned x, xd, xs, xs2;
+	unsigned id, is;
+
+	(void)dd1;
+	(void)dd2;
+
+	for (x=0; x<width; x+=2) {
+
+		int u, v, ruv, guv, buv;
+
+		xd  = (x + xoffs) * 2;
+
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
+
+		id = (xd + yd*lsd);
+		is  = (xs>>1) + (ys>>1)*lss/2;
+
+		u = ds1[is];
+		v = ds2[is];
+
+		ruv = CRV[v];
+		guv = CGV[v] + CGU[u];
+		buv = CBU[u];
+
+		yuv2rgb565(&dd0[id],         ds0[xs  + ys*lss],  ruv, guv,buv);
+		yuv2rgb565(&dd0[id+2],       ds0[xs2 + ys*lss],  ruv, guv,buv);
+		yuv2rgb565(&dd0[id   + lsd], ds0[xs  + ys2*lss], ruv, guv,buv);
+		yuv2rgb565(&dd0[id+2 + lsd], ds0[xs2 + ys2*lss], ruv, guv,buv);
+	}
+}
+
+
 static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 			    int yd, int ys, int ys2,
 			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
@@ -395,7 +446,7 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 
 
 #define MAX_SRC 8
-#define MAX_DST 4
+#define MAX_DST 6
 
 /**
  * Pixel conversion table:  [src][dst]
@@ -407,14 +458,15 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
 /*
  * Dst:  YUV420P              YUYV422   UYVY422   RGB32
  */
-	{yuv420p_to_yuv420p,  NULL,     NULL,     yuv420p_to_rgb32},
-	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL            },
-	{uyvy422_to_yuv420p,  NULL,     NULL,     NULL            },
-	{rgb32_to_yuv420p,    NULL,     NULL,     NULL            },
-	{rgb32_to_yuv420p,    NULL,     NULL,     NULL            },
-	{NULL,                NULL,     NULL,     NULL            },
-	{NULL,                NULL,     NULL,     NULL            },
-	{nv12_to_yuv420p,     NULL,     NULL,     NULL            },
+	{yuv420p_to_yuv420p,  NULL,     NULL,     yuv420p_to_rgb32, NULL,
+	 yuv420p_to_rgb565},
+	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL,     NULL,     NULL},
+	{uyvy422_to_yuv420p,  NULL,     NULL,     NULL,     NULL,     NULL},
+	{rgb32_to_yuv420p,    NULL,     NULL,     NULL,     NULL,     NULL},
+	{rgb32_to_yuv420p,    NULL,     NULL,     NULL,     NULL,     NULL},
+	{NULL,                NULL,     NULL,     NULL,     NULL,     NULL},
+	{NULL,                NULL,     NULL,     NULL,     NULL,     NULL},
+	{nv12_to_yuv420p,     NULL,     NULL,     NULL,     NULL,     NULL},
 };
 
 
