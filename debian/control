@@ -1,0 +1,23 @@
+Source: librem
+Section: comm
+Priority: optional
+Maintainer: Alfred E. Heggestad <aeh@db.org>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.2
+
+Package: librem
+Architecture: any
+Section: libs
+Depends: libre (= ${Source-Version}), ${shlibs:Depends}
+Description: Audio and video processing media library
+ .
+ Audio mixer, resampler, tone generator, G.711 codec
+ Video mixer, pixel converter
+
+Package: librem-dev
+Architecture: any
+Section: libdevel
+Depends: librem (= ${Source-Version}), ${shlibs:Depends}
+Description: Audio and video processing media library (development files)
+ .
+ Development package for librem
