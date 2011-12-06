@@ -13,6 +13,7 @@ URL: http://www.creytiv.com/
 Vendor: Creytiv
 Packager: Alfred E. Heggestad <aeh@db.org>
 BuildRoot: /var/tmp/%{name}-build-root
+BuildRequires: re-devel
 
 %description
 Audio and Video processing media library
