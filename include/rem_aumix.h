@@ -7,6 +7,13 @@
 struct aumix;
 struct aumix_source;
 
+/**
+ * Audio mixer frame handler
+ *
+ * @param buf Buffer with audio samples
+ * @param sz  Number of bytes
+ * @param arg Handler argument
+ */
 typedef void (aumix_frame_h)(const uint8_t *buf, size_t sz, void *arg);
 
 int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime);

@@ -28,6 +28,15 @@ static size_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
 }
 
 
+/**
+ * Initialize a video frame
+ *
+ * @param vf       Video frame
+ * @param fmt      Video pixel format
+ * @param sz       Size of video frame
+ * @param data     Pointer to video planes
+ * @param linesize Pointer to linesizes
+ */
 void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
 		   const struct vidsz *sz, void *data[4], int linesize[4])
 {
@@ -46,6 +55,14 @@ void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
 }
 
 
+/**
+ * Initialize a video frame from a buffer
+ *
+ * @param vf  Video frame
+ * @param fmt Video pixel format
+ * @param sz  Size of video frame
+ * @param buf Frame buffer
+ */
 void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		       const struct vidsz *sz, uint8_t *buf)
 {
@@ -106,6 +123,15 @@ void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 }
 
 
+/**
+ * Allocate an empty video frame
+ *
+ * @param vfp Pointer to allocated video frame
+ * @param fmt Video pixel format
+ * @param sz  Size of video frame
+ *
+ * @return 0 for success, otherwise error code
+ */
 int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 		   const struct vidsz *sz)
 {
@@ -126,6 +152,14 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 }
 
 
+/**
+ * Fill a video frame with a nice color
+ *
+ * @param vf Video frame
+ * @param r  Red color component
+ * @param g  Green color component
+ * @param b  Blue color component
+ */
 void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 {
 	uint8_t *p;
@@ -161,6 +195,13 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 }
 
 
+/**
+ * Get the size of a video frame
+ *
+ * @param vf Video frame
+ *
+ * @return Number of bytes
+ */
 size_t vidframe_size(const struct vidframe *vf)
 {
 	if (!vf)

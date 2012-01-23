@@ -19,12 +19,28 @@
  */
 
 
+/**
+ * Initialize the FIR-filter
+ *
+ * @param fir FIR-filter state
+ */
 void fir_init(struct fir *fir)
 {
 	memset(fir->insamp, 0, sizeof(fir->insamp));
 }
 
 
+/**
+ * Process PCM samples with the FIR filter
+ *
+ * @param fir          FIR filter
+ * @param coeffs       FIR Coefficients to use
+ * @param input        Input PCM samples
+ * @param output       Output PCM samples
+ * @param length       Number of samples
+ * @param filterLength Number of coefficients
+ * @param channels     Number of channels
+ */
 void fir_process(struct fir *fir, const int16_t *coeffs,
 		 const int16_t *input, int16_t *output,
 		 size_t length, int filterLength, int channels)

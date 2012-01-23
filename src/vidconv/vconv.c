@@ -470,14 +470,17 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
 };
 
 
-/*
+/**
+ * Convert a video frame from one pixel format to another pixel format
  *
  * Speed matches swscale: SWS_BILINEAR
  *
  * todo: optimize (check out SWS_FAST_BILINEAR)
  *
+ * @param dst  Destination video frame
+ * @param src  Source video frame
+ * @param r    Drawing area in destination frame, NULL means whole frame
  */
-
 void vidconv(struct vidframe *dst, const struct vidframe *src,
 	     struct vidrect *r)
 {
@@ -551,11 +554,15 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 }
 
 
-/*
- * Maintain source aspect ratio within bounds of r
+/**
+ * Same as vidconv(), but maintain source aspect ratio within bounds of r
+ *
+ * @param dst  Destination video frame
+ * @param src  Source video frame
+ * @param r    Drawing area in destination frame
  */
 void vidconv_aspect(struct vidframe *dst, const struct vidframe *src,
-		     struct vidrect *r)
+		    struct vidrect *r)
 {
 	struct vidsz asz;
 	double ar;

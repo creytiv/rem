@@ -54,6 +54,15 @@ static void aubuf_destructor(void *arg)
 }
 
 
+/**
+ * Allocate a new audio buffer
+ *
+ * @param abp    Pointer to allocated audio buffer
+ * @param min_sz Minimum buffer size
+ * @param max_sz Maximum buffer size (0 for no max size)
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aubuf_alloc(struct aubuf **abp, size_t min_sz, size_t max_sz)
 {
 	struct aubuf *ab;
@@ -84,6 +93,14 @@ int aubuf_alloc(struct aubuf **abp, size_t min_sz, size_t max_sz)
 }
 
 
+/**
+ * Append a PCM-buffer to the end of the audio buffer
+ *
+ * @param ab Audio buffer
+ * @param mb Mbuffer with PCM samples
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aubuf_append(struct aubuf *ab, struct mbuf *mb)
 {
 	struct auframe *af;
@@ -119,6 +136,15 @@ int aubuf_append(struct aubuf *ab, struct mbuf *mb)
 }
 
 
+/**
+ * Write PCM samples to the audio buffer
+ *
+ * @param ab Audio buffer
+ * @param p  Pointer to PCM data
+ * @param sz Number of bytes to write
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aubuf_write(struct aubuf *ab, const uint8_t *p, size_t sz)
 {
 	struct mbuf *mb = mbuf_alloc(sz);
@@ -138,6 +164,14 @@ int aubuf_write(struct aubuf *ab, const uint8_t *p, size_t sz)
 }
 
 
+/**
+ * Read PCM samples from the audio buffer. If there is not enough data
+ * in the audio buffer, silence will be read.
+ *
+ * @param ab Audio buffer
+ * @param p  Buffer where PCM samples are read into
+ * @param sz Number of bytes to read
+ */
 void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 {
 	struct le *le;
@@ -190,7 +224,20 @@ void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 }
 
 
-/** Timed read */
+/**
+ * Timed read PCM samples from the audio buffer. If there is not enough data
+ * in the audio buffer, silence will be read.
+ *
+ * @param ab    Audio buffer
+ * @param ptime Packet time in [ms]
+ * @param p     Buffer where PCM samples are read into
+ * @param sz    Number of bytes to read
+ *
+ * @note This does the same as aubuf_read() except that it also takes
+ *       timing into consideration.
+ *
+ * @return 0 if valid PCM was read, ETIMEDOUT if no PCM is ready yet
+ */
 int aubuf_get(struct aubuf *ab, uint32_t ptime, uint8_t *p, size_t sz)
 {
 	uint64_t now;
@@ -222,6 +269,11 @@ int aubuf_get(struct aubuf *ab, uint32_t ptime, uint8_t *p, size_t sz)
 }
 
 
+/**
+ * Flush the audio buffer
+ *
+ * @param ab Audio buffer
+ */
 void aubuf_flush(struct aubuf *ab)
 {
 	if (!ab)
@@ -238,6 +290,14 @@ void aubuf_flush(struct aubuf *ab)
 }
 
 
+/**
+ * Audio buffer debug handler, use with fmt %H
+ *
+ * @param pf Print function
+ * @param ab Audio buffer
+ *
+ * @return 0 if success, otherwise errorcode
+ */
 int aubuf_debug(struct re_printf *pf, const struct aubuf *ab)
 {
 	int err;
@@ -260,6 +320,13 @@ int aubuf_debug(struct re_printf *pf, const struct aubuf *ab)
 }
 
 
+/**
+ * Get the current number of bytes in the audio buffer
+ *
+ * @param ab Audio buffer
+ *
+ * @return Number of bytes in the audio buffer
+ */
 size_t aubuf_cur_size(const struct aubuf *ab)
 {
 	size_t sz;

@@ -43,6 +43,18 @@ static inline uint32_t digit2hi(int digit)
 }
 
 
+/**
+ * Generate a dual-tone sine wave into a PCM buffer
+ *
+ * @param mb    Buffer for PCM samples
+ * @param srate Sample rate in [Hz]
+ * @param f1    Frequency number one
+ * @param l1    Level of f1 from 0-100
+ * @param f2    Frequency number two
+ * @param l2    Level of f2 from 0-100
+ *
+ * @return 0 for success, otherwise error code
+ */
 int autone_sine(struct mbuf *mb, uint32_t srate,
 		uint32_t f1, int l1, uint32_t f2, int l2)
 {
@@ -69,6 +81,15 @@ int autone_sine(struct mbuf *mb, uint32_t srate,
 }
 
 
+/**
+ * Generate a DTMF tone into a PCM buffer
+ *
+ * @param mb    Buffer for PCM samples
+ * @param srate Sample rate in [Hz]
+ * @param digit DTMF digit to generate (0-9, *, #, A-D)
+ *
+ * @return 0 for success, otherwise error code
+ */
 int autone_dtmf(struct mbuf *mb, uint32_t srate, int digit)
 {
 	return autone_sine(mb, srate,

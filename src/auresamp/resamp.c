@@ -15,6 +15,7 @@ typedef void (resample_h)(struct auresamp *ar, int16_t *dst,
 			  const int16_t *src, size_t nsamp_dst);
 
 
+/** Defines an Audio resampler */
 struct auresamp {
 	struct fir fir;
 	const int16_t *coeffv;
@@ -128,6 +129,17 @@ static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp,
 }
 
 
+/**
+ * Allocate a new Audio resampler
+ *
+ * @param arp       Pointer to allocated audio resampler
+ * @param srate_in  Sample rate for the input in [Hz]
+ * @param ch_in     Number of channels for the input
+ * @param srate_out Sample rate for the output in [Hz]
+ * @param ch_out    Number of channels for the output
+ *
+ * @return 0 for success, otherwise error code
+ */
 int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
 		   uint32_t srate_out, uint8_t ch_out)
 {
@@ -185,6 +197,15 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
 }
 
 
+/**
+ * Resample PCM data
+ *
+ * @param ar  Audio resampler
+ * @param dst Destination buffer for PCM data
+ * @param src Source buffer with PCM data
+ *
+ * @return 0 for success, otherwise error code
+ */
 int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
 {
 	size_t ns, nd, sz;

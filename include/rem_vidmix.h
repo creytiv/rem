@@ -8,6 +8,13 @@
 struct vidmix;
 struct vidmix_source;
 
+/**
+ * Video mixer frame handler
+ *
+ * @param ts    Timestamp
+ * @param frame Video frame
+ * @param arg   Handler argument
+ */
 typedef void (vidmix_frame_h)(uint32_t ts, const struct vidframe *frame,
 			      void *arg);
 

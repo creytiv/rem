@@ -19,11 +19,13 @@ enum vidfmt {
 	VID_FMT_N
 };
 
+/** Video pixel format component description */
 struct vidfmt_compdesc {
 	unsigned plane_index:2;
 	unsigned step:3;
 };
 
+/** Video pixel format description */
 struct vidfmt_desc {
 	const char *name;
 	uint8_t planes;
@@ -31,6 +33,7 @@ struct vidfmt_desc {
 	struct vidfmt_compdesc compv[4];
 };
 
+/** Video orientation */
 enum vidorient {
 	VIDORIENT_PORTRAIT,
 	VIDORIENT_PORTRAIT_UPSIDEDOWN,
@@ -38,24 +41,32 @@ enum vidorient {
 	VIDORIENT_LANDSCAPE_RIGHT,
 };
 
+/** Video size */
 struct vidsz {
-	int w, h;
+	int w;  /**< Width  */
+	int h;  /**< Height */
 };
 
+/** Video frame */
 struct vidframe {
-	uint8_t *data[4];
-	uint16_t linesize[4];
-	struct vidsz size;
-	enum vidfmt fmt;
+	uint8_t *data[4];      /**< Video planes        */
+	uint16_t linesize[4];  /**< Array of line-sizes */
+	struct vidsz size;     /**< Frame resolution    */
+	enum vidfmt fmt;       /**< Video pixel format  */
 };
 
+/** Video point */
 struct vidpt {
-	int x;
-	int y;
+	int x;  /**< X position */
+	int y;  /**< Y position */
 };
 
+/** Video rectangle */
 struct vidrect {
-	int x, y, w, h;
+	int x;  /**< X position */
+	int y;  /**< Y position */
+	int w;  /**< Width      */
+	int h;  /**< Height     */
 };
 
 static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)

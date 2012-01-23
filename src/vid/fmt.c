@@ -8,6 +8,7 @@
 #include <rem_vid.h>
 
 
+/** Video format description table */
 const struct vidfmt_desc vidfmt_descv[VID_FMT_N] = {
 
 	{"yuv420p", 3, 3, { {0, 1}, {1, 1}, {2, 1}, {0, 0} } },
@@ -21,6 +22,13 @@ const struct vidfmt_desc vidfmt_descv[VID_FMT_N] = {
 };
 
 
+/**
+ * Get the name of a video format
+ *
+ * @param fmt Video format
+ *
+ * @return Name of the video format
+ */
 const char *vidfmt_name(enum vidfmt fmt)
 {
 	if (fmt >= VID_FMT_N)

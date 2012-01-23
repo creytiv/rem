@@ -200,6 +200,15 @@ static void *vidmix_thread(void *arg)
 }
 
 
+/**
+ * Allocate a new Video mixer
+ *
+ * @param mixp Pointer to allocated video mixer
+ * @param sz   Size of video mixer frame
+ * @param fps  Frame rate (frames per second)
+ *
+ * @return 0 for success, otherwise error code
+ */
 int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 {
 	struct vidmix *mix;
@@ -246,6 +255,12 @@ int vidmix_alloc(struct vidmix **mixp, const struct vidsz *sz, int fps)
 }
 
 
+/**
+ * Put a video source in focus
+ *
+ * @param mix  Video mixer
+ * @param fidx Frame index
+ */
 void vidmix_focus(struct vidmix *mix, unsigned fidx)
 {
 	struct le *le;
@@ -270,6 +285,16 @@ void vidmix_focus(struct vidmix *mix, unsigned fidx)
 }
 
 
+/**
+ * Add a video source to the video mixer
+ *
+ * @param srcp Pointer to allocated video source
+ * @param mix  Video mixer
+ * @param fh   Mixer frame handler
+ * @param arg  Handler argument
+ *
+ * @return 0 for success, otherwise error code
+ */
 int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *mix,
 		      vidmix_frame_h *fh, void *arg)
 {
@@ -307,6 +332,12 @@ int vidmix_source_add(struct vidmix_source **srcp, struct vidmix *mix,
 }
 
 
+/**
+ * Put a video frame into the video mixer
+ *
+ * @param src   Video source
+ * @param frame Video frame
+ */
 void vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 {
 	if (!src || !frame)

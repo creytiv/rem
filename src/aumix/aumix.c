@@ -13,6 +13,7 @@
 #include <rem_aumix.h>
 
 
+/** Defines an Audio mixer */
 struct aumix {
 	pthread_mutex_t mutex;
 	pthread_cond_t cond;
@@ -24,6 +25,7 @@ struct aumix {
 	bool run;
 };
 
+/** Defines an Audio mixer source */
 struct aumix_source {
 	struct le le;
 	int16_t *frame;
@@ -157,6 +159,16 @@ static void *aumix_thread(void *arg)
 }
 
 
+/**
+ * Allocate a new Audio mixer
+ *
+ * @param mixp  Pointer to allocated audio mixer
+ * @param srate Sample rate in [Hz]
+ * @param ch    Number of channels
+ * @param ptime Packet time in [ms]
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 {
 	struct aumix *mix;
@@ -205,6 +217,15 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 }
 
 
+/**
+ * Write PCM samples to the audio mixer
+ *
+ * @param mix Audio mixer
+ * @param p   PCM samples
+ * @param sz  Number of bytes to write
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aumix_write(struct aumix *mix, const uint8_t *p, size_t sz)
 {
 	if (!mix || !p)
@@ -214,6 +235,13 @@ int aumix_write(struct aumix *mix, const uint8_t *p, size_t sz)
 }
 
 
+/**
+ * Count number of audio sources in the audio mixer
+ *
+ * @param mix Audio mixer
+ *
+ * @return Number of audio sources
+ */
 uint32_t aumix_source_count(const struct aumix *mix)
 {
 	if (!mix)
@@ -223,6 +251,16 @@ uint32_t aumix_source_count(const struct aumix *mix)
 }
 
 
+/**
+ * Add an audio source to the audio mixer
+ *
+ * @param srcp Pointer to allocated audio source
+ * @param mix  Audio mixer
+ * @param fh   Mixer frame handler
+ * @param arg  Handler argument
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 		     aumix_frame_h *fh, void *arg)
 {
@@ -268,6 +306,14 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 }
 
 
+/**
+ * Write PCM samples for a given source to the audio mixer
+ *
+ * @param src Audio mixer source
+ * @param mb  PCM samples
+ *
+ * @return 0 for success, otherwise error code
+ */
 int aumix_source_put(struct aumix_source *src, struct mbuf *mb)
 {
 	if (!src || !mb)
