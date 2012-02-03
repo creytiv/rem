@@ -109,6 +109,16 @@
 				</File>
 			</Filter>
 			<Filter
+				Name="aufile"
+				Filter="">
+				<File
+					RelativePath="..\..\src\aufile\aufile.c">
+				</File>
+				<File
+					RelativePath="..\..\src\aufile\wave.c">
+				</File>
+			</Filter>
+			<Filter
 				Name="auresamp"
 				Filter="">
 				<File

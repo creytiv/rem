@@ -15,6 +15,7 @@ Audio Modules:
 
 * au        unstable      Base audio types
 * aubuf     unstable      Audio buffer
+* aufile    unstable      Audio file reader/writer
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
 * autone    unstable      Tone/DTMF generator

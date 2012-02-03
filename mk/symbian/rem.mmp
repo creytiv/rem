@@ -25,6 +25,10 @@ SOURCE        dll.cpp
 SOURCEPATH    ..\..\src\aubuf
 SOURCE        aubuf.c
 
+SOURCEPATH    ..\..\src\aufile
+SOURCE        aufile.c
+SOURCE        wave.c
+
 SOURCEPATH    ..\..\src\auresamp
 SOURCE        resamp.c
 
