@@ -153,8 +153,6 @@ int wav_header_decode(struct wav_fmt *fmt, size_t *datasize, FILE *f)
 		return EBADMSG;
 	}
 
-	(void)re_printf("format size %d\n", format.size);
-
 	if (format.size < WAVE_FMT_SIZE)
 		return EBADMSG;
 
