@@ -9,7 +9,9 @@
 #include <pthread.h>
 #include <string.h>
 #include <re.h>
+#include <rem_au.h>
 #include <rem_aubuf.h>
+#include <rem_aufile.h>
 #include <rem_aumix.h>
 
 
@@ -19,9 +21,11 @@ struct aumix {
 	pthread_cond_t cond;
 	struct list srcl;
 	pthread_t thread;
-	struct aubuf *aubuf;
+	struct aufile *af;
 	uint32_t ptime;
 	uint32_t frame_size;
+	uint32_t srate;
+	int ch;
 	bool run;
 };
 
@@ -59,7 +63,7 @@ static void destructor(void *arg)
 	}
 
 	list_flush(&mix->srcl);
-	mem_deref(mix->aubuf);
+	mem_deref(mix->af);
 }
 
 
@@ -78,14 +82,16 @@ static void source_destructor(void *arg)
 
 static void *aumix_thread(void *arg)
 {
-	int16_t *frame, *mix_frame;
+	uint8_t *silence, *frame, *base_frame;
 	struct aumix *mix = arg;
+	int16_t *mix_frame;
 	uint64_t ts = 0;
 
+	silence   = mem_zalloc(mix->frame_size*2, NULL);
 	frame     = mem_alloc(mix->frame_size*2, NULL);
 	mix_frame = mem_alloc(mix->frame_size*2, NULL);
 
-	if (!frame || !mix_frame)
+	if (!silence || !frame || !mix_frame)
 		goto out;
 
 	pthread_mutex_lock(&mix->mutex);
@@ -112,6 +118,27 @@ static void *aumix_thread(void *arg)
 		if (ts > now)
 			continue;
 
+		if (mix->af) {
+
+			size_t n = mix->frame_size*2;
+
+			if (aufile_read(mix->af, frame, &n) || n == 0) {
+				mix->af = mem_deref(mix->af);
+				base_frame = silence;
+			}
+			else if (n < mix->frame_size*2) {
+				memset(frame + n, 0, mix->frame_size*2 - n);
+				mix->af = mem_deref(mix->af);
+				base_frame = frame;
+			}
+			else {
+				base_frame = frame;
+			}
+		}
+		else {
+			base_frame = silence;
+		}
+
 		for (le=mix->srcl.head; le; le=le->next) {
 
 			struct aumix_source *src = le->data;
@@ -120,14 +147,12 @@ static void *aumix_thread(void *arg)
 				   mix->frame_size*2);
 		}
 
-		aubuf_read(mix->aubuf, (uint8_t *)frame, mix->frame_size*2);
-
 		for (le=mix->srcl.head; le; le=le->next) {
 
 			struct aumix_source *src = le->data;
 			struct le *cle;
 
-			memcpy(mix_frame, frame, mix->frame_size*2);
+			memcpy(mix_frame, base_frame, mix->frame_size*2);
 
 			for (cle=mix->srcl.head; cle; cle=cle->next) {
 
@@ -153,6 +178,7 @@ static void *aumix_thread(void *arg)
 
  out:
 	mem_deref(mix_frame);
+	mem_deref(silence);
 	mem_deref(frame);
 
 	return NULL;
@@ -184,12 +210,10 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 
 	mix->ptime      = ptime;
 	mix->frame_size = srate * ch * ptime / 1000;
+	mix->srate      = srate;
+	mix->ch         = ch;
 
 	sz = mix->frame_size*2;
-
-	err = aubuf_alloc(&mix->aubuf, sz * 6, sz * 12);
-	if (err)
-		goto out;
 
 	err = pthread_mutex_init(&mix->mutex, NULL);
 	if (err)
@@ -218,20 +242,38 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 
 
 /**
- * Write PCM samples to the audio mixer
+ * Load audio file for mixer announcements
  *
- * @param mix Audio mixer
- * @param p   PCM samples
- * @param sz  Number of bytes to write
+ * @param mix      Audio mixer
+ * @param filepath Filename of audio file with complete path
  *
  * @return 0 for success, otherwise error code
  */
-int aumix_write(struct aumix *mix, const uint8_t *p, size_t sz)
+int aumix_playfile(struct aumix *mix, const char *filepath)
 {
-	if (!mix || !p)
+	struct aufile_prm prm;
+	struct aufile *af;
+	int err;
+
+	if (!mix || !filepath)
 		return EINVAL;
 
-	return aubuf_write(mix->aubuf, p, sz);
+	err = aufile_open(&af, &prm, filepath, AUFILE_READ);
+	if (err)
+		return err;
+
+	if (prm.fmt != AUFMT_S16LE || prm.srate != mix->srate ||
+	    prm.channels != mix->ch) {
+		mem_deref(af);
+		return EINVAL;
+	}
+
+	pthread_mutex_lock(&mix->mutex);
+	mem_deref(mix->af);
+	mix->af = af;
+	pthread_mutex_unlock(&mix->mutex);
+
+	return 0;
 }
 
 
