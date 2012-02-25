@@ -198,7 +198,6 @@ static void *aumix_thread(void *arg)
 int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 {
 	struct aumix *mix;
-	size_t sz;
 	int err;
 
 	if (!mixp || !srate || !ch || !ptime)
@@ -212,8 +211,6 @@ int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
 	mix->frame_size = srate * ch * ptime / 1000;
 	mix->srate      = srate;
 	mix->ch         = ch;
-
-	sz = mix->frame_size*2;
 
 	err = pthread_mutex_init(&mix->mutex, NULL);
 	if (err)
