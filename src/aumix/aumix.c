@@ -62,7 +62,6 @@ static void destructor(void *arg)
 		pthread_join(mix->thread, NULL);
 	}
 
-	list_flush(&mix->srcl);
 	mem_deref(mix->af);
 }
 
@@ -77,6 +76,7 @@ static void source_destructor(void *arg)
 
 	mem_deref(src->aubuf);
 	mem_deref(src->frame);
+	mem_deref(src->mix);
 }
 
 
@@ -291,7 +291,7 @@ uint32_t aumix_source_count(const struct aumix *mix)
 
 
 /**
- * Add an audio source to the audio mixer
+ * Allocate an audio mixer source
  *
  * @param srcp Pointer to allocated audio source
  * @param mix  Audio mixer
@@ -300,8 +300,8 @@ uint32_t aumix_source_count(const struct aumix *mix)
  *
  * @return 0 for success, otherwise error code
  */
-int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
-		     aumix_frame_h *fh, void *arg)
+int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
+		       aumix_frame_h *fh, void *arg)
 {
 	struct aumix_source *src;
 	size_t sz;
@@ -314,7 +314,7 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 	if (!src)
 		return ENOMEM;
 
-	src->mix = mix;
+	src->mix = mem_ref(mix);
 	src->fh  = fh ? fh : dummy_frame_handler;
 	src->arg = arg;
 
@@ -330,11 +330,6 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 	if (err)
 		goto out;
 
-	pthread_mutex_lock(&mix->mutex);
-	list_append(&mix->srcl, &src->le, src);
-	pthread_cond_signal(&mix->cond);
-	pthread_mutex_unlock(&mix->mutex);
-
  out:
 	if (err)
 		mem_deref(src);
@@ -342,6 +337,35 @@ int aumix_source_add(struct aumix_source **srcp, struct aumix *mix,
 		*srcp = src;
 
 	return err;
+}
+
+
+/**
+ * Enable/disable aumix source
+ *
+ * @param src    Audio mixer source
+ * @param enable True to enable, false to disable
+ */
+void aumix_source_enable(struct aumix_source *src, bool enable)
+{
+	struct aumix *mix;
+
+	if (!src)
+		return;
+
+	mix = src->mix;
+
+	pthread_mutex_lock(&mix->mutex);
+
+	if (enable) {
+		list_append(&mix->srcl, &src->le, src);
+		pthread_cond_signal(&mix->cond);
+	}
+	else {
+		list_unlink(&src->le);
+	}
+
+	pthread_mutex_unlock(&mix->mutex);
 }
 
 
