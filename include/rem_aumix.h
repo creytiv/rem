@@ -22,4 +22,5 @@ uint32_t aumix_source_count(const struct aumix *mix);
 int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 		       aumix_frame_h *fh, void *arg);
 void aumix_source_enable(struct aumix_source *src, bool enable);
-int aumix_source_put(struct aumix_source *src, struct mbuf *mb);
+int  aumix_source_put(struct aumix_source *src, struct mbuf *mb);
+void aumix_source_flush(struct aumix_source *src);

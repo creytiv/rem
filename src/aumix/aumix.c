@@ -384,3 +384,17 @@ int aumix_source_put(struct aumix_source *src, struct mbuf *mb)
 
 	return aubuf_append(src->aubuf, mb);
 }
+
+
+/**
+ * Flush the audio buffer of a given audio mixer source
+ *
+ * @param src Audio mixer source
+ */
+void aumix_source_flush(struct aumix_source *src)
+{
+	if (!src)
+		return;
+
+	aubuf_flush(src->aubuf);
+}
