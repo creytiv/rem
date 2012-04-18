@@ -152,7 +152,7 @@ static inline void yuv2rgb(uint8_t *rgb, uint8_t y, int ruv, int guv, int buv)
 	*rgb++ = saturate_u8(y + buv);
 	*rgb++ = saturate_u8(y + guv);
 	*rgb++ = saturate_u8(y + ruv);
-	*rgb++ = 0;
+	*rgb   = 0;
 }
 
 
