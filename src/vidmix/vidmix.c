@@ -151,6 +151,7 @@ static void *vidmix_thread(void *arg)
 		uint64_t now;
 
 		if (!mix->srcl.head) {
+			mix->focus = false;
 			pthread_cond_wait(&mix->cond, &mix->mutex);
 			ts = 0;
 		}
