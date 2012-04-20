@@ -30,6 +30,7 @@ struct vidmix_source {
 	struct le le;
 	pthread_mutex_t mutex;
 	struct vidframe frame;
+	struct vidsz psize;
 	struct vidmix *mix;
 	vidmix_frame_h *fh;
 	void *arg;
@@ -86,6 +87,11 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 
 	if (!frame.data[0])
 		return;
+
+	if (!vidsz_cmp(&src->psize, &frame.size)) {
+		src->psize = frame.size;
+		src->mix->clear = true;
+	}
 
 	mframe = src->mix->frame;
 
