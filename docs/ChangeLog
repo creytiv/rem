@@ -1,3 +1,22 @@
+2012-04-21 Alfred E. Heggestad <aeh@db.org>
+
+	* Version 0.4.1
+
+	* updated doxygen comments
+	
+	* aufile: new module for audio file reading/writing
+
+	* aumix: various improvements, add aumix_playfile()
+		 add function to enable/disable sources
+		 added aumix_source_flush()
+	
+	* vidconv: add support for YUV420P to RGB555
+		   fix warning of casting to unaligned access
+
+	* vidmix: various improvements
+		  add function to enable/disable sources
+
+
 2011-12-25 Alfred E. Heggestad <aeh@db.org>
 
 	* Version 0.4.0
