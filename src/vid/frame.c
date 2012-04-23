@@ -9,7 +9,15 @@
 #include <rem_vid.h>
 
 
-static size_t vidsize(const struct vidsz *sz, enum vidfmt fmt)
+/**
+ * Get video frame buffer size
+ *
+ * @param fmt Video pixel format
+ * @param sz  Size of video frame
+ *
+ * @return Number of bytes
+ */
+size_t vidframe_size(enum vidfmt fmt, const struct vidsz *sz)
 {
 	if (!sz)
 		return 0;
@@ -142,7 +150,7 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 	if (!sz || !sz->w || !sz->h)
 		return EINVAL;
 
-	vf = mem_zalloc(sizeof(*vf) + vidsize(sz, fmt), NULL);
+	vf = mem_zalloc(sizeof(*vf) + vidframe_size(fmt, sz), NULL);
 	if (!vf)
 		return ENOMEM;
 
@@ -194,20 +202,4 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 		(void)re_printf("vidfill: no fmt %s\n", vidfmt_name(vf->fmt));
 		break;
 	}
-}
-
-
-/**
- * Get the size of a video frame
- *
- * @param vf Video frame
- *
- * @return Number of bytes
- */
-size_t vidframe_size(const struct vidframe *vf)
-{
-	if (!vf)
-		return 0;
-
-	return vidsize(&vf->size, vf->fmt);
 }
