@@ -135,11 +135,11 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 
 static inline int calc_rows(uint32_t n)
 {
-       uint32_t rows;
+	uint32_t rows;
 
-       for (rows=2;; rows++)
-               if (n <= (rows * rows))
-                       return rows;
+	for (rows=2;; rows++)
+		if (n <= (rows * rows))
+			return rows;
 }
 
 

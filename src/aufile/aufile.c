@@ -23,41 +23,41 @@ struct aufile {
 
 static int wavfmt_to_aufmt(enum wavfmt fmt, uint16_t bps)
 {
-       switch (fmt) {
+	switch (fmt) {
 
-       case WAVE_FMT_PCM:
-	       if (bps != 16)
-		       return -1;
+	case WAVE_FMT_PCM:
+		if (bps != 16)
+			return -1;
 
-	       return AUFMT_S16LE;
+		return AUFMT_S16LE;
 
-       case WAVE_FMT_ALAW:
-	       if (bps != 8)
-		       return -1;
+	case WAVE_FMT_ALAW:
+		if (bps != 8)
+			return -1;
 
-	       return AUFMT_PCMA;
+		return AUFMT_PCMA;
 
-       case WAVE_FMT_ULAW:
-	       if (bps != 8)
-		       return -1;
+	case WAVE_FMT_ULAW:
+		if (bps != 8)
+			return -1;
 
-	       return AUFMT_PCMU;
+		return AUFMT_PCMU;
 
-       default:
-	       return -1;
-       }
+	default:
+		return -1;
+	}
 }
 
 
 static enum wavfmt aufmt_to_wavfmt(enum aufmt fmt)
 {
-       switch (fmt) {
+	switch (fmt) {
 
-       case AUFMT_S16LE:  return WAVE_FMT_PCM;
-       case AUFMT_PCMA:   return WAVE_FMT_ALAW;
-       case AUFMT_PCMU:   return WAVE_FMT_ULAW;
-       default:           return -1;
-       }
+	case AUFMT_S16LE:  return WAVE_FMT_PCM;
+	case AUFMT_PCMA:   return WAVE_FMT_ALAW;
+	case AUFMT_PCMU:   return WAVE_FMT_ULAW;
+	default:           return -1;
+	}
 }
 
 
