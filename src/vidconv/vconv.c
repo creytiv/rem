@@ -548,21 +548,6 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 	if (!vidframe_isvalid(dst) || !vidframe_isvalid(src))
 		return;
 
-	if (r) {
-		if ((int)(r->w - r->x) > dst->size.w ||
-		    (int)(r->h - r->y) > dst->size.h) {
-			(void)re_printf("vidconv: out of bounds (%u x %u)\n",
-					dst->size.w, dst->size.h);
-			return;
-		}
-	}
-	else {
-		rdst.x = rdst.y = 0;
-		rdst.w = dst->size.w;
-		rdst.h = dst->size.h;
-		r = &rdst;
-	}
-
 	if (src->fmt < MAX_SRC && dst->fmt < MAX_DST) {
 
 		/* Lookup conversion function */
@@ -573,6 +558,26 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 				" %s -> %s\n", vidfmt_name(src->fmt),
 				vidfmt_name(dst->fmt));
 		return;
+	}
+
+	if (r) {
+		r->x &= ~1;
+		r->y &= ~1;
+		r->w &= ~1;
+		r->h &= ~1;
+
+		if ((r->x + r->w) > dst->size.w ||
+		    (r->y + r->h) > dst->size.h) {
+			(void)re_printf("vidconv: out of bounds (%i x %i)\n",
+					dst->size.w, dst->size.h);
+			return;
+		}
+	}
+	else {
+		rdst.x = rdst.y = 0;
+		rdst.w = dst->size.w & ~1;
+		rdst.h = dst->size.h & ~1;
+		r = &rdst;
 	}
 
 	rw = (double)src->size.w / (double)r->w;
@@ -588,10 +593,6 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 	ds0 = src->data[0];
 	ds1 = src->data[1];
 	ds2 = src->data[2];
-
-	/* align 2 pixels */
-	r->x &= ~1;
-	r->y &= ~1;
 
 	for (y=0; y<r->h; y+=2) {
 
