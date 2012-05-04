@@ -29,8 +29,7 @@ struct vidmix {
 struct vidmix_source {
 	struct le le;
 	pthread_mutex_t mutex;
-	struct vidframe frame;
-	struct vidsz psize;
+	struct vidframe *frame;
 	struct vidmix *mix;
 	vidmix_frame_h *fh;
 	void *arg;
@@ -71,6 +70,7 @@ static void source_destructor(void *arg)
 	mix->clear = true;
 	pthread_mutex_unlock(&mix->mutex);
 
+	mem_deref(src->frame);
 	mem_deref(src->mix);
 }
 
@@ -78,20 +78,15 @@ static void source_destructor(void *arg)
 static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 		       unsigned idx, bool focus)
 {
-	struct vidframe *mframe, frame;
+	struct vidframe *mframe, *frame;
 	struct vidrect rect;
 
 	pthread_mutex_lock(&src->mutex);
-	frame = src->frame;
+	frame = mem_ref(src->frame);
 	pthread_mutex_unlock(&src->mutex);
 
-	if (!frame.data[0])
+	if (!frame)
 		return;
-
-	if (!vidsz_cmp(&src->psize, &frame.size)) {
-		src->psize = frame.size;
-		src->mix->clear = true;
-	}
 
 	mframe = src->mix->frame;
 
@@ -118,7 +113,7 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 				rect.y = mframe->size.h - rect.h;
 			}
 			else {
-				return;
+				goto out;
 			}
 		}
 	}
@@ -129,7 +124,10 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 		rect.y = rect.h * (idx / rows);
 	}
 
-	vidconv_aspect(mframe, &frame, &rect);
+	vidconv_aspect(mframe, frame, &rect);
+
+ out:
+	mem_deref(frame);
 }
 
 
@@ -365,6 +363,48 @@ void vidmix_source_enable(struct vidmix_source *src, bool enable)
 }
 
 
+static inline void vidframe_copy(struct vidframe *dst,
+				 const struct vidframe *src)
+{
+	const uint8_t *ds0, *ds1, *ds2;
+	unsigned lsd, lss, w, h, y;
+	uint8_t *dd0, *dd1, *dd2;
+
+	lsd = dst->linesize[0];
+	lss = src->linesize[0];
+
+	dd0 = dst->data[0];
+	dd1 = dst->data[1];
+	dd2 = dst->data[2];
+
+	ds0 = src->data[0];
+	ds1 = src->data[1];
+	ds2 = src->data[2];
+
+	w  = dst->size.w & ~1;
+	h  = dst->size.h & ~1;
+
+	for (y=0; y<h; y+=2) {
+
+		memcpy(dd0, ds0, w);
+		dd0 += lsd;
+		ds0 += lss;
+
+		memcpy(dd0, ds0, w);
+		dd0 += lsd;
+		ds0 += lss;
+
+		memcpy(dd1, ds1, w/2);
+		dd1 += lsd/2;
+		ds1 += lss/2;
+
+		memcpy(dd2, ds2, w/2);
+		dd2 += lsd/2;
+		ds2 += lss/2;
+	}
+}
+
+
 /**
  * Put a video frame into the video mixer
  *
@@ -373,11 +413,25 @@ void vidmix_source_enable(struct vidmix_source *src, bool enable)
  */
 void vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 {
-	if (!src || !frame)
+	if (!src || !frame || frame->fmt != VID_FMT_YUV420P)
 		return;
 
-	pthread_mutex_lock(&src->mutex);
-	/* todo: this crash if codec state is destroyed before source */
-	src->frame = *frame;
-	pthread_mutex_unlock(&src->mutex);
+	if (!src->frame || !vidsz_cmp(&src->frame->size, &frame->size)) {
+
+		struct vidframe *frm;
+		int err;
+
+		err = vidframe_alloc(&frm, VID_FMT_YUV420P, &frame->size);
+		if (err)
+			return;
+
+		src->mix->clear = true;
+
+		pthread_mutex_lock(&src->mutex);
+		mem_deref(src->frame);
+		src->frame = frm;
+		pthread_mutex_unlock(&src->mutex);
+	}
+
+	vidframe_copy(src->frame, frame);
 }
