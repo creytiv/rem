@@ -127,7 +127,9 @@ static void source_mix(struct vidmix_source *src, unsigned n, unsigned rows,
 	vidconv_aspect(mframe, frame, &rect);
 
  out:
+	pthread_mutex_lock(&src->mutex);
 	mem_deref(frame);
+	pthread_mutex_unlock(&src->mutex);
 }
 
 
