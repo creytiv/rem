@@ -14,7 +14,7 @@ struct aumix_source;
  * @param sz  Number of bytes
  * @param arg Handler argument
  */
-typedef void (aumix_frame_h)(const uint8_t *buf, size_t sz, void *arg);
+typedef void (aumix_frame_h)(const int16_t *sampv, size_t sampc, void *arg);
 
 int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime);
 int aumix_playfile(struct aumix *mix, const char *filepath);
@@ -22,5 +22,6 @@ uint32_t aumix_source_count(const struct aumix *mix);
 int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 		       aumix_frame_h *fh, void *arg);
 void aumix_source_enable(struct aumix_source *src, bool enable);
-int  aumix_source_put(struct aumix_source *src, struct mbuf *mb);
+int  aumix_source_put(struct aumix_source *src, const int16_t *sampv,
+		      size_t sampc);
 void aumix_source_flush(struct aumix_source *src);

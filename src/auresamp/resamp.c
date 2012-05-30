@@ -19,6 +19,8 @@ typedef void (resample_h)(struct auresamp *ar, int16_t *dst,
 struct auresamp {
 	struct fir fir;
 	const int16_t *coeffv;
+	int16_t *sampv;
+	size_t sampc;
 	int coeffn;
 	double ratio;
 	uint8_t ch_in;
@@ -28,24 +30,13 @@ struct auresamp {
 
 
 /*
- * FIR filter with cutoff 4000Hz, samplerate 48000Hz
+ * FIR filter with cutoff 8000Hz, samplerate 16000Hz
  */
-static const int16_t fir_lowpass_48_4[31] = {
-	-42,    -35,    -26,      0,     61,    173,    349,    595,
-	907,   1271,   1663,   2052,   2403,   2683,   2864,   2927,
-       2864,   2683,   2403,   2052,   1663,   1271,    907,    595,
-	349,    173,     61,      0,    -26,    -35,    -42,
-};
-
-
-/*
- * FIR filter with cutoff 8000Hz, samplerate 48000Hz
- */
-static const int16_t fir_lowpass_48_8[31] = {
-	55,     57,     47,      0,   -109,   -279,   -459,   -553,
-      -436,      0,    800,   1908,   3161,   4323,   5146,   5443,
-      5146,   4323,   3161,   1908,    800,      0,   -436,   -553,
-      -459,   -279,   -109,      0,     47,     57,     55,
+static const int16_t fir_lowpass[31] = {
+   -55,      0,     96,      0,   -220,      0,    461,      0,
+  -877,      0,   1608,      0,  -3176,      0,  10342,  16410,
+ 10342,      0,  -3176,      0,   1608,      0,   -877,      0,
+   461,      0,   -220,      0,     96,      0,    -55,
 };
 
 
@@ -129,10 +120,19 @@ static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp,
 }
 
 
+static void destructor(void *arg)
+{
+	struct auresamp *ar = arg;
+
+	mem_deref(ar->sampv);
+}
+
+
 /**
  * Allocate a new Audio resampler
  *
  * @param arp       Pointer to allocated audio resampler
+ * @param sampc_max Maximum number of source samples when downsampling
  * @param srate_in  Sample rate for the input in [Hz]
  * @param ch_in     Number of channels for the input
  * @param srate_out Sample rate for the output in [Hz]
@@ -140,19 +140,27 @@ static void auresamp_lowpass(struct auresamp *ar, int16_t *buf, size_t nsamp,
  *
  * @return 0 for success, otherwise error code
  */
-int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
+int auresamp_alloc(struct auresamp **arp, size_t sampc_max,
+		   uint32_t srate_in, uint8_t ch_in,
 		   uint32_t srate_out, uint8_t ch_out)
 {
 	struct auresamp *ar;
 	int err = 0;
 
-	if (!arp || !srate_in || !srate_out)
+	if (!arp || !sampc_max || !srate_in || !srate_out)
 		return EINVAL;
 
-	ar = mem_zalloc(sizeof(*ar), NULL);
+	ar = mem_zalloc(sizeof(*ar), destructor);
 	if (!ar)
 		return ENOMEM;
 
+	ar->sampv = mem_zalloc(sampc_max * 2, NULL);
+	if (!ar->sampv) {
+		err = ENOMEM;
+		goto out;
+	}
+
+	ar->sampc = sampc_max;
 	ar->ratio = 1.0 * srate_out / srate_in;
 	ar->ch_in = ch_in;
 	ar->ch_out = ch_out;
@@ -172,20 +180,8 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
 		goto out;
 	}
 
-	if (srate_in == 8000 || srate_out == 8000) {
-
-		ar->coeffv = fir_lowpass_48_4;
-		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_4);
-
-		(void)re_printf("auresamp: using 4000 Hz cutoff\n");
-	}
-	else {
-
-		ar->coeffv = fir_lowpass_48_8;
-		ar->coeffn = (int)ARRAY_SIZE(fir_lowpass_48_8);
-
-		(void)re_printf("auresamp: using 8000 Hz cutoff\n");
-	}
+	ar->coeffv = fir_lowpass;
+	ar->coeffn = (int)ARRAY_SIZE(fir_lowpass);
 
  out:
 	if (err)
@@ -200,53 +196,51 @@ int auresamp_alloc(struct auresamp **arp, uint32_t srate_in, uint8_t ch_in,
 /**
  * Resample PCM data
  *
- * @param ar  Audio resampler
- * @param dst Destination buffer for PCM data
- * @param src Source buffer with PCM data
+ * @param ar        Audio resampler
+ * @param dst_sampv Destination buffer for PCM data
+ * @param dst_sampc Size of destination buffer/number of destination samples
+ * @param src_sampv Source buffer with PCM data
+ * @param src_sampc Number of source samples
  *
  * @return 0 for success, otherwise error code
  */
-int auresamp_process(struct auresamp *ar, struct mbuf *dst, struct mbuf *src)
+int auresamp_process(struct auresamp *ar,
+		     int16_t *dst_sampv, size_t *dst_sampc,
+		     const int16_t *src_sampv, size_t src_sampc)
 {
-	size_t ns, nd, sz;
-	int16_t *s, *d;
+	size_t ns, nd;
 
-	if (!ar || !dst || !src)
+	if (!ar || !dst_sampv || !dst_sampc || !src_sampv)
 		return EINVAL;
 
-	ns = mbuf_get_left(src) / 2 / ar->ch_in;
+	ns = src_sampc / ar->ch_in;
 	nd = (size_t)(ns * ar->ratio);
-	sz = nd * 2 * ar->ch_out;
 
-	if (mbuf_get_space(dst) < sz) {
-
-		int err;
-
-		err = mbuf_resize(dst, dst->pos + sz);
-		if (err)
-			return err;
-	}
-
-	s = (void *)mbuf_buf(src);
-	d = (void *)mbuf_buf(dst);
+	if (*dst_sampc < nd * ar->ch_out)
+		return ENOMEM;
 
 	if (ar->ratio > 1) {
 
-		ar->resample(ar, d, s, nd);
-		auresamp_lowpass(ar, d, nd, ar->ch_out);
+		ar->resample(ar, dst_sampv, src_sampv, nd);
+		auresamp_lowpass(ar, dst_sampv, nd, ar->ch_out);
 	}
 	else if (ar->ratio < 1) {
 
 		/* decimation: low-pass filter, then downsample */
 
-		auresamp_lowpass(ar, s, ns, ar->ch_in);
-		ar->resample(ar, d, s, nd);
+		if (src_sampc > ar->sampc)
+			return ENOMEM;
+
+		memcpy(ar->sampv, src_sampv, src_sampc * 2);
+
+		auresamp_lowpass(ar, ar->sampv, ns, ar->ch_in);
+		ar->resample(ar, dst_sampv, ar->sampv, nd);
 	}
 	else {
-		ar->resample(ar, d, s, nd);
+		ar->resample(ar, dst_sampv, src_sampv, nd);
 	}
 
-	dst->end = dst->pos += sz;
+	*dst_sampc = nd * ar->ch_out;
 
 	return 0;
 }

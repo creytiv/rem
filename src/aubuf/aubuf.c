@@ -126,8 +126,10 @@ int aubuf_append(struct aubuf *ab, struct mbuf *mb)
 				ab, ab->cur_sz);
 #endif
 		af = list_ledata(ab->afl.head);
-		ab->cur_sz -= mbuf_get_left(af->mb);
-		mem_deref(af);
+		if (af) {
+			ab->cur_sz -= mbuf_get_left(af->mb);
+			mem_deref(af);
+		}
 	}
 
 	lock_rel(ab->lock);
