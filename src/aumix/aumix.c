@@ -25,7 +25,7 @@ struct aumix {
 	uint32_t ptime;
 	uint32_t frame_size;
 	uint32_t srate;
-	int ch;
+	uint8_t ch;
 	bool run;
 };
 
@@ -194,7 +194,8 @@ static void *aumix_thread(void *arg)
  *
  * @return 0 for success, otherwise error code
  */
-int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime)
+int aumix_alloc(struct aumix **mixp, uint32_t srate,
+		uint8_t ch, uint32_t ptime)
 {
 	struct aumix *mix;
 	int err;

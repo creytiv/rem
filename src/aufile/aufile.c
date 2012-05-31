@@ -145,7 +145,7 @@ int aufile_open(struct aufile **afp, struct aufile_prm *prm,
 
 		if (prm) {
 			prm->srate    = fmt.srate;
-			prm->channels = fmt.channels;
+			prm->channels = (uint8_t)fmt.channels;
 			prm->fmt      = aufmt;
 		}
 		break;

@@ -16,7 +16,8 @@ struct aumix_source;
  */
 typedef void (aumix_frame_h)(const int16_t *sampv, size_t sampc, void *arg);
 
-int aumix_alloc(struct aumix **mixp, uint32_t srate, int ch, uint32_t ptime);
+int aumix_alloc(struct aumix **mixp, uint32_t srate,
+		uint8_t ch, uint32_t ptime);
 int aumix_playfile(struct aumix *mix, const char *filepath);
 uint32_t aumix_source_count(const struct aumix *mix);
 int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,

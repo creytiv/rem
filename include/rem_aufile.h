@@ -14,7 +14,7 @@ enum aufile_mode {
 /** Audio file parameters */
 struct aufile_prm {
 	uint32_t srate;
-	uint16_t channels;
+	uint8_t channels;
 	enum aufmt fmt;
 };
 
