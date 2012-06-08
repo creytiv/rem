@@ -18,10 +18,16 @@ struct vidmix_source;
 typedef void (vidmix_frame_h)(uint32_t ts, const struct vidframe *frame,
 			      void *arg);
 
-int  vidmix_alloc(struct vidmix **vmp, const struct vidsz *sz, int fps);
-void vidmix_focus(struct vidmix *mix, unsigned fidx);
-int  vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *vm,
+int  vidmix_alloc(struct vidmix **mixp);
+int  vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
+			 const struct vidsz *sz, unsigned fps,
 			 vidmix_frame_h *fh, void *arg);
 void vidmix_source_enable(struct vidmix_source *src, bool enable);
+int  vidmix_source_start(struct vidmix_source *src);
+void vidmix_source_stop(struct vidmix_source *src);
+int  vidmix_source_set_size(struct vidmix_source *src, const struct vidsz *sz);
+void vidmix_source_set_rate(struct vidmix_source *src, unsigned fps);
+void vidmix_source_toggle_selfview(struct vidmix_source *src);
+void vidmix_source_set_focus(struct vidmix_source *src, unsigned pidx);
 void vidmix_source_put(struct vidmix_source *src,
 		       const struct vidframe *frame);
