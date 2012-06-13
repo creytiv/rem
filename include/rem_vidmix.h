@@ -22,6 +22,7 @@ int  vidmix_alloc(struct vidmix **mixp);
 int  vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 			 const struct vidsz *sz, unsigned fps,
 			 vidmix_frame_h *fh, void *arg);
+bool vidmix_source_isrunning(const struct vidmix_source *src);
 void vidmix_source_enable(struct vidmix_source *src, bool enable);
 int  vidmix_source_start(struct vidmix_source *src);
 void vidmix_source_stop(struct vidmix_source *src);

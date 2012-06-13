@@ -150,7 +150,7 @@ static void *vidmix_thread(void *arg)
 {
 	struct vidmix_source *src = arg;
 	struct vidmix *mix = src->mix;
-	uint64_t ts = 0;
+	uint64_t ts = tmr_jiffies();
 
 	pthread_mutex_lock(&src->mutex);
 
@@ -165,11 +165,14 @@ static void *vidmix_thread(void *arg)
 		pthread_mutex_lock(&src->mutex);
 
 		now = tmr_jiffies();
-		if (!ts)
-			ts = now;
 
 		if (ts > now)
 			continue;
+
+		if (!src->frame_tx) {
+			ts += src->fint;
+			continue;
+		}
 
 		pthread_rwlock_rdlock(&mix->rwlock);
 
@@ -268,7 +271,7 @@ int vidmix_alloc(struct vidmix **mixp)
  *
  * @param srcp Pointer to allocated video source
  * @param mix  Video mixer
- * @param sz   Size of output video frame
+ * @param sz   Size of output video frame (optional)
  * @param fps  Output frame rate (frames per second)
  * @param fh   Mixer frame handler
  * @param arg  Handler argument
@@ -282,7 +285,7 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 	struct vidmix_source *src;
 	int err;
 
-	if (!srcp || !mix || !sz || !fps || !fh)
+	if (!srcp || !mix || !fps || !fh)
 		return EINVAL;
 
 	src = mem_zalloc(sizeof(*src), source_destructor);
@@ -298,11 +301,13 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 	if (err)
 		goto out;
 
-	err = vidframe_alloc(&src->frame_tx, VID_FMT_YUV420P, sz);
-	if (err)
-		goto out;
+	if (sz) {
+		err = vidframe_alloc(&src->frame_tx, VID_FMT_YUV420P, sz);
+		if (err)
+			goto out;
 
-	clear_frame(src->frame_tx);
+		clear_frame(src->frame_tx);
+	}
 
  out:
 	if (err)
@@ -311,6 +316,19 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 		*srcp = src;
 
 	return err;
+}
+
+
+/**
+ * Check if vidmix source is running
+ *
+ * @param src Video mixer source
+ *
+ * @return true if running, otherwise false
+ */
+bool vidmix_source_isrunning(const struct vidmix_source *src)
+{
+	return src ? src->run : false;
 }
 
 
@@ -399,7 +417,7 @@ int vidmix_source_set_size(struct vidmix_source *src, const struct vidsz *sz)
 	if (!src || !sz)
 		return EINVAL;
 
-	if (vidsz_cmp(&src->frame_tx->size, sz))
+	if (src->frame_tx && vidsz_cmp(&src->frame_tx->size, sz))
 		return 0;
 
 	err = vidframe_alloc(&frame, VID_FMT_YUV420P, sz);
