@@ -70,9 +70,11 @@ static void source_destructor(void *arg)
 {
 	struct aumix_source *src = arg;
 
-	pthread_mutex_lock(&src->mix->mutex);
-	list_unlink(&src->le);
-	pthread_mutex_unlock(&src->mix->mutex);
+	if (src->le.list) {
+		pthread_mutex_lock(&src->mix->mutex);
+		list_unlink(&src->le);
+		pthread_mutex_unlock(&src->mix->mutex);
+	}
 
 	mem_deref(src->aubuf);
 	mem_deref(src->frame);
@@ -350,7 +352,7 @@ void aumix_source_enable(struct aumix_source *src, bool enable)
 {
 	struct aumix *mix;
 
-	if (!src)
+	if (!src || (src->le.list != NULL) == enable)
 		return;
 
 	mix = src->mix;
