@@ -340,7 +340,13 @@ bool vidmix_source_isrunning(const struct vidmix_source *src)
  */
 void vidmix_source_enable(struct vidmix_source *src, bool enable)
 {
-	if (!src || (src->le.list != NULL) == enable)
+	if (!src)
+		return;
+
+	if (src->le.list && enable)
+		return;
+
+	if (!src->le.list && !enable)
 		return;
 
 	pthread_rwlock_wrlock(&src->mix->rwlock);

@@ -352,7 +352,13 @@ void aumix_source_enable(struct aumix_source *src, bool enable)
 {
 	struct aumix *mix;
 
-	if (!src || (src->le.list != NULL) == enable)
+	if (!src)
+		return;
+
+	if (src->le.list && enable)
+		return;
+
+	if (!src->le.list && !enable)
 		return;
 
 	mix = src->mix;
