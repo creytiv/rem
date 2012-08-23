@@ -31,11 +31,15 @@ struct vidmix_source {
 	vidmix_frame_h *fh;
 	void *arg;
 	void *focus;
+	bool focus_full;
 	unsigned fint;
 	bool selfview;
 	bool clear;
 	bool run;
 };
+
+
+static void vidframe_copy(struct vidframe *dst, const struct vidframe *src);
 
 
 static inline void clear_frame(struct vidframe *vf)
@@ -88,10 +92,10 @@ static void source_destructor(void *arg)
 }
 
 
-static void source_mix(struct vidframe *mframe,
-		       const struct vidframe *frame_src,
-		       unsigned n, unsigned rows, unsigned idx,
-		       bool focus, bool focus_this)
+static inline void source_mix(struct vidframe *mframe,
+			      const struct vidframe *frame_src,
+			      unsigned n, unsigned rows, unsigned idx,
+			      bool focus, bool focus_this, bool focus_full)
 {
 	struct vidrect rect;
 
@@ -100,7 +104,9 @@ static void source_mix(struct vidframe *mframe,
 
 	if (focus) {
 
-		n = max((n+1), 6)/2;
+		const unsigned nmin = focus_full ? 12 : 6;
+
+		n = max((n+1), nmin)/2;
 
 		if (focus_this) {
 			rect.w = mframe->size.w * (n-1) / n;
@@ -133,6 +139,29 @@ static void source_mix(struct vidframe *mframe,
 	}
 
 	vidconv_aspect(mframe, frame_src, &rect);
+}
+
+
+static inline void source_mix_full(struct vidframe *mframe,
+				   const struct vidframe *frame_src)
+{
+	if (!frame_src)
+		return;
+
+	if (vidsz_cmp(&mframe->size, &frame_src->size)) {
+
+		vidframe_copy(mframe, frame_src);
+	}
+	else {
+		struct vidrect rect;
+
+		rect.w = mframe->size.w;
+		rect.h = mframe->size.h;
+		rect.x = 0;
+		rect.y = 0;
+
+		vidconv_aspect(mframe, frame_src, &rect);
+	}
 }
 
 
@@ -181,6 +210,23 @@ static void *vidmix_thread(void *arg)
 			src->clear = false;
 		}
 
+		if (src->focus_full) {
+
+			for (le=mix->srcl.head; le; le=le->next) {
+
+				struct vidmix_source *lsrc = le->data;
+
+				if (lsrc != src->focus)
+					continue;
+
+				if (lsrc == src && !src->selfview)
+					continue;
+
+				source_mix_full(src->frame_tx, lsrc->frame_rx);
+				break;
+			}
+		}
+
 		n = list_count(&mix->srcl);
 
 		if (!src->selfview)
@@ -195,8 +241,12 @@ static void *vidmix_thread(void *arg)
 			if (lsrc == src && !src->selfview)
 				continue;
 
+			if (lsrc == src->focus && src->focus_full)
+				continue;
+
 			source_mix(src->frame_tx, lsrc->frame_rx, n, rows, idx,
-				   src->focus != NULL, src->focus == lsrc);
+				   src->focus != NULL, src->focus == lsrc,
+				   src->focus_full);
 
 			if (src->focus != lsrc)
 				++idx;
@@ -483,6 +533,7 @@ void vidmix_source_toggle_selfview(struct vidmix_source *src)
  */
 void vidmix_source_set_focus(struct vidmix_source *src, unsigned pidx)
 {
+	bool focus_full = false;
 	void *focus = NULL;
 
 	if (!src)
@@ -509,15 +560,18 @@ void vidmix_source_set_focus(struct vidmix_source *src, unsigned pidx)
 		pthread_rwlock_unlock(&src->mix->rwlock);
 	}
 
+	if (focus && focus == src->focus)
+		focus_full = !src->focus_full;
+
 	pthread_mutex_lock(&src->mutex);
+	src->focus_full = focus_full;
 	src->focus = focus;
 	src->clear = true;
 	pthread_mutex_unlock(&src->mutex);
 }
 
 
-static inline void vidframe_copy(struct vidframe *dst,
-				 const struct vidframe *src)
+static void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
 {
 	const uint8_t *ds0, *ds1, *ds2;
 	unsigned lsd, lss, w, h, y;
