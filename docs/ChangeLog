@@ -1,3 +1,20 @@
+2012-09-08 Alfred E. Heggestad <aeh@db.org>
+
+	* Version 0.4.2
+
+	* aubuf: fix bug in aubuf_append()
+
+	* aumix: change sample type to int16_t
+
+	* auresamp: change sample API to array of int16_t
+
+	* vid: change signature of vidframe_size()
+
+	* vidconv: fix pixel alignment bug
+
+	* vidmix: enhance API
+	
+	
 2012-04-21 Alfred E. Heggestad <aeh@db.org>
 
 	* Version 0.4.1
