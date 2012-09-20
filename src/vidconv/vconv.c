@@ -497,8 +497,42 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 	}
 }
 
+static void nv21_to_yuv420p(int xoffs, unsigned width, double rw,
+			    int yd, int ys, int ys2,
+			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			    int lsd,
+			    const uint8_t *ds0, const uint8_t *ds1,
+			    const uint8_t *ds2, int lss
+			    )
+{
+	unsigned x, xd, xs, xs2;
+	unsigned id, is;
 
-#define MAX_SRC 8
+	(void)ds2;
+
+	for (x=0; x<width; x+=2) {
+
+		xd  = x + xoffs;
+
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
+
+		id = xd + yd*lsd;
+
+		dd0[id]         = ds0[xs  + ys*lss];
+		dd0[id+1]       = ds0[xs2 + ys*lss];
+		dd0[id + lsd]   = ds0[xs  + ys2*lss];
+		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
+
+		id = xd/2    + yd*lsd/4;
+		is = ((xs>>1) + (ys>>1)*lss/2) & ~1;
+
+		dd2[id] = ds1[2*is];
+		dd1[id] = ds1[2*is+1];
+	}
+}
+
+#define MAX_SRC 9
 #define MAX_DST 7
 
 /**
@@ -520,6 +554,7 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
 	{NULL,                NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{NULL,                NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{nv12_to_yuv420p,     NULL,     NULL,     NULL, NULL, NULL, NULL},
+	{nv21_to_yuv420p,     NULL,     NULL,     NULL, NULL, NULL, NULL},
 };
 
 
