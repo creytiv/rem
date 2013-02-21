@@ -31,9 +31,11 @@ struct vidmix_source {
 	vidmix_frame_h *fh;
 	void *arg;
 	void *focus;
+	bool content_hide;
 	bool focus_full;
 	unsigned fint;
 	bool selfview;
+	bool content;
 	bool clear;
 	bool run;
 };
@@ -210,35 +212,32 @@ static void *vidmix_thread(void *arg)
 			src->clear = false;
 		}
 
-		if (src->focus_full) {
+		for (le=mix->srcl.head, n=0; le; le=le->next) {
 
-			for (le=mix->srcl.head; le; le=le->next) {
+			const struct vidmix_source *lsrc = le->data;
 
-				struct vidmix_source *lsrc = le->data;
+			if (lsrc == src && !src->selfview)
+				continue;
 
-				if (lsrc != src->focus)
-					continue;
+			if (lsrc->content && src->content_hide)
+				continue;
 
-				if (lsrc == src && !src->selfview)
-					continue;
-
+			if (lsrc == src->focus && src->focus_full)
 				source_mix_full(src->frame_tx, lsrc->frame_rx);
-				break;
-			}
+
+			++n;
 		}
-
-		n = list_count(&mix->srcl);
-
-		if (!src->selfview)
-			--n;
 
 		rows = calc_rows(n);
 
 		for (le=mix->srcl.head, idx=0; le; le=le->next) {
 
-			struct vidmix_source *lsrc = le->data;
+			const struct vidmix_source *lsrc = le->data;
 
 			if (lsrc == src && !src->selfview)
+				continue;
+
+			if (lsrc->content && src->content_hide)
 				continue;
 
 			if (lsrc == src->focus && src->focus_full)
@@ -255,6 +254,52 @@ static void *vidmix_thread(void *arg)
 		pthread_rwlock_unlock(&mix->rwlock);
 
 		src->fh((uint32_t)ts * 90, src->frame_tx, src->arg);
+
+		ts += src->fint;
+	}
+
+	pthread_mutex_unlock(&src->mutex);
+
+	return NULL;
+}
+
+
+static void *content_thread(void *arg)
+{
+	struct vidmix_source *src = arg;
+	struct vidmix *mix = src->mix;
+	uint64_t ts = tmr_jiffies();
+
+	pthread_mutex_lock(&src->mutex);
+
+	while (src->run) {
+
+		struct le *le;
+		uint64_t now;
+
+		pthread_mutex_unlock(&src->mutex);
+		(void)usleep(4000);
+		pthread_mutex_lock(&src->mutex);
+
+		now = tmr_jiffies();
+
+		if (ts > now)
+			continue;
+
+		pthread_rwlock_rdlock(&mix->rwlock);
+
+		for (le=mix->srcl.head; le; le=le->next) {
+
+			const struct vidmix_source *lsrc = le->data;
+
+			if (!lsrc->content || !lsrc->frame_rx || lsrc == src)
+				continue;
+
+			src->fh((uint32_t)ts * 90, lsrc->frame_rx, src->arg);
+			break;
+		}
+
+		pthread_rwlock_unlock(&mix->rwlock);
 
 		ts += src->fint;
 	}
@@ -319,17 +364,18 @@ int vidmix_alloc(struct vidmix **mixp)
 /**
  * Allocate a video mixer source
  *
- * @param srcp Pointer to allocated video source
- * @param mix  Video mixer
- * @param sz   Size of output video frame (optional)
- * @param fps  Output frame rate (frames per second)
- * @param fh   Mixer frame handler
- * @param arg  Handler argument
+ * @param srcp    Pointer to allocated video source
+ * @param mix     Video mixer
+ * @param sz      Size of output video frame (optional)
+ * @param fps     Output frame rate (frames per second)
+ * @param content True if source is of type content
+ * @param fh      Mixer frame handler
+ * @param arg     Handler argument
  *
  * @return 0 for success, otherwise error code
  */
 int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
-			const struct vidsz *sz, unsigned fps,
+			const struct vidsz *sz, unsigned fps, bool content,
 			vidmix_frame_h *fh, void *arg)
 {
 	struct vidmix_source *src;
@@ -342,10 +388,11 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 	if (!src)
 		return ENOMEM;
 
-	src->mix  = mem_ref(mix);
-	src->fint = 1000/fps;
-	src->fh   = fh;
-	src->arg  = arg;
+	src->mix     = mem_ref(mix);
+	src->fint    = 1000/fps;
+	src->content = content;
+	src->fh      = fh;
+	src->arg     = arg;
 
 	err = pthread_mutex_init(&src->mutex, NULL);
 	if (err)
@@ -370,6 +417,19 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 
 
 /**
+ * Check if vidmix source is enabled
+ *
+ * @param src Video mixer source
+ *
+ * @return true if enabled, otherwise false
+ */
+bool vidmix_source_isenabled(const struct vidmix_source *src)
+{
+	return src ? (src->le.list != NULL) : false;
+}
+
+
+/**
  * Check if vidmix source is running
  *
  * @param src Video mixer source
@@ -379,6 +439,19 @@ int vidmix_source_alloc(struct vidmix_source **srcp, struct vidmix *mix,
 bool vidmix_source_isrunning(const struct vidmix_source *src)
 {
 	return src ? src->run : false;
+}
+
+
+/**
+ * Get focus source
+ *
+ * @param src Video mixer source
+ *
+ * @return pointer of focused source or NULL if focus is not set
+ */
+void *vidmix_source_get_focus(const struct vidmix_source *src)
+{
+	return src ? src->focus : NULL;
 }
 
 
@@ -401,10 +474,15 @@ void vidmix_source_enable(struct vidmix_source *src, bool enable)
 
 	pthread_rwlock_wrlock(&src->mix->rwlock);
 
-	if (enable)
+	if (enable) {
+		if (src->frame_rx)
+			clear_frame(src->frame_rx);
+
 		list_append(&src->mix->srcl, &src->le, src);
-	else
+	}
+	else {
 		list_unlink(&src->le);
+	}
 
 	clear_all(src->mix);
 
@@ -431,7 +509,9 @@ int vidmix_source_start(struct vidmix_source *src)
 
 	src->run = true;
 
-	err = pthread_create(&src->thread, NULL, vidmix_thread, src);
+	err = pthread_create(&src->thread, NULL,
+			     src->content ? content_thread : vidmix_thread,
+			     src);
 	if (err) {
 		src->run = false;
 	}
@@ -509,6 +589,24 @@ void vidmix_source_set_rate(struct vidmix_source *src, unsigned fps)
 
 
 /**
+ * Set video mixer content hide
+ *
+ * @param src    Video mixer source
+ * @param hide   True to hide content, false to show
+ */
+void vidmix_source_set_content_hide(struct vidmix_source *src, bool hide)
+{
+	if (!src)
+		return;
+
+	pthread_mutex_lock(&src->mutex);
+	src->content_hide = hide;
+	src->clear = true;
+	pthread_mutex_unlock(&src->mutex);
+}
+
+
+/**
  * Toggle vidmix source selfview
  *
  * @param src    Video mixer source
@@ -526,12 +624,34 @@ void vidmix_source_toggle_selfview(struct vidmix_source *src)
 
 
 /**
+ * Set focus on selected participant source
+ *
+ * @param src        Video mixer source
+ * @param focus_src  Video mixer source to focus, NULL to clear focus state
+ * @param focus_full Full focus
+ */
+void vidmix_source_set_focus(struct vidmix_source *src,
+			     const struct vidmix_source *focus_src,
+			     bool focus_full)
+{
+	if (!src)
+		return;
+
+	pthread_mutex_lock(&src->mutex);
+	src->focus_full = focus_full;
+	src->focus = (void *)focus_src;
+	src->clear = true;
+	pthread_mutex_unlock(&src->mutex);
+}
+
+
+/**
  * Set focus on selected participant
  *
  * @param src    Video mixer source
  * @param pidx   Participant to focus, 0 to disable
  */
-void vidmix_source_set_focus(struct vidmix_source *src, unsigned pidx)
+void vidmix_source_set_focus_idx(struct vidmix_source *src, unsigned pidx)
 {
 	bool focus_full = false;
 	void *focus = NULL;
@@ -548,11 +668,16 @@ void vidmix_source_set_focus(struct vidmix_source *src, unsigned pidx)
 
 		for (le=src->mix->srcl.head, i=1; le; le=le->next) {
 
-			if (src == le->data && !src->selfview)
+			const struct vidmix_source *lsrc = le->data;
+
+			if (lsrc == src && !src->selfview)
+				continue;
+
+			if (lsrc->content && src->content_hide)
 				continue;
 
 			if (i++ == pidx) {
-				focus = le->data;
+				focus = (void *)lsrc;
 				break;
 			}
 		}
