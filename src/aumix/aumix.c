@@ -145,8 +145,8 @@ static void *aumix_thread(void *arg)
 
 			struct aumix_source *src = le->data;
 
-			aubuf_read(src->aubuf, (uint8_t *)src->frame,
-				   mix->frame_size*2);
+			aubuf_read_samp(src->aubuf, src->frame,
+					mix->frame_size);
 		}
 
 		for (le=mix->srcl.head; le; le=le->next) {
@@ -392,7 +392,7 @@ int aumix_source_put(struct aumix_source *src, const int16_t *sampv,
 	if (!src || !sampv)
 		return EINVAL;
 
-	return aubuf_write(src->aubuf, (const uint8_t *)sampv, sampc * 2);
+	return aubuf_write_samp(src->aubuf, sampv, sampc);
 }
 
 
