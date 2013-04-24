@@ -130,7 +130,7 @@ int wav_header_decode(struct wav_fmt *fmt, size_t *datasize, FILE *f)
 
 	if (memcmp(header.id, "RIFF", 4)) {
 		(void)re_fprintf(stderr, "aufile: expected RIFF (%b)\n",
-				 header.id, 4);
+				 header.id, sizeof(header.id));
 		return EBADMSG;
 	}
 
@@ -139,7 +139,7 @@ int wav_header_decode(struct wav_fmt *fmt, size_t *datasize, FILE *f)
 
 	if (memcmp(rifftype, "WAVE", 4)) {
 		(void)re_fprintf(stderr, "aufile: expected WAVE (%b)\n",
-				 rifftype, 4);
+				 rifftype, sizeof(rifftype));
 		return EBADMSG;
 	}
 
@@ -149,7 +149,7 @@ int wav_header_decode(struct wav_fmt *fmt, size_t *datasize, FILE *f)
 
 	if (memcmp(format.id, "fmt ", 4)) {
 		(void)re_fprintf(stderr, "aufile: expected fmt (%b)\n",
-				 format.id, 4);
+				 format.id, sizeof(format.id));
 		return EBADMSG;
 	}
 
