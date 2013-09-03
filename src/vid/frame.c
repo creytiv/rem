@@ -48,7 +48,7 @@ size_t vidframe_size(enum vidfmt fmt, const struct vidsz *sz)
  * @param linesize Pointer to linesizes
  */
 void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
-		   const struct vidsz *sz, void *data[4], int linesize[4])
+		   const struct vidsz *sz, void *data[4], unsigned linesize[4])
 {
 	int i;
 
@@ -76,7 +76,7 @@ void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
 void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		       const struct vidsz *sz, uint8_t *buf)
 {
-	int w, h;
+	unsigned w, h;
 
 	if (!vf || !sz || !buf)
 		return;
@@ -175,7 +175,7 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 {
 	uint8_t *p;
-	int h, i;
+	unsigned h, i;
 
 	if (!vf)
 		return;

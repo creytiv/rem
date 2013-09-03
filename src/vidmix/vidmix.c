@@ -167,9 +167,9 @@ static inline void source_mix_full(struct vidframe *mframe,
 }
 
 
-static inline int calc_rows(uint32_t n)
+static inline unsigned calc_rows(unsigned n)
 {
-	uint32_t rows;
+	unsigned rows;
 
 	for (rows=2;; rows++)
 		if (n <= (rows * rows))

@@ -44,8 +44,8 @@ enum vidorient {
 
 /** Video size */
 struct vidsz {
-	int w;  /**< Width  */
-	int h;  /**< Height */
+	unsigned w;  /**< Width  */
+	unsigned h;  /**< Height */
 };
 
 /** Video frame */
@@ -58,16 +58,16 @@ struct vidframe {
 
 /** Video point */
 struct vidpt {
-	int x;  /**< X position */
-	int y;  /**< Y position */
+	unsigned x;  /**< X position */
+	unsigned y;  /**< Y position */
 };
 
 /** Video rectangle */
 struct vidrect {
-	int x;  /**< X position */
-	int y;  /**< Y position */
-	int w;  /**< Width      */
-	int h;  /**< Height     */
+	unsigned x;  /**< X position */
+	unsigned y;  /**< Y position */
+	unsigned w;  /**< Width      */
+	unsigned h;  /**< Height     */
 };
 
 static inline bool vidsz_cmp(const struct vidsz *a, const struct vidsz *b)
@@ -115,7 +115,8 @@ static inline int rgb2v(uint8_t r, uint8_t g, uint8_t b)
 
 size_t vidframe_size(enum vidfmt fmt, const struct vidsz *sz);
 void vidframe_init(struct vidframe *vf, enum vidfmt fmt,
-		   const struct vidsz *sz, void *data[4], int linesize[4]);
+		   const struct vidsz *sz, void *data[4],
+		   unsigned linesize[4]);
 void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		       const struct vidsz *sz, uint8_t *buf);
 int  vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,

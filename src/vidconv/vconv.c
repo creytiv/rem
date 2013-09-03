@@ -180,20 +180,20 @@ static inline void yuv2rgb555(uint8_t *rgb, uint8_t y,
 }
 
 
-typedef void (line_h)(int xoffs, unsigned width, double rw,
-		      int yd, int ys, int ys2,
+typedef void (line_h)(unsigned xoffs, unsigned width, double rw,
+		      unsigned yd, unsigned ys, unsigned ys2,
 		      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-		      int lsd,
+		      unsigned lsd,
 		      const uint8_t *sd0, const uint8_t *sd1,
-		      const uint8_t *sd2, int lss);
+		      const uint8_t *sd2, unsigned lss);
 
 
-static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
-			       int yd, int ys, int ys2,
+static void yuv420p_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			       unsigned yd, unsigned ys, unsigned ys2,
 			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			       int lsd,
+			       unsigned lsd,
 			       const uint8_t *ds0, const uint8_t *ds1,
-			       const uint8_t *ds2, int lss
+			       const uint8_t *ds2, unsigned lss
 			       )
 {
 	unsigned x, xd, xs, xs2;
@@ -222,12 +222,12 @@ static void yuv420p_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
-static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
-			       int yd, int ys, int ys2,
+static void yuyv422_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			       unsigned yd, unsigned ys, unsigned ys2,
 			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			       int lsd,
+			       unsigned lsd,
 			       const uint8_t *sd0, const uint8_t *sd1,
-			       const uint8_t *sd2, int lss
+			       const uint8_t *sd2, unsigned lss
 			       )
 {
 	unsigned x, xd, xs;
@@ -259,12 +259,12 @@ static void yuyv422_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
-static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
-			       int yd, int ys, int ys2,
+static void uyvy422_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			       unsigned yd, unsigned ys, unsigned ys2,
 			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			       int lsd,
+			       unsigned lsd,
 			       const uint8_t *sd0, const uint8_t *sd1,
-			       const uint8_t *sd2, int lss
+			       const uint8_t *sd2, unsigned lss
 			       )
 {
 	unsigned x, xd, xs;
@@ -296,12 +296,12 @@ static void uyvy422_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
-static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
-			     int yd, int ys, int ys2,
+static void rgb32_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			     unsigned yd, unsigned ys, unsigned ys2,
 			     uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			     int lsd,
+			     unsigned lsd,
 			     const uint8_t *ds0, const uint8_t *ds1,
-			     const uint8_t *ds2, int lss
+			     const uint8_t *ds2, unsigned lss
 			     )
 {
 	unsigned x, xd, xs, xs2;
@@ -342,12 +342,12 @@ static void rgb32_to_yuv420p(int xoffs, unsigned width, double rw,
 }
 
 
-static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
-			     int yd, int ys, int ys2,
+static void yuv420p_to_rgb32(unsigned xoffs, unsigned width, double rw,
+			     unsigned yd, unsigned ys, unsigned ys2,
 			     uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			     int lsd,
+			     unsigned lsd,
 			     const uint8_t *ds0, const uint8_t *ds1,
-			     const uint8_t *ds2, int lss)
+			     const uint8_t *ds2, unsigned lss)
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
@@ -357,7 +357,8 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 
 	for (x=0; x<width; x+=2) {
 
-		int u, v, ruv, guv, buv;
+		int ruv, guv, buv;
+		uint8_t u, v;
 
 		xd  = (x + xoffs) * 4;
 
@@ -382,12 +383,12 @@ static void yuv420p_to_rgb32(int xoffs, unsigned width, double rw,
 }
 
 
-static void yuv420p_to_rgb565(int xoffs, unsigned width, double rw,
-			      int yd, int ys, int ys2,
+static void yuv420p_to_rgb565(unsigned xoffs, unsigned width, double rw,
+			      unsigned yd, unsigned ys, unsigned ys2,
 			      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			      int lsd,
+			      unsigned lsd,
 			      const uint8_t *ds0, const uint8_t *ds1,
-			      const uint8_t *ds2, int lss)
+			      const uint8_t *ds2, unsigned lss)
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
@@ -397,7 +398,8 @@ static void yuv420p_to_rgb565(int xoffs, unsigned width, double rw,
 
 	for (x=0; x<width; x+=2) {
 
-		int u, v, ruv, guv, buv;
+		int ruv, guv, buv;
+		uint8_t u, v;
 
 		xd  = (x + xoffs) * 2;
 
@@ -422,12 +424,12 @@ static void yuv420p_to_rgb565(int xoffs, unsigned width, double rw,
 }
 
 
-static void yuv420p_to_rgb555(int xoffs, unsigned width, double rw,
-			      int yd, int ys, int ys2,
+static void yuv420p_to_rgb555(unsigned xoffs, unsigned width, double rw,
+			      unsigned yd, unsigned ys, unsigned ys2,
 			      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			      int lsd,
+			      unsigned lsd,
 			      const uint8_t *ds0, const uint8_t *ds1,
-			      const uint8_t *ds2, int lss)
+			      const uint8_t *ds2, unsigned lss)
 {
 	unsigned x, xd, xs, xs2;
 	unsigned id, is;
@@ -437,7 +439,8 @@ static void yuv420p_to_rgb555(int xoffs, unsigned width, double rw,
 
 	for (x=0; x<width; x+=2) {
 
-		int u, v, ruv, guv, buv;
+		int ruv, guv, buv;
+		uint8_t u, v;
 
 		xd  = (x + xoffs) * 2;
 
@@ -462,12 +465,12 @@ static void yuv420p_to_rgb555(int xoffs, unsigned width, double rw,
 }
 
 
-static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
-			    int yd, int ys, int ys2,
+static void nv12_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			    unsigned yd, unsigned ys, unsigned ys2,
 			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			    int lsd,
+			    unsigned lsd,
 			    const uint8_t *ds0, const uint8_t *ds1,
-			    const uint8_t *ds2, int lss
+			    const uint8_t *ds2, unsigned lss
 			    )
 {
 	unsigned x, xd, xs, xs2;
@@ -497,12 +500,12 @@ static void nv12_to_yuv420p(int xoffs, unsigned width, double rw,
 	}
 }
 
-static void nv21_to_yuv420p(int xoffs, unsigned width, double rw,
-			    int yd, int ys, int ys2,
+static void nv21_to_yuv420p(unsigned xoffs, unsigned width, double rw,
+			    unsigned yd, unsigned ys, unsigned ys2,
 			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
-			    int lsd,
+			    unsigned lsd,
 			    const uint8_t *ds0, const uint8_t *ds1,
-			    const uint8_t *ds2, int lss
+			    const uint8_t *ds2, unsigned lss
 			    )
 {
 	unsigned x, xd, xs, xs2;
@@ -573,8 +576,7 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 	     struct vidrect *r)
 {
 	struct vidrect rdst;
-	unsigned yd, ys, ys2, lsd, lss;
-	int y;
+	unsigned yd, ys, ys2, lsd, lss, y;
 	const uint8_t *ds0, *ds1, *ds2;
 	uint8_t *dd0, *dd1, *dd2;
 	double rw, rh;
@@ -603,7 +605,7 @@ void vidconv(struct vidframe *dst, const struct vidframe *src,
 
 		if ((r->x + r->w) > dst->size.w ||
 		    (r->y + r->h) > dst->size.h) {
-			(void)re_printf("vidconv: out of bounds (%i x %i)\n",
+			(void)re_printf("vidconv: out of bounds (%u x %u)\n",
 					dst->size.w, dst->size.h);
 			return;
 		}
@@ -661,8 +663,8 @@ void vidconv_aspect(struct vidframe *dst, const struct vidframe *src,
 	asz.w = r->w;
 	asz.h = r->h;
 
-	r->w = (int)min((double)asz.w, (double)asz.h * ar);
-	r->h = (int)min((double)asz.h, (double)asz.w / ar);
+	r->w = (unsigned)min((double)asz.w, (double)asz.h * ar);
+	r->h = (unsigned)min((double)asz.h, (double)asz.w / ar);
 	r->x = r->x + (asz.w - r->w) / 2;
 	r->y = r->y + (asz.h - r->h) / 2;
 
