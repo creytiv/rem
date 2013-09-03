@@ -6,3 +6,4 @@
 
 SRCS	+= vid/fmt.c
 SRCS	+= vid/frame.c
+SRCS	+= vid/draw.c
