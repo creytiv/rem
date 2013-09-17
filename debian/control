@@ -8,7 +8,7 @@ Standards-Version: 3.6.2
 Package: librem
 Architecture: any
 Section: libs
-Depends: libre (= ${Source-Version}), ${shlibs:Depends}
+Depends: libre (>= ${Source-Version}), ${shlibs:Depends}
 Description: Audio and video processing media library
  .
  Audio mixer, resampler, tone generator, G.711 codec
