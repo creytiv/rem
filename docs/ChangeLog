@@ -1,3 +1,14 @@
+2013-10-03 Alfred E. Heggestad <aeh@db.org>
+
+	* Version 0.4.4
+
+	* debian: fix dependency to libre (patch from Juha)
+
+	* vid: change type of width/height to 'unsigned'
+
+	* vidframe: added basic drawing functions
+
+
 2013-05-05 Alfred E. Heggestad <aeh@db.org>
 
 	* Version 0.4.3
