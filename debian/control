@@ -2,13 +2,13 @@ Source: librem
 Section: comm
 Priority: optional
 Maintainer: Alfred E. Heggestad <aeh@db.org>
-Build-Depends: debhelper (>= 4.0.0), libre-dev (>= 0.4.1)
+Build-Depends: debhelper (>= 4.0.0), libre-dev (>= 0.4.5)
 Standards-Version: 3.6.2
 
 Package: librem
 Architecture: any
 Section: libs
-Depends: libre (>= ${Source-Version}), ${shlibs:Depends}
+Depends: libre (>= 0.4.5), ${shlibs:Depends}
 Description: Audio and video processing media library
  .
  Audio mixer, resampler, tone generator, G.711 codec
