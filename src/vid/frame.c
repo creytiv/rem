@@ -195,9 +195,9 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 	case VID_FMT_RGB32:
 		p = vf->data[0];
 		for (i=0; i<vf->linesize[0] * vf->size.h; i+=4) {
-			*p++ = r;
-			*p++ = g;
 			*p++ = b;
+			*p++ = g;
+			*p++ = r;
 			*p++ = 0;
 		}
 		break;
