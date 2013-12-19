@@ -15,28 +15,47 @@
  * @param f   Video frame
  * @param x   Pixel X-position
  * @param y   Pixel Y-position
- * @param cy  Color component Y
- * @param cu  Color component U
- * @param cv  Color component V
+ * @param r   Red color component
+ * @param g   Green color component
+ * @param b   Blue color component
  */
 void vidframe_draw_point(struct vidframe *f, unsigned x, unsigned y,
-			 uint8_t cy, uint8_t cu, uint8_t cv)
+			 uint8_t r, uint8_t g, uint8_t b)
 {
-	uint8_t *yp, *up, *vp;
+	uint8_t *yp, *up, *vp, *p;
 
-	if (!f || f->fmt != VID_FMT_YUV420P)
+	if (!f)
 		return;
 
 	if (x >= f->size.w || y >= f->size.h)
 		return;
 
-	yp = f->data[0] + f->linesize[0] * y     + x;
-	up = f->data[1] + f->linesize[1] * (y/2) + x/2;
-	vp = f->data[2] + f->linesize[2] * (y/2) + x/2;
+	switch (f->fmt) {
 
-	yp[0] = cy;
-	up[0] = cu;
-	vp[0] = cv;
+	case VID_FMT_YUV420P:
+		yp = f->data[0] + f->linesize[0] * y     + x;
+		up = f->data[1] + f->linesize[1] * (y/2) + x/2;
+		vp = f->data[2] + f->linesize[2] * (y/2) + x/2;
+
+		yp[0] = rgb2y(r, g, b);
+		up[0] = rgb2u(r, g, b);
+		vp[0] = rgb2v(r, g, b);
+		break;
+
+	case VID_FMT_RGB32:
+		p = f->data[0] + f->linesize[0] * y + x*4;
+
+		p[0] = b;
+		p[1] = g;
+		p[2] = r;
+		break;
+
+	default:
+		(void)re_fprintf(stderr, "vidframe_draw_point:"
+				 " unsupported format %s\n",
+				 vidfmt_name(f->fmt));
+		break;
+	}
 }
 
 
@@ -84,17 +103,11 @@ void vidframe_draw_vline(struct vidframe *f,
 			 unsigned x0, unsigned y0, unsigned h,
 			 uint8_t r, uint8_t g, uint8_t b)
 {
-	uint8_t cy, cu, cv;
-
-	if (!f || f->fmt != VID_FMT_YUV420P)
+	if (!f)
 		return;
 
-	cy = rgb2y(r, g, b);
-	cu = rgb2u(r, g, b);
-	cv = rgb2v(r, g, b);
-
 	while (h--) {
-		vidframe_draw_point(f, x0, y0++, cy, cu, cv);
+		vidframe_draw_point(f, x0, y0++, r, g, b);
 	}
 }
 

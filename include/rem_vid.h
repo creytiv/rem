@@ -138,7 +138,7 @@ extern const struct vidfmt_desc vidfmt_descv[VID_FMT_N];
 
 /* draw */
 void vidframe_draw_point(struct vidframe *f, unsigned x, unsigned y,
-			 uint8_t cy, uint8_t cu, uint8_t cv);
+			 uint8_t r, uint8_t g, uint8_t b);
 void vidframe_draw_hline(struct vidframe *f,
 			 unsigned x0, unsigned y0, unsigned w,
 			 uint8_t r, uint8_t g, uint8_t b);
