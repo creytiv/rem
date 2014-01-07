@@ -1,5 +1,5 @@
 %define name     rem
-%define ver      0.4.4
+%define ver      0.4.5
 %define rel      1
 
 Summary: Audio and Video processing media library
