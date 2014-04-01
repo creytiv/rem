@@ -42,6 +42,8 @@ struct vidmix_source {
 
 
 static void vidframe_copy(struct vidframe *dst, const struct vidframe *src);
+static inline void source_mix_full(struct vidframe *mframe,
+				   const struct vidframe *frame_src);
 
 
 static inline void clear_frame(struct vidframe *vf)
@@ -133,6 +135,11 @@ static inline void source_mix(struct vidframe *mframe,
 			}
 		}
 	}
+	else if (rows == 1) {
+
+		source_mix_full(mframe, frame_src);
+		return;
+	}
 	else {
 		rect.w = mframe->size.w / rows;
 		rect.h = mframe->size.h / rows;
@@ -171,7 +178,7 @@ static inline unsigned calc_rows(unsigned n)
 {
 	unsigned rows;
 
-	for (rows=2;; rows++)
+	for (rows=1;; rows++)
 		if (n <= (rows * rows))
 			return rows;
 }
