@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 
-#include <rem_audio.h>
-#include <rem_video.h>
-#include <rem_dsp.h>
+#include "rem_audio.h"
+#include "rem_video.h"
+#include "rem_dsp.h"
 
 
 #ifdef __cplusplus
