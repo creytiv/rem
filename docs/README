@@ -13,12 +13,12 @@ Audio Modules:
 
   name:     status:       description:
 
-* au        unstable      Base audio types
-* aubuf     unstable      Audio buffer
-* aufile    unstable      Audio file reader/writer
+* au        testing       Base audio types
+* aubuf     testing       Audio buffer
+* aufile    testing       Audio file reader/writer
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
-* autone    unstable      Tone/DTMF generator
+* autone    testing       Tone/DTMF generator
 * g711      stable        G.711 audio codec
 
 
@@ -28,8 +28,8 @@ Video Modules:
 
   name:     status:       description:
 
-* vid       unstable      Base video types
-* vidconv   unstable      Colorspace conversion and scaling
+* vid       testing       Base video types
+* vidconv   testing       Colorspace conversion and scaling
 * vidmix    unstable      Video mixer
 
 
@@ -37,7 +37,7 @@ Video Modules:
 
 Generic modules:
 
-* dsp       unstable      DSP routines
+* dsp       testing       DSP routines
 * fir       unstable      FIR (Finite Impulse Response) filter
 
 

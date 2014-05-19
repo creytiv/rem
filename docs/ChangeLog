@@ -1,3 +1,14 @@
+2014-05-18 Alfred E. Heggestad <aeh@db.org>
+
+	* Version 0.4.6
+
+	* debian: update package
+
+	* include: use quotes to include header files
+
+	* vidmix: use full picture for 2 participants
+
+	
 2014-01-06 Alfred E. Heggestad <aeh@db.org>
 
 	* Version 0.4.5
