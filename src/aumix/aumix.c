@@ -104,6 +104,7 @@ static void *aumix_thread(void *arg)
 		uint64_t now;
 
 		if (!mix->srcl.head) {
+			mix->af = mem_deref(mix->af);
 			pthread_cond_wait(&mix->cond, &mix->mutex);
 			ts = 0;
 		}
