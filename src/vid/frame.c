@@ -207,3 +207,68 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 		break;
 	}
 }
+
+
+/**
+ * Copy content between to equally sized video frames of same pixel format
+ *
+ * @param dst Destination frame
+ * @param src Source frame
+ */
+void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
+{
+	const uint8_t *ds0, *ds1, *ds2;
+	unsigned lsd, lss, w, h, y;
+	uint8_t *dd0, *dd1, *dd2;
+
+	if (!dst || !src)
+		return;
+
+	if (!vidsz_cmp(&dst->size, &src->size))
+		return;
+
+	if (dst->fmt != src->fmt)
+		return;
+
+	switch (dst->fmt) {
+
+	case VID_FMT_YUV420P:
+		lsd = dst->linesize[0];
+		lss = src->linesize[0];
+
+		dd0 = dst->data[0];
+		dd1 = dst->data[1];
+		dd2 = dst->data[2];
+
+		ds0 = src->data[0];
+		ds1 = src->data[1];
+		ds2 = src->data[2];
+
+		w  = dst->size.w & ~1;
+		h  = dst->size.h & ~1;
+
+		for (y=0; y<h; y+=2) {
+
+			memcpy(dd0, ds0, w);
+			dd0 += lsd;
+			ds0 += lss;
+
+			memcpy(dd0, ds0, w);
+			dd0 += lsd;
+			ds0 += lss;
+
+			memcpy(dd1, ds1, w/2);
+			dd1 += lsd/2;
+			ds1 += lss/2;
+
+			memcpy(dd2, ds2, w/2);
+			dd2 += lsd/2;
+			ds2 += lss/2;
+		}
+		break;
+
+	default:
+		(void)re_printf("vidframe_copy(): unsupported format\n");
+		break;
+	}
+}
