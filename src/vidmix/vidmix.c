@@ -342,7 +342,7 @@ int vidmix_alloc(struct vidmix **mixp)
 		return err;
 	}
 
-#ifdef LINUX
+#if defined(LINUX) && defined(__GLIBC__)
 	err = pthread_rwlockattr_setkind_np(&attr,
 				 PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP);
 	if (err)
