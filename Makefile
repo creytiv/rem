@@ -91,6 +91,20 @@ ifneq ($(RANLIB),)
 	@$(RANLIB) $@
 endif
 
+librem.pc:
+	@echo 'prefix='$(PREFIX) > librem.pc
+	@echo 'exec_prefix=$${prefix}' >> librem.pc
+	@echo 'libdir=$${prefix}/lib' >> librem.pc
+	@echo 'includedir=$${prefix}/include/rem' >> librem.pc
+	@echo '' >> librem.pc
+	@echo 'Name: librem' >> librem.pc
+	@echo 'Description: Audio and video processing media library' \
+		>> librem.pc
+	@echo 'Version: '$(VERSION) >> librem.pc
+	@echo 'URL: http://creytiv.com/rem.html' >> librem.pc
+	@echo 'Libs: -L$${libdir} -lrem -lre' >> librem.pc
+	@echo 'Cflags: -I$${includedir}' >> librem.pc
+
 $(BUILD)/%.o: src/%.c $(BUILD) Makefile $(MK) $(MODMKS)
 	@echo "  CC      $@"
 	@$(CC) $(CFLAGS) -c $< -o $@ $(DFLAGS)
@@ -108,21 +122,24 @@ $(BUILD): Makefile $(MK) $(MODMKS)
 
 .PHONY: clean
 clean:
-	@rm -rf $(SHARED) $(STATIC) test.d test.o test $(BUILD)
+	@rm -rf $(SHARED) $(STATIC) librem.pc test.d test.o test $(BUILD)
 
 
-install: $(SHARED) $(STATIC)
-	@mkdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(INCDIR)
+install: $(SHARED) $(STATIC) librem.pc
+	@mkdir -p $(DESTDIR)$(LIBDIR) $(DESTDIR)$(LIBDIR)/pkgconfig \
+		$(DESTDIR)$(INCDIR)
 	$(INSTALL) -m 0644 $(shell find include -name "*.h") \
 		$(DESTDIR)$(INCDIR)
 	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0755 $(STATIC) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0644 librem.pc $(DESTDIR)$(LIBDIR)/pkgconfig
 
 .PHONY: uninstall
 uninstall:
 	@rm -rf $(DESTDIR)$(INCDIR)
 	@rm -f $(DESTDIR)$(LIBDIR)/$(SHARED)
 	@rm -f $(DESTDIR)$(LIBDIR)/$(STATIC)
+	@rm -f $(DESTDIR)$(LIBDIR)/pkgconfig/librem.pc
 
 -include test.d
 
