@@ -2,7 +2,7 @@ README
 ------
 
 librem - "Audio and video processing media library"
-Copyright (C) 2010 - 2014 Creytiv.com
+Copyright (C) 2010 - 2015 Creytiv.com
 
 Distributed under BSD license
 
@@ -15,6 +15,7 @@ Audio Modules:
 
 * au        testing       Base audio types
 * aubuf     testing       Audio buffer
+* auconv    unstable      Audio sample format conversion
 * aufile    testing       Audio file reader/writer
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
@@ -39,6 +40,13 @@ Generic modules:
 
 * dsp       testing       DSP routines
 * fir       unstable      FIR (Finite Impulse Response) filter
+
+
+
+
+Features:
+
+* ITU-T G.711 Appendix I and Appendix II
 
 
 
