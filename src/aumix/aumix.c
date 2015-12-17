@@ -5,6 +5,7 @@
  */
 
 #define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
