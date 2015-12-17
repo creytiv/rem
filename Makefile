@@ -7,10 +7,10 @@
 # Master version number
 VER_MAJOR := 0
 VER_MINOR := 4
-VER_PATCH := 6
+VER_PATCH := 7
 
 PROJECT   := rem
-VERSION   := 0.4.6
+VERSION   := 0.4.7
 OPT_SPEED := 1
 
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
