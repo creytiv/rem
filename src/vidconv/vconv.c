@@ -492,8 +492,8 @@ static void nv12_to_yuv420p(unsigned xoffs, unsigned width, double rw,
 		dd0[id + lsd]   = ds0[xs  + ys2*lss];
 		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
 
-		id = xd/2    + yd*lsd/4;
-		is = ((xs>>1) + (ys>>1)*lss/2) & ~1;
+		id = (xd>>1) + (yd>>1)*lsd/2;
+		is = xs/2    + ys*lss/4;
 
 		dd1[id] = ds1[2*is];
 		dd2[id] = ds1[2*is+1];
@@ -528,8 +528,8 @@ static void yuv420p_to_nv12(unsigned xoffs, unsigned width, double rw,
 		dd0[id + lsd]   = ds0[xs  + ys2*lss];
 		dd0[id+1 + lsd] = ds0[xs2 + ys2*lss];
 
-		id = ((xd>>1) + (yd>>1)*lsd/2) & ~1;
-		is = xs/2    + ys*lss/4;
+		id = xd/2    + yd*lsd/4;
+		is = (xs>>1) + (ys>>1)*lss/2;
 
 		dd1[2*id]   = ds1[is];
 		dd1[2*id+1] = ds2[is];
