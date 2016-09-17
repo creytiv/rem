@@ -1,0 +1,6 @@
+build*
+test*
+librem.a
+librem.dylib
+librem.pc
+librem.so
