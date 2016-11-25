@@ -1,5 +1,5 @@
 /**
- * @file fmt.c Video Formats
+ * @file vid/fmt.c Video Formats
  *
  * Copyright (C) 2010 Creytiv.com
  */
