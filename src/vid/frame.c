@@ -33,6 +33,7 @@ size_t vidframe_size(enum vidfmt fmt, const struct vidsz *sz)
 	case VID_FMT_RGB555:  return sz->w * sz->h * 2;
 	case VID_FMT_NV12:    return sz->w * sz->h * 3 / 2;
 	case VID_FMT_NV21:    return sz->w * sz->h * 3 / 2;
+	case VID_FMT_YUV444P: return sz->w * sz->h * 3;
 	default:
 		return 0;
 	}
@@ -127,6 +128,16 @@ void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
 		break;
 
+	case VID_FMT_YUV444P:
+		vf->linesize[0] = sz->w;
+		vf->linesize[1] = sz->w;
+		vf->linesize[2] = sz->w;
+
+		vf->data[0] = buf;
+		vf->data[1] = vf->data[0] + vf->linesize[0] * sz->h;
+		vf->data[2] = vf->data[1] + vf->linesize[1] * sz->h;
+		break;
+
 	default:
 		(void)re_printf("vidframe: no fmt %s\n", vidfmt_name(fmt));
 		return;
@@ -150,11 +161,20 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 		   const struct vidsz *sz)
 {
 	struct vidframe *vf;
+	size_t fsize;
 
 	if (!sz || !sz->w || !sz->h)
 		return EINVAL;
 
-	vf = mem_zalloc(sizeof(*vf) + vidframe_size(fmt, sz), NULL);
+	fsize = vidframe_size(fmt, sz);
+	if (!fsize) {
+		re_fprintf(stderr, "vidframe: alloc: invalid frame size 0"
+			   " for pixel-format `%s' (%u x %u)\n",
+			   vidfmt_name(fmt), sz->w, sz->h);
+		return ENOTSUP;
+	}
+
+	vf = mem_zalloc(sizeof(*vf) + fsize, NULL);
 	if (!vf)
 		return ENOMEM;
 
