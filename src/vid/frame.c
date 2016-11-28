@@ -161,20 +161,11 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 		   const struct vidsz *sz)
 {
 	struct vidframe *vf;
-	size_t fsize;
 
 	if (!sz || !sz->w || !sz->h)
 		return EINVAL;
 
-	fsize = vidframe_size(fmt, sz);
-	if (!fsize) {
-		re_fprintf(stderr, "vidframe: alloc: invalid frame size 0"
-			   " for pixel-format `%s' (%u x %u)\n",
-			   vidfmt_name(fmt), sz->w, sz->h);
-		return ENOTSUP;
-	}
-
-	vf = mem_zalloc(sizeof(*vf) + fsize, NULL);
+	vf = mem_zalloc(sizeof(*vf) + vidframe_size(fmt, sz), NULL);
 	if (!vf)
 		return ENOMEM;
 
