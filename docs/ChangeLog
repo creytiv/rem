@@ -1,3 +1,17 @@
+2016-12-02 Alfred E. Heggestad <alfred.heggestad@gmail.com>
+
+	* Version 0.5.0
+
+	* Project URL: https://github.com/creytiv/rem
+
+	* build: remove support for Symbian OS
+
+	* vid: add support for YUV444P pixel format
+
+	* vidconv: fix yuv420p <-> nv12 conversion
+		   added vidconv YUV420P to NV12
+
+
 2015-12-13 Alfred E. Heggestad <aeh@db.org>
 
 	* Version 0.4.7
