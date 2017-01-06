@@ -278,6 +278,36 @@ void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
 		}
 		break;
 
+	case VID_FMT_NV12:
+	case VID_FMT_NV21:
+		lsd = dst->linesize[0];
+		lss = src->linesize[0];
+
+		dd0 = dst->data[0];
+		dd1 = dst->data[1];
+
+		ds0 = src->data[0];
+		ds1 = src->data[1];
+
+		w  = dst->size.w & ~1;
+		h  = dst->size.h & ~1;
+
+		for (y=0; y<h; y+=2) {
+
+			memcpy(dd0, ds0, w);
+			dd0 += lsd;
+			ds0 += lss;
+
+			memcpy(dd0, ds0, w);
+			dd0 += lsd;
+			ds0 += lss;
+
+			memcpy(dd1, ds1, w);
+			dd1 += lsd;
+			ds1 += lss;
+		}
+		break;
+
 	default:
 		(void)re_printf("vidframe_copy(): unsupported format\n");
 		break;
