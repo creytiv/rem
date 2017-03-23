@@ -42,6 +42,16 @@ void vidframe_draw_point(struct vidframe *f, unsigned x, unsigned y,
 		vp[0] = rgb2v(r, g, b);
 		break;
 
+	case VID_FMT_YUV444P:
+		yp = f->data[0] + f->linesize[0] * y + x;
+		up = f->data[1] + f->linesize[1] * y + x;
+		vp = f->data[2] + f->linesize[2] * y + x;
+
+		yp[0] = rgb2y(r, g, b);
+		up[0] = rgb2u(r, g, b);
+		vp[0] = rgb2v(r, g, b);
+		break;
+
 	case VID_FMT_RGB32:
 		p = f->data[0] + f->linesize[0] * y + x*4;
 
@@ -74,7 +84,9 @@ void vidframe_draw_hline(struct vidframe *f,
 			 unsigned x0, unsigned y0, unsigned w,
 			 uint8_t r, uint8_t g, uint8_t b)
 {
-	if (!f || f->fmt != VID_FMT_YUV420P)
+	uint8_t y, u, v;
+
+	if (!f)
 		return;
 
 	if (x0 >= f->size.w || y0 >= f->size.h)
@@ -82,9 +94,30 @@ void vidframe_draw_hline(struct vidframe *f,
 
 	w = min(w, f->size.w-x0);
 
-	memset(f->data[0] +  y0   *f->linesize[0] + x0,   rgb2y(r, g, b), w);
-	memset(f->data[1] + (y0/2)*f->linesize[1] + x0/2, rgb2u(r, g, b), w/2);
-	memset(f->data[2] + (y0/2)*f->linesize[2] + x0/2, rgb2v(r, g, b), w/2);
+	y = rgb2y(r, g, b);
+	u = rgb2u(r, g, b);
+	v = rgb2v(r, g, b);
+
+	switch (f->fmt) {
+
+	case VID_FMT_YUV420P:
+		memset(f->data[0] +  y0   *f->linesize[0] + x0,   y, w);
+		memset(f->data[1] + (y0/2)*f->linesize[1] + x0/2, u, w/2);
+		memset(f->data[2] + (y0/2)*f->linesize[2] + x0/2, v, w/2);
+		break;
+
+	case VID_FMT_YUV444P:
+		memset(f->data[0] + y0*f->linesize[0] + x0, y, w);
+		memset(f->data[1] + y0*f->linesize[1] + x0, u, w);
+		memset(f->data[2] + y0*f->linesize[2] + x0, v, w);
+		break;
+
+	default:
+		(void)re_fprintf(stderr, "vidframe_draw_hline:"
+				 " unsupported format %s\n",
+				 vidfmt_name(f->fmt));
+		break;
+	}
 }
 
 
