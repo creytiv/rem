@@ -301,12 +301,9 @@ void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
 		w  = dst->size.w;
 		h  = dst->size.h;
 
-		for (y=0; y<h; y+=2) {
+		for (y=0; y<h; y++) {
 
 			/* Y */
-			memcpy(dd0, ds0, w);
-			dd0 += lsd;
-			ds0 += lss;
 			memcpy(dd0, ds0, w);
 			dd0 += lsd;
 			ds0 += lss;
@@ -315,14 +312,8 @@ void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
 			memcpy(dd1, ds1, w);
 			dd1 += lsd;
 			ds1 += lss;
-			memcpy(dd1, ds1, w);
-			dd1 += lsd;
-			ds1 += lss;
 
 			/* V */
-			memcpy(dd2, ds2, w);
-			dd2 += lsd;
-			ds2 += lss;
 			memcpy(dd2, ds2, w);
 			dd2 += lsd;
 			ds2 += lss;
