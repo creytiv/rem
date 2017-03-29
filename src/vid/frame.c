@@ -203,6 +203,14 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 		memset(vf->data[2], rgb2v(r, g, b), h/2 * vf->linesize[2]);
 		break;
 
+	case VID_FMT_YUV444P:
+		h = vf->size.h;
+
+		memset(vf->data[0], rgb2y(r, g, b), h * vf->linesize[0]);
+		memset(vf->data[1], rgb2u(r, g, b), h * vf->linesize[1]);
+		memset(vf->data[2], rgb2v(r, g, b), h * vf->linesize[2]);
+		break;
+
 	case VID_FMT_RGB32:
 		p = vf->data[0];
 		for (i=0; i<vf->linesize[0] * vf->size.h; i+=4) {
@@ -275,6 +283,40 @@ void vidframe_copy(struct vidframe *dst, const struct vidframe *src)
 			memcpy(dd2, ds2, w/2);
 			dd2 += lsd/2;
 			ds2 += lss/2;
+		}
+		break;
+
+	case VID_FMT_YUV444P:
+		lsd = dst->linesize[0];
+		lss = src->linesize[0];
+
+		dd0 = dst->data[0];
+		dd1 = dst->data[1];
+		dd2 = dst->data[2];
+
+		ds0 = src->data[0];
+		ds1 = src->data[1];
+		ds2 = src->data[2];
+
+		w  = dst->size.w;
+		h  = dst->size.h;
+
+		for (y=0; y<h; y++) {
+
+			/* Y */
+			memcpy(dd0, ds0, w);
+			dd0 += lsd;
+			ds0 += lss;
+
+			/* U */
+			memcpy(dd1, ds1, w);
+			dd1 += lsd;
+			ds1 += lss;
+
+			/* V */
+			memcpy(dd2, ds2, w);
+			dd2 += lsd;
+			ds2 += lss;
 		}
 		break;
 
