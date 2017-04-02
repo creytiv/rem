@@ -365,45 +365,34 @@ static void rgb32_to_yuv444p(unsigned xoffs, unsigned width, double rw,
 			     const uint8_t *ds2, unsigned lss
 			     )
 {
-	unsigned x, xd, xs, xs2;
+	unsigned x, xd, xs;
 	unsigned id;
 
 	(void)ds1;
 	(void)ds2;
 
-	for (x=0; x<width; x+=2) {
+	for (x=0; x<width; x++) {
 
 		uint32_t x0;
-		uint32_t x1;
 		uint32_t x2;
-		uint32_t x3;
 
 		xd  = x + xoffs;
 
-		xs  = 4 * ((unsigned)( x    * rw));
-		xs2 = 4 * ((unsigned)((x+1) * rw));
+		xs  = 4 * ((unsigned)( x * rw));
 
 		id = xd + yd*lsd;
 
-		x0 = *(uint32_t *)(void *)&ds0[xs  + ys*lss];
-		x1 = *(uint32_t *)(void *)&ds0[xs2 + ys*lss];
+		x0 = *(uint32_t *)(void *)&ds0[xs  + ys *lss];
 		x2 = *(uint32_t *)(void *)&ds0[xs  + ys2*lss];
-		x3 = *(uint32_t *)(void *)&ds0[xs2 + ys2*lss];
 
 		dd0[id]         = rgb2y(x0 >> 16, x0 >> 8, x0);
-		dd0[id+1]       = rgb2y(x1 >> 16, x1 >> 8, x1);
 		dd0[id + lsd]   = rgb2y(x2 >> 16, x2 >> 8, x2);
-		dd0[id+1 + lsd] = rgb2y(x3 >> 16, x3 >> 8, x3);
 
 		dd1[id]         = rgb2u(x0 >> 16, x0 >> 8, x0);
-		dd1[id+1]       = rgb2u(x1 >> 16, x1 >> 8, x1);
 		dd1[id + lsd]   = rgb2u(x2 >> 16, x2 >> 8, x2);
-		dd1[id+1 + lsd] = rgb2u(x3 >> 16, x3 >> 8, x3);
 
 		dd2[id]         = rgb2v(x0 >> 16, x0 >> 8, x0);
-		dd2[id+1]       = rgb2v(x1 >> 16, x1 >> 8, x1);
 		dd2[id + lsd]   = rgb2v(x2 >> 16, x2 >> 8, x2);
-		dd2[id+1 + lsd] = rgb2v(x3 >> 16, x3 >> 8, x3);
 	}
 }
 
