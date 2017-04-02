@@ -635,31 +635,26 @@ static void yuv444p_to_rgb32(unsigned xoffs, unsigned width, double rw,
 			     const uint8_t *ds0, const uint8_t *ds1,
 			     const uint8_t *ds2, unsigned lss)
 {
-	unsigned x, xd, xs, xs2;
+	unsigned x, xd, xs;
 	unsigned id;
-	unsigned is1, is2, is3, is4;
+	unsigned is1, is2;
 
 	(void)dd1;
 	(void)dd2;
 
-	for (x=0; x<width; x+=2) {
+	for (x=0; x<width; x++) {
 
 		xd  = (x + xoffs) * 4;
 
 		xs  = (unsigned)(x * rw);
-		xs2 = (unsigned)((x+1) * rw);
 
 		id = (xd + yd*lsd);
 
-		is1  = (xs)  + (ys )*lss;
-		is2  = (xs2) + (ys )*lss;
-		is3  = (xs)  + (ys2)*lss;
-		is4  = (xs2) + (ys2)*lss;
+		is1  = (xs) + (ys )*lss;
+		is2  = (xs) + (ys2)*lss;
 
-		_yuv2rgb(&dd0[id],         ds0[is1], ds1[is1], ds2[is1] );
-		_yuv2rgb(&dd0[id+4],       ds0[is2], ds1[is2], ds2[is2] );
-		_yuv2rgb(&dd0[id   + lsd], ds0[is3], ds1[is3], ds2[is3] );
-		_yuv2rgb(&dd0[id+4 + lsd], ds0[is4], ds1[is4], ds2[is4] );
+		_yuv2rgb(&dd0[id],       ds0[is1], ds1[is1], ds2[is1] );
+		_yuv2rgb(&dd0[id + lsd], ds0[is2], ds1[is2], ds2[is2] );
 	}
 }
 
