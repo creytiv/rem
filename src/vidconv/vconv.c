@@ -371,25 +371,25 @@ static void rgb32_to_yuv444p(unsigned xoffs, unsigned width, double rw,
 	for (x=0; x<width; x++) {
 
 		uint32_t x0;
-		uint32_t x2;
+		uint32_t x1;
 
-		xd  = x + xoffs;
+		xd = x + xoffs;
 
-		xs  = 4 * ((unsigned)( x * rw));
+		xs = 4 * ((unsigned)(x * rw));
 
 		id = xd + yd*lsd;
 
-		x0 = *(uint32_t *)(void *)&ds0[xs  + ys *lss];
-		x2 = *(uint32_t *)(void *)&ds0[xs  + ys2*lss];
+		x0 = *(uint32_t *)(void *)&ds0[xs + ys *lss];
+		x1 = *(uint32_t *)(void *)&ds0[xs + ys2*lss];
 
-		dd0[id]         = rgb2y(x0 >> 16, x0 >> 8, x0);
-		dd0[id + lsd]   = rgb2y(x2 >> 16, x2 >> 8, x2);
+		dd0[id]       = rgb2y(x0 >> 16, x0 >> 8, x0);
+		dd0[id + lsd] = rgb2y(x1 >> 16, x1 >> 8, x1);
 
-		dd1[id]         = rgb2u(x0 >> 16, x0 >> 8, x0);
-		dd1[id + lsd]   = rgb2u(x2 >> 16, x2 >> 8, x2);
+		dd1[id]       = rgb2u(x0 >> 16, x0 >> 8, x0);
+		dd1[id + lsd] = rgb2u(x1 >> 16, x1 >> 8, x1);
 
-		dd2[id]         = rgb2v(x0 >> 16, x0 >> 8, x0);
-		dd2[id + lsd]   = rgb2v(x2 >> 16, x2 >> 8, x2);
+		dd2[id]       = rgb2v(x0 >> 16, x0 >> 8, x0);
+		dd2[id + lsd] = rgb2v(x1 >> 16, x1 >> 8, x1);
 	}
 }
 
@@ -641,17 +641,17 @@ static void yuv444p_to_rgb32(unsigned xoffs, unsigned width, double rw,
 
 	for (x=0; x<width; x++) {
 
-		xd  = (x + xoffs) * 4;
+		xd = (x + xoffs) * 4;
 
-		xs  = (unsigned)(x * rw);
+		xs = (unsigned)(x * rw);
 
 		id = (xd + yd*lsd);
 
-		is1  = (xs) + (ys )*lss;
-		is2  = (xs) + (ys2)*lss;
+		is1 = (xs) + (ys )*lss;
+		is2 = (xs) + (ys2)*lss;
 
-		_yuv2rgb(&dd0[id],       ds0[is1], ds1[is1], ds2[is1] );
-		_yuv2rgb(&dd0[id + lsd], ds0[is2], ds1[is2], ds2[is2] );
+		_yuv2rgb(&dd0[id],       ds0[is1], ds1[is1], ds2[is1]);
+		_yuv2rgb(&dd0[id + lsd], ds0[is2], ds1[is2], ds2[is2]);
 	}
 }
 
