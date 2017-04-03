@@ -645,10 +645,10 @@ static void yuv444p_to_rgb32(unsigned xoffs, unsigned width, double rw,
 
 		xs = (unsigned)(x * rw);
 
-		id = (xd + yd*lsd);
+		id = xd + yd*lsd;
 
-		is1 = (xs) + (ys )*lss;
-		is2 = (xs) + (ys2)*lss;
+		is1 = xs + ys *lss;
+		is2 = xs + ys2*lss;
 
 		_yuv2rgb(&dd0[id],       ds0[is1], ds1[is1], ds2[is1]);
 		_yuv2rgb(&dd0[id + lsd], ds0[is2], ds1[is2], ds2[is2]);
