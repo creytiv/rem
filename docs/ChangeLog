@@ -1,3 +1,16 @@
+2017-04-08 Alfred E. Heggestad <alfred.heggestad@gmail.com>
+
+	* Version 0.5.1
+
+	* Project URL: https://github.com/creytiv/rem
+
+	* vid: add YUV444P to vidframe functions
+	       add NV12/21 to vidframe_copy
+
+	* vidconv: add RGB32 to/from YUV444P
+		   add NV12/21 to RGB32 (thanks Harald Gutmann)
+
+
 2016-12-02 Alfred E. Heggestad <alfred.heggestad@gmail.com>
 
 	* Version 0.5.0
