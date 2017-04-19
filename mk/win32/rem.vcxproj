@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\rem.h" />
+    <ClInclude Include="..\..\include\rem_au.h" />
+    <ClInclude Include="..\..\include\rem_aubuf.h" />
+    <ClInclude Include="..\..\include\rem_auconv.h" />
+    <ClInclude Include="..\..\include\rem_audio.h" />
+    <ClInclude Include="..\..\include\rem_aufile.h" />
+    <ClInclude Include="..\..\include\rem_aumix.h" />
+    <ClInclude Include="..\..\include\rem_auresamp.h" />
+    <ClInclude Include="..\..\include\rem_autone.h" />
+    <ClInclude Include="..\..\include\rem_dsp.h" />
+    <ClInclude Include="..\..\include\rem_fir.h" />
+    <ClInclude Include="..\..\include\rem_g711.h" />
+    <ClInclude Include="..\..\include\rem_vid.h" />
+    <ClInclude Include="..\..\include\rem_vidconv.h" />
+    <ClInclude Include="..\..\include\rem_video.h" />
+    <ClInclude Include="..\..\include\rem_vidmix.h" />
+    <ClInclude Include="..\..\src\aufile\aufile.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\aubuf\aubuf.c" />
+    <ClCompile Include="..\..\src\auconv\auconv.c" />
+    <ClCompile Include="..\..\src\aufile\aufile.c" />
+    <ClCompile Include="..\..\src\aufile\wave.c" />
+    <ClCompile Include="..\..\src\auresamp\resamp.c" />
+    <ClCompile Include="..\..\src\autone\tone.c" />
+    <ClCompile Include="..\..\src\au\fmt.c" />
+    <ClCompile Include="..\..\src\fir\fir.c" />
+    <ClCompile Include="..\..\src\g711\g711.c" />
+    <ClCompile Include="..\..\src\vidconv\vconv.c" />
+    <ClCompile Include="..\..\src\vid\draw.c" />
+    <ClCompile Include="..\..\src\vid\fmt.c" />
+    <ClCompile Include="..\..\src\vid\frame.c" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>rem-win32</ProjectName>
+    <ProjectGuid>{3E767371-A72B-4F5C-A695-8F844B0889C5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25123.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\$(Platform)\$(Configuration)\bin\</OutDir>
+    <IntDir>..\..\$(Platform)\$(Configuration)\tmp\mk\win32\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\$(Platform)\$(Configuration)\bin\</OutDir>
+    <IntDir>..\..\$(Platform)\$(Configuration)\tmp\mk\win32\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\include;..\..\..\re\include;..\..\..\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;HAVE_SELECT;HAVE_IO_H;_CRT_SECURE_NO_DEPRECATE;FD_SETSIZE=1024;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4142;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)%(RelativeDir)%(Filename).obj</ObjectFileName>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>Iphlpapi.lib %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>..\..\include;..\..\..\re\include;..\..\..\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;HAVE_SELECT;HAVE_IO_H;_CRT_SECURE_NO_DEPRECATE;FD_SETSIZE=1024;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4142;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)%(RelativeDir)%(Filename).obj</ObjectFileName>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

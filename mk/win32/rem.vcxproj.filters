@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{454100a0-69da-46b8-87a7-362e0e8ded12}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{9de4f7c5-e0f0-48ec-88ee-bba0a84f11cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\au">
+      <UniqueIdentifier>{30b5c2c3-53a1-471f-a0b6-91dbcdec1f31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\aubuf">
+      <UniqueIdentifier>{646189bc-fc6d-42f7-8587-cd24d2c6cf36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\auconv">
+      <UniqueIdentifier>{ed1f97e2-4513-4599-84e5-914231538638}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\aufile">
+      <UniqueIdentifier>{12c26b7e-15a4-4696-90d6-3342ace2ff42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\auresamp">
+      <UniqueIdentifier>{d6c04be0-d9f9-4796-83b7-11b819928979}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\autone">
+      <UniqueIdentifier>{d2756e24-f5c6-4ac8-8744-9c1bc718bcd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\fir">
+      <UniqueIdentifier>{ab229de2-80fe-4d81-8a80-1fa6e481e483}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\g711">
+      <UniqueIdentifier>{488ee2c6-c3ae-4c94-b00e-6fafad186f06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\vid">
+      <UniqueIdentifier>{8f5e0c83-eccb-4c39-8064-796c2da69de9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\vidconv">
+      <UniqueIdentifier>{68ad1019-ff82-4811-a9df-cfe0eabeea34}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\rem.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_au.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_aubuf.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_auconv.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_audio.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_aufile.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_aumix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_auresamp.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_autone.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_dsp.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_fir.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_g711.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_vid.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_vidconv.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_video.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\rem_vidmix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\aufile\aufile.h">
+      <Filter>src\aufile</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\au\fmt.c">
+      <Filter>src\au</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\aubuf\aubuf.c">
+      <Filter>src\aubuf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\auconv\auconv.c">
+      <Filter>src\auconv</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\aufile\aufile.c">
+      <Filter>src\aufile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\aufile\wave.c">
+      <Filter>src\aufile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\auresamp\resamp.c">
+      <Filter>src\auresamp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\autone\tone.c">
+      <Filter>src\autone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fir\fir.c">
+      <Filter>src\fir</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\g711\g711.c">
+      <Filter>src\g711</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\vid\draw.c">
+      <Filter>src\vid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\vid\fmt.c">
+      <Filter>src\vid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\vid\frame.c">
+      <Filter>src\vid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\vidconv\vconv.c">
+      <Filter>src\vidconv</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
