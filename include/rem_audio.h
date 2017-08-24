@@ -11,6 +11,8 @@
 #include "rem_aufile.h"
 #include "rem_autone.h"
 #include "rem_aumix.h"
+#include "rem_dtmf.h"
 #include "rem_fir.h"
+#include "rem_goertzel.h"
 #include "rem_auresamp.h"
 #include "rem_g711.h"

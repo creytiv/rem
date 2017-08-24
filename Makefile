@@ -27,9 +27,9 @@ endif
 include $(LIBRE_MK)
 
 # List of modules
-MODULES += fir
+MODULES += fir goertzel
 MODULES += g711
-MODULES += aubuf aufile auresamp autone
+MODULES += aubuf aufile auresamp autone dtmf
 MODULES += au auconv
 
 ifneq ($(HAVE_LIBPTHREAD),)
