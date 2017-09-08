@@ -17,6 +17,7 @@ Copyright (C) 2010 - 2017 Creytiv.com
 * Audio resampler
 * Audio tone generator
 * Audio codec (G.711)
+* DTMF decoder
 * Video mixer
 * Video pixel converter
 * FIR-filter
@@ -70,6 +71,7 @@ Audio Modules:
 * aumix     unstable      Audio mixer
 * auresamp  unstable      Audio resampler
 * autone    testing       Tone/DTMF generator
+* dtmf      unstable      DTMF decoder
 * g711      stable        G.711 audio codec
 
 
@@ -90,6 +92,7 @@ Generic modules:
 
 * dsp       testing       DSP routines
 * fir       unstable      FIR (Finite Impulse Response) filter
+* goertzel  unstable      Goertzel Algorithm
 ```
 
 
