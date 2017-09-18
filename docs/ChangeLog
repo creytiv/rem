@@ -1,3 +1,16 @@
+2017-09-23 Alfred E. Heggestad <alfred.heggestad@gmail.com>
+
+	* Version 0.5.2
+
+	* Project URL: https://github.com/creytiv/rem
+
+	* build: Updated MSVS projects to vs2015 (thanks Mikhail Barg)
+
+	* goertzel: new module for Goertzel Algorithm
+
+	* dtmf: new module for DTMF decoder
+
+
 2017-04-08 Alfred E. Heggestad <alfred.heggestad@gmail.com>
 
 	* Version 0.5.1
