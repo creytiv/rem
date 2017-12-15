@@ -216,7 +216,11 @@ int auresamp_setup(struct auresamp *rs, uint32_t irate, unsigned ich,
 		rs->ratio = orate / irate;
 		rs->up    = true;
 
-		if (orate == 48000 && irate == 16000) {
+		if (orate == irate) {
+			rs->tapv = NULL;
+			rs->tapc = 0;
+		}
+		else if (orate == 48000 && irate == 16000) {
 			rs->tapv = fir_48_8;
 			rs->tapc = ARRAY_SIZE(fir_48_8);
 		}
@@ -298,8 +302,9 @@ int auresamp(struct auresamp *rs, int16_t *outv, size_t *outc,
 
 		*outc = outcc * rs->och;
 
-		fir_filter(&rs->fir, outv, outv, *outc, rs->och,
-			   rs->tapv, rs->tapc);
+		if (rs->tapv)
+			fir_filter(&rs->fir, outv, outv, *outc, rs->och,
+				   rs->tapv, rs->tapc);
 	}
 	else {
 		outcc = incc / rs->ratio;
