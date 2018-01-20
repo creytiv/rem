@@ -22,7 +22,8 @@
 void vidframe_draw_point(struct vidframe *f, unsigned x, unsigned y,
 			 uint8_t r, uint8_t g, uint8_t b)
 {
-	uint8_t *yp, *up, *vp, *p;
+	uint8_t *yp, *up, *vp;
+	uint32_t *p;
 
 	if (!f)
 		return;
@@ -53,11 +54,9 @@ void vidframe_draw_point(struct vidframe *f, unsigned x, unsigned y,
 		break;
 
 	case VID_FMT_RGB32:
-		p = f->data[0] + f->linesize[0] * y + x*4;
+		p = (void *)(f->data[0] + f->linesize[0] * y + x*4);
 
-		p[0] = b;
-		p[1] = g;
-		p[2] = r;
+		*p = (uint32_t)r << 16 | (uint32_t)g << 8 | b;
 		break;
 
 	default:
