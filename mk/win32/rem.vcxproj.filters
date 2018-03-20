@@ -131,5 +131,7 @@
     <ClCompile Include="..\..\src\vidconv\vconv.c">
       <Filter>src\vidconv</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\goertzel\goertzel.c" />
+    <ClCompile Include="..\..\src\dtmf\dec.c" />
   </ItemGroup>
 </Project>

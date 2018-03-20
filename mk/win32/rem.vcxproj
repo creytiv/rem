@@ -43,6 +43,8 @@
     <ClCompile Include="..\..\src\vid\draw.c" />
     <ClCompile Include="..\..\src\vid\fmt.c" />
     <ClCompile Include="..\..\src\vid\frame.c" />
+    <ClCompile Include="..\..\src\goertzel\goertzel.c" />
+    <ClCompile Include="..\..\src\dtmf\dec.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>rem-win32</ProjectName>
