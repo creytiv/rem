@@ -1,3 +1,16 @@
+2018-04-20 Alfred E. Heggestad <alfred.heggestad@gmail.com>
+
+	* Version 0.5.3
+
+	* Project URL: https://github.com/creytiv/rem
+
+	* auresamp: avoid FIR filtering if ouput sample rate equals input (#15)
+
+	* build: Update Windows project (#18) (thanks Encamy)
+
+	* vid: vidframe_draw_point: correct endian for RGB32 (#16)
+
+
 2017-09-23 Alfred E. Heggestad <alfred.heggestad@gmail.com>
 
 	* Version 0.5.2
