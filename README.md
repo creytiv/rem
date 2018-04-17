@@ -3,7 +3,7 @@ librem README
 
 
 librem is a Audio and video processing media library
-Copyright (C) 2010 - 2017 Creytiv.com
+Copyright (C) 2010 - 2018 Creytiv.com
 
 [![Build Status](https://travis-ci.org/creytiv/rem.svg?branch=master)](https://travis-ci.org/creytiv/rem)
 
