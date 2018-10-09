@@ -41,3 +41,32 @@ enum {
 	FLV_VIDCODEC_H264  = 7,
 	FLV_VIDCODEC_MPEG4 = 9,
 };
+
+
+struct avc_config_record {
+	uint8_t version;
+	uint8_t profile_ind;
+	uint8_t profile_compat;
+	uint8_t level_ind;
+	uint8_t lengthSizeMinusOne;
+	uint8_t numOfSequenceParameterSets;
+	uint16_t sequenceParameterSetLength;
+	uint8_t *sps;
+	uint8_t numOfPictureParameterSets;
+	uint16_t pictureParameterSetLength;
+	uint8_t *pps;
+};
+
+
+int flv_config_record_encode(struct mbuf *mb,
+
+			     uint8_t profile_ind,
+			     uint8_t profile_compat,
+			     uint8_t level_ind,
+
+			     uint16_t spsLength,
+			     uint8_t *sps,
+
+			     uint16_t ppsLength,
+			     uint8_t *pps);
+int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb);
