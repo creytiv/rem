@@ -47,6 +47,11 @@ enum {
 	FLV_VIDCODEC_MPEG4 = 9,
 };
 
+enum avc_packet_type {
+	AVC_SEQUENCE = 0,
+	AVC_NALU     = 1,
+	AVC_EOS      = 2
+};
 
 struct avc_config_record {
 	uint8_t version;

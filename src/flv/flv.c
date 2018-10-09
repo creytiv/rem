@@ -64,8 +64,10 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 
 	conf->version        = mbuf_read_u8(mb);
 
-	if (conf->version != 1)
+	if (conf->version != 1) {
+		re_printf("flv: illegal version %u\n", conf->version);
 		return EBADMSG;
+	}
 
 	conf->profile_ind    = mbuf_read_u8(mb);
 	conf->profile_compat = mbuf_read_u8(mb);
