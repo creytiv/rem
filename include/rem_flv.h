@@ -23,6 +23,11 @@ enum {
 	FLV_SRATE_44000HZ = 3,
 };
 
+enum aac_packet_type {
+	AAC_SEQUENCE_HEADER = 0,
+	AAC_RAW             = 1
+};
+
 
 /*
  * Video
