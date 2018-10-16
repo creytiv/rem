@@ -1,5 +1,5 @@
 /**
- * @file avc.c RTMP Client
+ * @file flv.c Flash Video File Format
  *
  * Copyright (C) 2010 Creytiv.com
  */
