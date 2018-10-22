@@ -74,46 +74,46 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 	conf->level_ind      = mbuf_read_u8(mb);
 
 	v = mbuf_read_u8(mb);
-	conf->lengthSizeMinusOne = v & 0x03;
-	lengthSize = conf->lengthSizeMinusOne + 1;
+	conf->lengthsizeminusone = v & 0x03;
+	lengthSize = conf->lengthsizeminusone + 1;
 
 	if (lengthSize != 4)
 		return EPROTO;
 
 	/* SPS */
 	v = mbuf_read_u8(mb);
-	conf->numOfSequenceParameterSets = v & 0x1f;
+	conf->sps_count = v & 0x1f;
 
-	conf->sequenceParameterSetLength = ntohs(mbuf_read_u16(mb));
+	conf->sps_len = ntohs(mbuf_read_u16(mb));
 
-	conf->sps = mem_alloc(conf->sequenceParameterSetLength, NULL);
+	conf->sps = mem_alloc(conf->sps_len, NULL);
 
-	err |= mbuf_read_mem(mb, conf->sps, conf->sequenceParameterSetLength);
+	err |= mbuf_read_mem(mb, conf->sps, conf->sps_len);
 
 	/* PPS */
-	conf->numOfPictureParameterSets = mbuf_read_u8(mb);
-	conf->pictureParameterSetLength = ntohs(mbuf_read_u16(mb));
+	conf->pps_count = mbuf_read_u8(mb);
+	conf->pps_len = ntohs(mbuf_read_u16(mb));
 
-	conf->pps = mem_alloc(conf->pictureParameterSetLength, NULL);
+	conf->pps = mem_alloc(conf->pps_len, NULL);
 
-	err |= mbuf_read_mem(mb, conf->pps, conf->pictureParameterSetLength);
+	err |= mbuf_read_mem(mb, conf->pps, conf->pps_len);
 
 	re_printf("config: profile_ind    %u\n", conf->profile_ind);
 	re_printf("        profile_compat %u\n", conf->profile_compat);
 	re_printf("        level_ind      %u\n", conf->level_ind);
-	re_printf("        lengthSizeMinusOne %u\n", conf->lengthSizeMinusOne);
-	re_printf("        numOfSequenceParameterSets %u\n",
-		  conf->numOfSequenceParameterSets);
-	re_printf("        sequenceParameterSetLength %u\n",
-		  conf->sequenceParameterSetLength);
+	re_printf("        lengthsizeminusone %u\n", conf->lengthsizeminusone);
+	re_printf("        sps_count %u\n",
+		  conf->sps_count);
+	re_printf("        sps_len %u\n",
+		  conf->sps_len);
 	re_printf("        sps: %w\n",
-		  conf->sps, (size_t)conf->sequenceParameterSetLength);
-	re_printf("        numOfPictureParameterSets %u\n",
-		  conf->numOfPictureParameterSets);
-	re_printf("        pictureParameterSetLength %u\n",
-		  conf->pictureParameterSetLength);
+		  conf->sps, (size_t)conf->sps_len);
+	re_printf("        pps_count %u\n",
+		  conf->pps_count);
+	re_printf("        pps_len %u\n",
+		  conf->pps_len);
 	re_printf("        pps: %w\n",
-		  conf->pps, (size_t)conf->pictureParameterSetLength);
+		  conf->pps, (size_t)conf->pps_len);
 
 	return err;
 }

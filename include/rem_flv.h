@@ -58,12 +58,12 @@ struct avc_config_record {
 	uint8_t profile_ind;
 	uint8_t profile_compat;
 	uint8_t level_ind;
-	uint8_t lengthSizeMinusOne;
-	uint8_t numOfSequenceParameterSets;
-	uint16_t sequenceParameterSetLength;
+	uint8_t lengthsizeminusone;
+	uint8_t sps_count;
+	uint16_t sps_len;
 	uint8_t *sps;
-	uint8_t numOfPictureParameterSets;
-	uint16_t pictureParameterSetLength;
+	uint8_t pps_count;
+	uint16_t pps_len;
 	uint8_t *pps;
 };
 
