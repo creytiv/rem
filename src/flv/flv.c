@@ -14,25 +14,24 @@
 #include <rem_flv.h>
 
 
-int flv_config_record_encode(struct mbuf *mb,
+#define FLV_CONFIG_VERSION 1
 
+
+int flv_config_record_encode(struct mbuf *mb,
 			     uint8_t profile_ind,
 			     uint8_t profile_compat,
 			     uint8_t level_ind,
-
 			     uint16_t spsLength,
 			     uint8_t *sps,
-
 			     uint16_t ppsLength,
 			     uint8_t *pps)
 {
-#define CONFIG_VERSION 1
 	int err = 0;
 
 	if (!mb || !sps || !pps)
 		return EINVAL;
 
-	err |= mbuf_write_u8(mb, CONFIG_VERSION);
+	err |= mbuf_write_u8(mb, FLV_CONFIG_VERSION);
 
 	err |= mbuf_write_u8(mb, profile_ind);
 	err |= mbuf_write_u8(mb, profile_compat);
@@ -62,9 +61,9 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 
 	memset(conf, 0, sizeof(*conf));
 
-	conf->version        = mbuf_read_u8(mb);
+	conf->version = mbuf_read_u8(mb);
 
-	if (conf->version != 1) {
+	if (conf->version != FLV_CONFIG_VERSION) {
 		re_printf("flv: illegal version %u\n", conf->version);
 		return EBADMSG;
 	}
@@ -97,23 +96,6 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 	conf->pps = mem_alloc(conf->pps_len, NULL);
 
 	err |= mbuf_read_mem(mb, conf->pps, conf->pps_len);
-
-	re_printf("config: profile_ind    %u\n", conf->profile_ind);
-	re_printf("        profile_compat %u\n", conf->profile_compat);
-	re_printf("        level_ind      %u\n", conf->level_ind);
-	re_printf("        lengthsizeminusone %u\n", conf->lengthsizeminusone);
-	re_printf("        sps_count %u\n",
-		  conf->sps_count);
-	re_printf("        sps_len %u\n",
-		  conf->sps_len);
-	re_printf("        sps: %w\n",
-		  conf->sps, (size_t)conf->sps_len);
-	re_printf("        pps_count %u\n",
-		  conf->pps_count);
-	re_printf("        pps_len %u\n",
-		  conf->pps_len);
-	re_printf("        pps: %w\n",
-		  conf->pps, (size_t)conf->pps_len);
 
 	return err;
 }
