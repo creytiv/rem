@@ -17,14 +17,23 @@
 #define FLV_CONFIG_VERSION 1
 
 
+static void destructor(void *data)
+{
+	struct avc_config_record *conf = data;
+
+	mem_deref(conf->sps);
+	mem_deref(conf->pps);
+}
+
+
 int flv_config_record_encode(struct mbuf *mb,
 			     uint8_t profile_ind,
 			     uint8_t profile_compat,
 			     uint8_t level_ind,
-			     uint16_t spsLength,
-			     uint8_t *sps,
-			     uint16_t ppsLength,
-			     uint8_t *pps)
+			     uint16_t sps_length,
+			     const uint8_t *sps,
+			     uint16_t pps_length,
+			     const uint8_t *pps)
 {
 	int err = 0;
 
@@ -41,13 +50,13 @@ int flv_config_record_encode(struct mbuf *mb,
 
 	/* SPS */
 	err |= mbuf_write_u8(mb, 0xe0 | 1);
-	err |= mbuf_write_u16(mb, htons(spsLength));
-	err |= mbuf_write_mem(mb, sps, spsLength);
+	err |= mbuf_write_u16(mb, htons(sps_length));
+	err |= mbuf_write_mem(mb, sps, sps_length);
 
 	/* PPS */
 	err |= mbuf_write_u8(mb, 1);
-	err |= mbuf_write_u16(mb, htons(ppsLength));
-	err |= mbuf_write_mem(mb, pps, ppsLength);
+	err |= mbuf_write_u16(mb, htons(pps_length));
+	err |= mbuf_write_mem(mb, pps, pps_length);
 
 	return err;
 }
@@ -63,7 +72,7 @@ int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
 	if (!confp || !mb)
 		return EINVAL;
 
-	conf = mem_zalloc(sizeof(*conf), NULL);
+	conf = mem_zalloc(sizeof(*conf), destructor);
 	if (!conf)
 		return ENOMEM;
 
