@@ -53,19 +53,25 @@ int flv_config_record_encode(struct mbuf *mb,
 }
 
 
-int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
+int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
 {
+	struct avc_config_record *conf;
 	uint8_t v;
 	size_t lengthSize;
 	int err = 0;
 
-	memset(conf, 0, sizeof(*conf));
+	if (!confp || !mb)
+		return EINVAL;
+
+	conf = mem_zalloc(sizeof(*conf), NULL);
+	if (!conf)
+		return ENOMEM;
 
 	conf->version = mbuf_read_u8(mb);
 
 	if (conf->version != FLV_CONFIG_VERSION) {
-		re_printf("flv: illegal version %u\n", conf->version);
-		return EBADMSG;
+		err = EBADMSG;
+		goto out;
 	}
 
 	conf->profile_ind    = mbuf_read_u8(mb);
@@ -76,8 +82,10 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 	conf->lengthsizeminusone = v & 0x03;
 	lengthSize = conf->lengthsizeminusone + 1;
 
-	if (lengthSize != 4)
-		return EPROTO;
+	if (lengthSize != 4) {
+		err = EPROTO;
+		goto out;
+	}
 
 	/* SPS */
 	v = mbuf_read_u8(mb);
@@ -96,6 +104,12 @@ int flv_config_record_decode(struct avc_config_record *conf, struct mbuf *mb)
 	conf->pps = mem_alloc(conf->pps_len, NULL);
 
 	err |= mbuf_read_mem(mb, conf->pps, conf->pps_len);
+
+ out:
+	if (err)
+		mem_deref(conf);
+	else
+		*confp = conf;
 
 	return err;
 }
