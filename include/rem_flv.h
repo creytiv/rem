@@ -11,8 +11,8 @@
 
 enum {
 	FLV_AUCODEC_PCM       = 0,
-	FLV_AUCODEC_PCM_ALAW  = 7,
-	FLV_AUCODEC_PCM_MULAW = 8,
+	FLV_AUCODEC_ALAW      = 7,
+	FLV_AUCODEC_ULAW      = 8,
 	FLV_AUCODEC_AAC       = 10,
 };
 

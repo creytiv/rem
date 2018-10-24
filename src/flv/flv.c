@@ -66,7 +66,7 @@ int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
 {
 	struct avc_config_record *conf;
 	uint8_t v;
-	size_t lengthSize;
+	size_t length_size;
 	int err = 0;
 
 	if (!confp || !mb)
@@ -76,9 +76,18 @@ int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
 	if (!conf)
 		return ENOMEM;
 
+	if (mbuf_get_left(mb) < 1) {
+		err = EBADMSG;
+		goto out;
+	}
 	conf->version = mbuf_read_u8(mb);
 
 	if (conf->version != FLV_CONFIG_VERSION) {
+		err = EBADMSG;
+		goto out;
+	}
+
+	if (mbuf_get_left(mb) < 3) {
 		err = EBADMSG;
 		goto out;
 	}
@@ -87,30 +96,61 @@ int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
 	conf->profile_compat = mbuf_read_u8(mb);
 	conf->level_ind      = mbuf_read_u8(mb);
 
+	if (mbuf_get_left(mb) < 1) {
+		err = EBADMSG;
+		goto out;
+	}
+
 	v = mbuf_read_u8(mb);
 	conf->lengthsizeminusone = v & 0x03;
-	lengthSize = conf->lengthsizeminusone + 1;
+	length_size = conf->lengthsizeminusone + 1;
 
-	if (lengthSize != 4) {
+	if (length_size != 4) {
 		err = EPROTO;
 		goto out;
 	}
 
 	/* SPS */
+	if (mbuf_get_left(mb) < 3) {
+		err = EBADMSG;
+		goto out;
+	}
 	v = mbuf_read_u8(mb);
 	conf->sps_count = v & 0x1f;
 
 	conf->sps_len = ntohs(mbuf_read_u16(mb));
 
+	if (mbuf_get_left(mb) < conf->sps_len) {
+		err = EBADMSG;
+		goto out;
+	}
+
 	conf->sps = mem_alloc(conf->sps_len, NULL);
+	if (!conf->sps) {
+		err = ENOMEM;
+		goto out;
+	}
 
 	err |= mbuf_read_mem(mb, conf->sps, conf->sps_len);
 
 	/* PPS */
+	if (mbuf_get_left(mb) < 3) {
+		err = EBADMSG;
+		goto out;
+	}
 	conf->pps_count = mbuf_read_u8(mb);
 	conf->pps_len = ntohs(mbuf_read_u16(mb));
 
+	if (mbuf_get_left(mb) < conf->pps_len) {
+		err = EBADMSG;
+		goto out;
+	}
+
 	conf->pps = mem_alloc(conf->pps_len, NULL);
+	if (!conf->pps) {
+		err = ENOMEM;
+		goto out;
+	}
 
 	err |= mbuf_read_mem(mb, conf->pps, conf->pps_len);
 
