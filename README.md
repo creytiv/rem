@@ -91,6 +91,7 @@ Video Modules:
 Generic modules:
 
 * dsp       testing       DSP routines
+* flv       unstable      Flash Video File Format
 * fir       unstable      FIR (Finite Impulse Response) filter
 * goertzel  unstable      Goertzel Algorithm
 ```
