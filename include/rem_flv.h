@@ -23,9 +23,9 @@ enum flv_srate {
 	FLV_SRATE_44000HZ = 3,
 };
 
-enum aac_packet_type {
-	AAC_SEQUENCE_HEADER = 0,
-	AAC_RAW             = 1
+enum flv_aac_packet_type {
+	FLV_AAC_SEQUENCE_HEADER = 0,
+	FLV_AAC_RAW             = 1
 };
 
 
@@ -47,13 +47,13 @@ enum flv_vidcodec {
 	FLV_VIDCODEC_MPEG4 = 9,
 };
 
-enum avc_packet_type {
-	AVC_SEQUENCE = 0,
-	AVC_NALU     = 1,
-	AVC_EOS      = 2
+enum flv_avc_packet_type {
+	FLV_AVC_SEQUENCE = 0,
+	FLV_AVC_NALU     = 1,
+	FLV_AVC_EOS      = 2
 };
 
-struct avc_config_record {
+struct flv_avc_config_record {
 	uint8_t version;
 	uint8_t profile_ind;
 	uint8_t profile_compat;
@@ -76,5 +76,5 @@ int flv_config_record_encode(struct mbuf *mb,
 			     const uint8_t *sps,
 			     uint16_t pps_length,
 			     const uint8_t *pps);
-int flv_config_record_decode(struct avc_config_record **confp,
+int flv_config_record_decode(struct flv_avc_config_record **confp,
 			     struct mbuf *mb);

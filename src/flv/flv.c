@@ -4,13 +4,10 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
-#include <string.h>
 #include <re_types.h>
 #include <re_fmt.h>
 #include <re_mem.h>
 #include <re_mbuf.h>
-#include <re_net.h>
-#include <re_sa.h>
 #include <rem_flv.h>
 
 
@@ -19,7 +16,7 @@
 
 static void destructor(void *data)
 {
-	struct avc_config_record *conf = data;
+	struct flv_avc_config_record *conf = data;
 
 	mem_deref(conf->sps);
 	mem_deref(conf->pps);
@@ -62,9 +59,10 @@ int flv_config_record_encode(struct mbuf *mb,
 }
 
 
-int flv_config_record_decode(struct avc_config_record **confp, struct mbuf *mb)
+int flv_config_record_decode(struct flv_avc_config_record **confp,
+			     struct mbuf *mb)
 {
-	struct avc_config_record *conf;
+	struct flv_avc_config_record *conf;
 	uint8_t v;
 	size_t length_size;
 	int err = 0;
