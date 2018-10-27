@@ -49,7 +49,7 @@ int avc_config_encode(struct mbuf *mb, uint8_t profile_ind,
 }
 
 
-int avc_config_decode(struct avc_conf *conf, struct mbuf *mb)
+int avc_config_decode(struct avc_config *conf, struct mbuf *mb)
 {
 	uint8_t version, length_size, count;
 	int err = 0;
