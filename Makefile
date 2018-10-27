@@ -31,13 +31,13 @@ MODULES += fir goertzel
 MODULES += g711
 MODULES += aubuf aufile auresamp autone dtmf
 MODULES += au auconv
-MODULES += flv
 
 ifneq ($(HAVE_LIBPTHREAD),)
 MODULES += aumix vidmix
 endif
 
 MODULES += vid vidconv
+MODULES += avc
 
 LIBS    += -lm
 

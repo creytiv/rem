@@ -1,5 +1,5 @@
 /**
- * @file flv.c Flash Video File Format
+ * @file avc/conf.c Advanced Video Coding -- Configuration record
  *
  * Copyright (C) 2010 Creytiv.com
  */
@@ -10,28 +10,24 @@
 #include <re_mbuf.h>
 #include <re_sa.h>
 #include <re_net.h>
-#include <rem_flv.h>
+#include <rem_avc.h>
 
 
 #define AVC_CONF_VERSION 1
 #define SPS_MASK 0xe0
 
 
-int flv_config_record_encode(struct mbuf *mb,
-			     uint8_t profile_ind,
-			     uint8_t profile_compat,
-			     uint8_t level_ind,
-			     uint16_t sps_length,
-			     const uint8_t *sps,
-			     uint16_t pps_length,
-			     const uint8_t *pps)
+int avc_config_encode(struct mbuf *mb, uint8_t profile_ind,
+		      uint8_t profile_compat, uint8_t level_ind,
+		      uint16_t sps_length, const uint8_t *sps,
+		      uint16_t pps_length, const uint8_t *pps)
 {
-	int err = 0;
+	int err;
 
 	if (!mb || !sps || !pps)
 		return EINVAL;
 
-	err |= mbuf_write_u8(mb, AVC_CONF_VERSION);
+	err  = mbuf_write_u8(mb, AVC_CONF_VERSION);
 
 	err |= mbuf_write_u8(mb, profile_ind);
 	err |= mbuf_write_u8(mb, profile_compat);
@@ -53,7 +49,7 @@ int flv_config_record_encode(struct mbuf *mb,
 }
 
 
-int flv_config_record_decode(struct flv_avc_config *conf, struct mbuf *mb)
+int avc_config_decode(struct avc_conf *conf, struct mbuf *mb)
 {
 	uint8_t version, length_size, count;
 	int err = 0;
