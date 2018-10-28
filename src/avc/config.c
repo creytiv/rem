@@ -1,5 +1,5 @@
 /**
- * @file avc/conf.c Advanced Video Coding -- Configuration record
+ * @file avc/config.c Advanced Video Coding -- Configuration record
  *
  * Copyright (C) 2010 Creytiv.com
  */
@@ -13,7 +13,7 @@
 #include <rem_avc.h>
 
 
-#define AVC_CONF_VERSION 1
+#define AVC_CONFIG_VERSION 1
 #define SPS_MASK 0xe0
 
 
@@ -27,7 +27,7 @@ int avc_config_encode(struct mbuf *mb, uint8_t profile_ind,
 	if (!mb || !sps || !pps)
 		return EINVAL;
 
-	err  = mbuf_write_u8(mb, AVC_CONF_VERSION);
+	err  = mbuf_write_u8(mb, AVC_CONFIG_VERSION);
 
 	err |= mbuf_write_u8(mb, profile_ind);
 	err |= mbuf_write_u8(mb, profile_compat);
@@ -52,7 +52,6 @@ int avc_config_encode(struct mbuf *mb, uint8_t profile_ind,
 int avc_config_decode(struct avc_config *conf, struct mbuf *mb)
 {
 	uint8_t version, length_size, count;
-	int err = 0;
 
 	if (!conf || !mb)
 		return EINVAL;
@@ -66,7 +65,7 @@ int avc_config_decode(struct avc_config *conf, struct mbuf *mb)
 	conf->level_ind      = mbuf_read_u8(mb);
 	length_size          = mbuf_read_u8(mb) & 0x03;
 
-	if (version != AVC_CONF_VERSION || length_size != 3)
+	if (version != AVC_CONFIG_VERSION || length_size != 3)
 		return EPROTO;
 
 	/* SPS */
@@ -99,5 +98,5 @@ int avc_config_decode(struct avc_config *conf, struct mbuf *mb)
 
 	mbuf_read_mem(mb, conf->pps, conf->pps_len);
 
-	return err;
+	return 0;
 }

@@ -4,4 +4,4 @@
 # Copyright (C) 2010 Creytiv.com
 #
 
-SRCS	+= avc/conf.c
+SRCS	+= avc/config.c

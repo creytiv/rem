@@ -25,7 +25,7 @@ enum flv_srate {
 
 enum flv_aac_packet_type {
 	FLV_AAC_SEQUENCE_HEADER = 0,
-	FLV_AAC_RAW             = 1
+	FLV_AAC_RAW             = 1,
 };
 
 
@@ -50,5 +50,5 @@ enum flv_vidcodec {
 enum flv_avc_packet_type {
 	FLV_AVC_SEQUENCE = 0,
 	FLV_AVC_NALU     = 1,
-	FLV_AVC_EOS      = 2
+	FLV_AVC_EOS      = 2,
 };

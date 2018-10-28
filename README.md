@@ -81,6 +81,7 @@ Video Modules:
 
   name:     status:       description:
 
+* avc       unstable      Advanced Video Coding (AVC)
 * vid       testing       Base video types
 * vidconv   testing       Colorspace conversion and scaling
 * vidmix    unstable      Video mixer
