@@ -15,6 +15,7 @@ extern "C" {
 #include "rem_audio.h"
 #include "rem_video.h"
 #include "rem_dsp.h"
+#include "rem_flv.h"
 
 
 #ifdef __cplusplus

@@ -81,6 +81,7 @@ Video Modules:
 
   name:     status:       description:
 
+* avc       unstable      Advanced Video Coding (AVC)
 * vid       testing       Base video types
 * vidconv   testing       Colorspace conversion and scaling
 * vidmix    unstable      Video mixer
@@ -91,6 +92,7 @@ Video Modules:
 Generic modules:
 
 * dsp       testing       DSP routines
+* flv       unstable      Flash Video File Format
 * fir       unstable      FIR (Finite Impulse Response) filter
 * goertzel  unstable      Goertzel Algorithm
 ```
