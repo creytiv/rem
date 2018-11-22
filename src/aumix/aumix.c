@@ -41,14 +41,6 @@ struct aumix_source {
 };
 
 
-static void dummy_frame_handler(const int16_t *sampv, size_t sampc, void *arg)
-{
-	(void)sampv;
-	(void)sampc;
-	(void)arg;
-}
-
-
 static void destructor(void *arg)
 {
 	struct aumix *mix = arg;
@@ -168,6 +160,9 @@ static void *aumix_thread(void *arg)
 
 			struct aumix_source *src = le->data;
 			size_t i;
+
+			if (!src->fh)
+				continue;
 
 			memcpy(src_frame, mix_frame, mix->frame_size*2);
 
@@ -323,7 +318,7 @@ int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 		return ENOMEM;
 
 	src->mix = mem_ref(mix);
-	src->fh  = fh ? fh : dummy_frame_handler;
+	src->fh  = fh ? fh : NULL;
 	src->arg = arg;
 
 	sz = mix->frame_size*2;
