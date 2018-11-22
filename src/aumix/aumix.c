@@ -88,11 +88,13 @@ static void *aumix_thread(void *arg)
 	uint8_t *silence, *frame, *base_frame;
 	struct aumix *mix = arg;
 	int16_t *mix_frame;
+	int16_t *src_frame;
 	uint64_t ts = 0;
 
 	silence   = mem_zalloc(mix->frame_size*2, NULL);
 	frame     = mem_alloc(mix->frame_size*2, NULL);
 	mix_frame = mem_alloc(mix->frame_size*2, NULL);
+	src_frame = mem_alloc(mix->frame_size*2, NULL);
 
 	if (!silence || !frame || !mix_frame)
 		goto out;
@@ -151,27 +153,28 @@ static void *aumix_thread(void *arg)
 					mix->frame_size);
 		}
 
+		memcpy(mix_frame, base_frame, mix->frame_size*2);
+
 		for (le=mix->srcl.head; le; le=le->next) {
 
 			struct aumix_source *src = le->data;
-			struct le *cle;
+			size_t i;
 
-			memcpy(mix_frame, base_frame, mix->frame_size*2);
+			for (i=0; i<mix->frame_size; i++)
+				mix_frame[i] += src->frame[i];
+		}
 
-			for (cle=mix->srcl.head; cle; cle=cle->next) {
+		for (le=mix->srcl.head; le; le=le->next) {
 
-				struct aumix_source *csrc = cle->data;
-				size_t i;
-#if 1
-				/* skip self */
-				if (csrc == src)
-					continue;
-#endif
-				for (i=0; i<mix->frame_size; i++)
-					mix_frame[i] += csrc->frame[i];
-			}
+			struct aumix_source *src = le->data;
+			size_t i;
 
-			src->fh(mix_frame, mix->frame_size, src->arg);
+			memcpy(src_frame, mix_frame, mix->frame_size*2);
+
+			for (i=0; i<mix->frame_size; i++)
+				src_frame[i] -= src->frame[i];
+
+			src->fh(src_frame, mix->frame_size, src->arg);
 		}
 
 		ts += mix->ptime;
@@ -181,6 +184,7 @@ static void *aumix_thread(void *arg)
 
  out:
 	mem_deref(mix_frame);
+	mem_deref(src_frame);
 	mem_deref(silence);
 	mem_deref(frame);
 
