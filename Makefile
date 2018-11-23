@@ -10,7 +10,7 @@ VER_MINOR := 6
 VER_PATCH := 0
 
 PROJECT   := rem
-VERSION   := 0.6.0
+VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
 OPT_SPEED := 1
 
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
