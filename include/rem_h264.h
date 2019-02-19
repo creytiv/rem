@@ -5,7 +5,9 @@
  */
 
 
+/** NAL unit types */
 enum {
+	H264_NALU_UNKNOWN      = 0,
 	H264_NALU_SLICE        = 1,
 	H264_NALU_DPA          = 2,
 	H264_NALU_DPB          = 3,
@@ -30,10 +32,13 @@ enum {
 };
 
 
+/**
+ * H.264 NAL Header
+ */
 struct h264_nal_header {
-	unsigned f:1;
-	unsigned nri:2;
-	unsigned type:5;
+	unsigned f:1;      /**< Forbidden zero bit (must be 0) */
+	unsigned nri:2;    /**< nal_ref_idc                    */
+	unsigned type:5;   /**< NAL unit type                  */
 };
 
 
