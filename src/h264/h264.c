@@ -17,7 +17,7 @@
  *
  * @return 0 if success, otherwise errorcode
  */
-int h264_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr)
+int h264_nal_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr)
 {
 	uint8_t v;
 
@@ -38,7 +38,7 @@ int h264_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr)
  *
  * @return 0 if success, otherwise errorcode
  */
-int h264_header_decode(struct h264_nal_header *hdr, struct mbuf *mb)
+int h264_nal_header_decode(struct h264_nal_header *hdr, struct mbuf *mb)
 {
 	uint8_t v;
 

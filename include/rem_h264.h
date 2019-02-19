@@ -42,6 +42,6 @@ struct h264_nal_header {
 };
 
 
-int h264_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr);
-int h264_header_decode(struct h264_nal_header *hdr, struct mbuf *mb);
+int h264_nal_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr);
+int h264_nal_header_decode(struct h264_nal_header *hdr, struct mbuf *mb);
 const char *h264_nal_unit_name(int nal_type);
