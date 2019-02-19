@@ -24,7 +24,7 @@ int h264_nal_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr)
 	if (!mb || !hdr)
 		return EINVAL;
 
-	v = hdr->f<<7 | hdr->nri<<5 | hdr->type<<0;
+	v = hdr->f<<7 | hdr->nri<<5 | hdr->type;
 
 	return mbuf_write_u8(mb, v);
 }
@@ -51,7 +51,7 @@ int h264_nal_header_decode(struct h264_nal_header *hdr, struct mbuf *mb)
 
 	hdr->f    = v>>7 & 0x1;
 	hdr->nri  = v>>5 & 0x3;
-	hdr->type = v>>0 & 0x1f;
+	hdr->type = v    & 0x1f;
 
 	return 0;
 }
