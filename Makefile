@@ -37,6 +37,7 @@ MODULES += aumix vidmix
 endif
 
 MODULES += vid vidconv
+MODULES += aac
 MODULES += avc
 MODULES += h264
 
