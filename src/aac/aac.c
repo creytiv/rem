@@ -28,6 +28,15 @@ static const unsigned aac_channels[8] = {
 };
 
 
+/**
+ * Decode an AAC header
+ *
+ * @param hdr Decoded AAC header
+ * @param p   Packet to decode
+ * @param len Packet length
+ *
+ * @return 0 if success, otherwise errorcode
+ */
 int aac_header_decode(struct aac_header *hdr, const uint8_t *p, size_t len)
 {
 	uint8_t object_type;
