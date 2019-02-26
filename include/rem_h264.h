@@ -6,8 +6,7 @@
 
 
 /** NAL unit types */
-enum {
-	H264_NALU_UNKNOWN      = 0,
+enum h264_nalu {
 	H264_NALU_SLICE        = 1,
 	H264_NALU_DPA          = 2,
 	H264_NALU_DPB          = 3,
@@ -44,4 +43,4 @@ struct h264_nal_header {
 
 int h264_nal_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr);
 int h264_nal_header_decode(struct h264_nal_header *hdr, struct mbuf *mb);
-const char *h264_nal_unit_name(int nal_type);
+const char *h264_nal_unit_name(enum h264_nalu nal_type);
