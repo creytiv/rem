@@ -16,3 +16,4 @@
 #include "rem_goertzel.h"
 #include "rem_auresamp.h"
 #include "rem_g711.h"
+#include "rem_aac.h"
