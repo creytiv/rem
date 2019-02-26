@@ -9,3 +9,4 @@
 #include "rem_vidmix.h"
 #include "rem_vidconv.h"
 #include "rem_avc.h"
+#include "rem_h264.h"
