@@ -1,5 +1,5 @@
 /**
- * @file h264.c H.264 header parser
+ * @file h264/nal.c H.264 header parser
  *
  * Copyright (C) 2010 Creytiv.com
  */

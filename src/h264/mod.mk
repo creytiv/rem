@@ -4,4 +4,4 @@
 # Copyright (C) 2010 Creytiv.com
 #
 
-SRCS	+= h264/h264.c
+SRCS	+= h264/nal.c
