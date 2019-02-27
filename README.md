@@ -64,6 +64,7 @@ Audio Modules:
 
   name:     status:       description:
 
+* aac       unstable      Advanced Audio Coding (AAC)
 * au        testing       Base audio types
 * aubuf     testing       Audio buffer
 * auconv    unstable      Audio sample format conversion
@@ -82,6 +83,7 @@ Video Modules:
   name:     status:       description:
 
 * avc       unstable      Advanced Video Coding (AVC)
+* h264      unstable      H.264 header parser
 * vid       testing       Base video types
 * vidconv   testing       Colorspace conversion and scaling
 * vidmix    unstable      Video mixer
