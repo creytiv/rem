@@ -11,6 +11,8 @@
 
 enum flv_aucodec {
 	FLV_AUCODEC_PCM       = 0,
+	FLV_AUCODEC_MP3       = 2,
+	FLV_AUCODEC_PCM_LE    = 3,
 	FLV_AUCODEC_ALAW      = 7,
 	FLV_AUCODEC_ULAW      = 8,
 	FLV_AUCODEC_AAC       = 10,
