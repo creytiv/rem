@@ -1,15 +1,24 @@
 language: c
 
-before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get -y install libssl-dev
+os:
+    - linux
+    - osx
+
+compiler:
+    - clang
+    - gcc
+
+addons:
+  apt:
+    packages:
+      libssl-dev
 
 install:
     - git clone https://github.com/creytiv/re.git
-    - cd re && make && sudo make install && cd ..
-    - sudo ldconfig
+    - cd re && make && sudo PATH="$PATH" make install && cd ..
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ldconfig; fi
     - wget "https://github.com/alfredh/pytools/raw/master/ccheck.py"
 
 script: 
-    - make EXTRA_CFLAGS=-Werror
+    - make CCACHE= EXTRA_CFLAGS=-Werror
     - python2 ccheck.py
