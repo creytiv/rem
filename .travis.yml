@@ -16,7 +16,7 @@ addons:
 install:
     - git clone https://github.com/creytiv/re.git
     - cd re && make && sudo make install && cd ..
-    - sudo ldconfig
+    - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo ldconfig; fi
     - wget "https://github.com/alfredh/pytools/raw/master/ccheck.py"
 
 script: 
