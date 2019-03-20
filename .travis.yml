@@ -1,8 +1,17 @@
 language: c
 
-before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get -y install libssl-dev
+os:
+    - linux
+    - osx
+
+compiler:
+    - clang
+    - gcc
+
+addons:
+  apt:
+    packages:
+      libssl-dev
 
 install:
     - git clone https://github.com/creytiv/re.git
