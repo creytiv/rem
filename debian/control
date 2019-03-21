@@ -17,6 +17,6 @@ Description: Audio and video processing media library
 Package: librem-dev
 Architecture: any
 Section: libdevel
-Depends: librem (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: librem (= ${binary:Version}), ${misc:Depends}
 Description: Audio and video processing media library (development files)
  Development package for librem
