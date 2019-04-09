@@ -43,7 +43,7 @@ static inline uint8_t g711_pcm2alaw(int16_t l)
 {
 	const uint8_t mask = (l < 0) ? 0x7f : 0xff;
 	if (l < 0)
-		l = -l;
+		l = ~l;
 	l >>= 4;
 
 	return g711_l2A[l] & mask;
