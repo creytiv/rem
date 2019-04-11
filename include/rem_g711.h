@@ -18,8 +18,9 @@ extern const int16_t g711_A2l[256];
  *
  * @return U-law byte
  */
-static inline uint8_t g711_pcm2ulaw(int16_t l)
+static inline uint8_t g711_pcm2ulaw(int16_t lx)
 {
+	int32_t l = lx;
 	const uint8_t mask = (l < 0) ? 0x7f : 0xff;
 	if (l < 0)
 		l = -l;
@@ -43,7 +44,7 @@ static inline uint8_t g711_pcm2alaw(int16_t l)
 {
 	const uint8_t mask = (l < 0) ? 0x7f : 0xff;
 	if (l < 0)
-		l = -l;
+		l = ~l;
 	l >>= 4;
 
 	return g711_l2A[l] & mask;
