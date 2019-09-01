@@ -188,7 +188,8 @@ int vidframe_alloc(struct vidframe **vfp, enum vidfmt fmt,
 void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 {
 	uint8_t *p;
-	unsigned h, i;
+	unsigned h, i, x;
+	int u, v;
 
 	if (!vf)
 		return;
@@ -218,6 +219,34 @@ void vidframe_fill(struct vidframe *vf, uint32_t r, uint32_t g, uint32_t b)
 			*p++ = g;
 			*p++ = r;
 			*p++ = 0;
+		}
+		break;
+
+	case VID_FMT_NV12:
+	case VID_FMT_NV21:
+		h = vf->size.h;
+
+		if (vf->fmt == VID_FMT_NV12) {
+			u = rgb2u(r, g, b);
+			v = rgb2v(r, g, b);
+		}
+		else {
+			v = rgb2u(r, g, b);
+			u = rgb2v(r, g, b);
+		}
+
+		memset(vf->data[0], rgb2y(r, g, b), h * vf->linesize[0]);
+
+		p = vf->data[1];
+
+		for (h=0; h<vf->size.h; h+=2) {
+
+			for (x=0; x<vf->size.w; x+=2) {
+				p[x  ] = u;
+				p[x+1] = v;
+			}
+
+			p += vf->linesize[1];
 		}
 		break;
 
