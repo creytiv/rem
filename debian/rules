@@ -29,7 +29,8 @@ build-stamp: configure-stamp
 	# Add here commands to compile the package.
 	$(MAKE) RELEASE=1 \
 		EXTRA_CFLAGS=$(EXTRA_CFLAGS) \
-		EXTRA_LFLAGS=$(EXTRA_LFLAGS)
+		EXTRA_LFLAGS=$(EXTRA_LFLAGS) \
+		LIB_SUFFIX=.so.0
 
 	touch $@
 
@@ -51,7 +52,9 @@ install: build
 
         # Add here commands to install the package into debian/tmp
 	mkdir $(CURDIR)/debian/tmp
-	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp \
+		LIB_SUFFIX=.so.0
+	cd $(CURDIR)/debian/tmp/usr/lib && ln -s -f librem.so.0 librem.so
 
 	dh_movefiles
 
