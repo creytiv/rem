@@ -44,3 +44,25 @@ struct h264_nal_header {
 int h264_nal_header_encode(struct mbuf *mb, const struct h264_nal_header *hdr);
 int h264_nal_header_decode(struct h264_nal_header *hdr, struct mbuf *mb);
 const char *h264_nal_unit_name(enum h264_nalu nal_type);
+
+
+/**
+ * H.264 Sequence Parameter Set (SPS)
+ */
+struct h264_sps {
+	uint8_t profile_idc;
+	uint8_t level_idc;
+	unsigned seq_parameter_set_id;
+
+	unsigned log2_max_frame_num;
+	unsigned pic_order_cnt_type;
+
+	unsigned max_num_ref_frames;
+	unsigned gaps_in_frame_num_value_allowed_flag;
+	unsigned pic_width_in_mbs;
+	unsigned pic_height_in_map_units;
+};
+
+
+int  h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len);
+void h264_sps_print(const struct h264_sps *sps);

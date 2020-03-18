@@ -5,3 +5,4 @@
 #
 
 SRCS	+= h264/nal.c
+SRCS	+= h264/sps.c
