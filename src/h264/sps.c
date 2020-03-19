@@ -107,6 +107,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	uint8_t profile_idc;
 	unsigned seq_parameter_set_id;
 	unsigned log2_max_frame_num_minus4;
+	unsigned frame_mbs_only_flag;
 	unsigned w, h;
 	int err;
 
@@ -212,6 +213,10 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	if (err)
 		return err;
 
+	if (getbit_get_left(&gb) < 1)
+		return ENODATA;
+	frame_mbs_only_flag = get_bits(&gb, 1);
+
 	if (w >= 1048576 || h >= 1048576) {
 		re_printf("sps: width/height overflow\n");
 		return EBADMSG;
@@ -219,6 +224,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	sps->pic_width_in_mbs = w + 1;
 	sps->pic_height_in_map_units = h + 1;
+
+	sps->pic_height_in_map_units *= 2 - frame_mbs_only_flag;
 
 	/* success */
 	sps->profile_idc = profile_idc;
