@@ -15,7 +15,7 @@
 
 
 struct getbitcontext {
-	const uint8_t *buffer, *buffer_end;
+	const uint8_t *buffer;
 	size_t pos;
 	size_t size;
 };
@@ -24,14 +24,9 @@ struct getbitcontext {
 static void getbit_init(struct getbitcontext *s, const uint8_t *buffer,
 			size_t bit_size)
 {
-	size_t buffer_size;
-
-	buffer_size = (bit_size + 7) >> 3;
-
-	s->buffer             = buffer;
-	s->buffer_end         = buffer + buffer_size;
-	s->pos                = 0;
-	s->size               = bit_size;
+	s->buffer = buffer;
+	s->pos    = 0;
+	s->size   = bit_size;
 }
 
 
@@ -74,8 +69,9 @@ static unsigned get_bits(struct getbitcontext *gb, uint8_t bits)
 
 static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
 {
-	uint32_t zeros = 0;
+	unsigned zeros = 0;
 	unsigned info;
+	int i;
 
 	while (1) {
 
@@ -90,7 +86,7 @@ static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
 
 	info = 1 << zeros;
 
-	for (int32_t i = zeros - 1; i >= 0; i--) {
+	for (i = zeros - 1; i >= 0; i--) {
 
 		if (getbit_get_left(gb) < 1)
 			return ENODATA;
@@ -111,6 +107,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	uint8_t profile_idc;
 	unsigned seq_parameter_set_id;
 	unsigned log2_max_frame_num_minus4;
+	unsigned w, h;
 	int err;
 
 	if (!sps || !p || !len)
@@ -209,18 +206,19 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return ENODATA;
 	sps->gaps_in_frame_num_value_allowed_flag = get_bits(&gb, 1);
 
-	err  = get_ue_golomb(&gb, &sps->pic_width_in_mbs);
-	err |= get_ue_golomb(&gb, &sps->pic_height_in_map_units);
+
+	err  = get_ue_golomb(&gb, &w);
+	err |= get_ue_golomb(&gb, &h);
 	if (err)
 		return err;
 
-	++sps->pic_width_in_mbs;
-	++sps->pic_height_in_map_units;
-
-	if (sps->pic_height_in_map_units >= 1048576) {
-		re_printf("sps: height overflow\n");
+	if (w >= 1048576 || h >= 1048576) {
+		re_printf("sps: width/height overflow\n");
 		return EBADMSG;
 	}
+
+	sps->pic_width_in_mbs = w + 1;
+	sps->pic_height_in_map_units = h + 1;
 
 	/* success */
 	sps->profile_idc = profile_idc;
