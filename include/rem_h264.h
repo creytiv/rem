@@ -61,6 +61,11 @@ struct h264_sps {
 	bool gaps_in_frame_num_value_allowed_flag;
 	unsigned pic_width_in_mbs;
 	unsigned pic_height_in_map_units;
+
+	unsigned frame_crop_left_offset;
+	unsigned frame_crop_right_offset;
+	unsigned frame_crop_top_offset;
+	unsigned frame_crop_bottom_offset;
 };
 
 

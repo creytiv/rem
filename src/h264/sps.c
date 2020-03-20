@@ -4,6 +4,7 @@
  * Copyright (C) 2010 Creytiv.com
  */
 
+#include <string.h>
 #include <re_types.h>
 #include <re_fmt.h>
 #include <re_mbuf.h>
@@ -117,11 +118,15 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	unsigned seq_parameter_set_id;
 	unsigned log2_max_frame_num_minus4;
 	unsigned frame_mbs_only_flag;
+	bool direct_8x8_inference_flag;
+	bool frame_cropping_flag;
 	unsigned w, h;
 	int err;
 
 	if (!sps || !p || !len)
 		return EINVAL;
+
+	memset(sps, 0, sizeof(*sps));
 
 	getbit_init(&gb, p, len*8);
 
@@ -240,6 +245,59 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	sps->pic_height_in_map_units = h + 1;
 
 	sps->pic_height_in_map_units *= 2 - frame_mbs_only_flag;
+
+	re_printf(".... frame_mbs_only_flag: %u\n", frame_mbs_only_flag);
+
+	if (!frame_mbs_only_flag) {
+
+		if (getbit_get_left(&gb) < 1)
+			return ENODATA;
+
+		/* mb_adaptive_frame_field_flag */
+		(void)get_bits(&gb, 1);
+	}
+
+	if (getbit_get_left(&gb) < 1)
+		return ENODATA;
+
+	direct_8x8_inference_flag = get_bits(&gb, 1);
+
+	if (getbit_get_left(&gb) < 1)
+		return ENODATA;
+
+	frame_cropping_flag = get_bits(&gb, 1);
+
+	re_printf(".... frame_cropping_flag: %d\n",
+		  frame_cropping_flag);
+
+	int width = 16 * sps->pic_width_in_mbs;
+	int height = 16 * sps->pic_height_in_map_units;
+
+	if (frame_cropping_flag) {
+
+		err  = get_ue_golomb(&gb, &sps->frame_crop_left_offset);
+		err |= get_ue_golomb(&gb, &sps->frame_crop_right_offset);
+		err |= get_ue_golomb(&gb, &sps->frame_crop_top_offset);
+		err |= get_ue_golomb(&gb, &sps->frame_crop_bottom_offset);
+		if (err)
+			return err;
+
+		width -= 2*sps->frame_crop_left_offset;
+		width -= 2*sps->frame_crop_right_offset;
+
+		height -= 2*sps->frame_crop_top_offset;
+		height -= 2*sps->frame_crop_bottom_offset;
+
+		re_printf(".... sps: Frame cropping:\n");
+
+		re_printf(".... left:   %u\n", sps->frame_crop_left_offset);
+		re_printf(".... right:  %u\n", sps->frame_crop_right_offset);
+		re_printf(".... top:    %u\n", sps->frame_crop_top_offset);
+		re_printf(".... bottom: %u\n", sps->frame_crop_bottom_offset);
+
+	}
+
+	re_printf(".... resolution: %d x %d\n", width, height);
 
 	/* success */
 	sps->profile_idc = profile_idc;
