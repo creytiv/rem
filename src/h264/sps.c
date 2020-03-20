@@ -261,6 +261,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return ENODATA;
 
 	direct_8x8_inference_flag = get_bits(&gb, 1);
+	(void)direct_8x8_inference_flag;
 
 	if (getbit_get_left(&gb) < 1)
 		return ENODATA;
