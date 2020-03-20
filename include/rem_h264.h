@@ -58,7 +58,7 @@ struct h264_sps {
 	unsigned pic_order_cnt_type;
 
 	unsigned max_num_ref_frames;
-	unsigned gaps_in_frame_num_value_allowed_flag;
+	bool gaps_in_frame_num_value_allowed_flag;
 	unsigned pic_width_in_mbs;
 	unsigned pic_height_in_map_units;
 };

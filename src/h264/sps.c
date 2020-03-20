@@ -101,6 +101,15 @@ static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
 }
 
 
+/**
+ * Decode a Sequence Parameter Set (SPS) bitstream
+ *
+ * @param sps  Decoded H.264 SPS
+ * @param p    SPS bitstream to decode, excluding NAL header
+ * @param len  Number of bytes
+ *
+ * @return 0 if success, otherwise errorcode
+ */
 int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 {
 	struct getbitcontext gb;
@@ -150,8 +159,11 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		err = get_ue_golomb(&gb, &chroma_format_idc);
 		if (err)
 			return err;
-		if (chroma_format_idc == 3)
+		if (chroma_format_idc == 3) {
+			re_fprintf(stderr, "sps: chroma_format_idc == 3"
+				   " not supported\n");
 			return ENOTSUP;
+		}
 
 		/* bit_depth_luma/chroma */
 		err  = get_ue_golomb(&gb, NULL);
@@ -166,8 +178,11 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		get_bits(&gb, 1);
 
 		seq_scaling_matrix_present_flag = get_bits(&gb, 1);
-		if (seq_scaling_matrix_present_flag)
+		if (seq_scaling_matrix_present_flag) {
+			re_fprintf(stderr, "sps: seq_scaling_matrix"
+				   " not supported\n");
 			return ENOTSUP;
+		}
 	}
 
 	err = get_ue_golomb(&gb, &log2_max_frame_num_minus4);
@@ -206,7 +221,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	if (getbit_get_left(&gb) < 1)
 		return ENODATA;
 	sps->gaps_in_frame_num_value_allowed_flag = get_bits(&gb, 1);
-
 
 	err  = get_ue_golomb(&gb, &w);
 	err |= get_ue_golomb(&gb, &h);
@@ -258,7 +272,7 @@ void h264_sps_print(const struct h264_sps *sps)
 
 	re_printf("max_num_ref_frames                   %u\n",
 		  sps->max_num_ref_frames);
-	re_printf("gaps_in_frame_num_value_allowed_flag %u\n",
+	re_printf("gaps_in_frame_num_value_allowed_flag %d\n",
 		  sps->gaps_in_frame_num_value_allowed_flag);
 	re_printf("pic_width_in_mbs                     %u\n",
 		  sps->pic_width_in_mbs);
