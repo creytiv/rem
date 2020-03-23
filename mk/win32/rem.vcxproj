@@ -106,7 +106,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\..\include;..\..\..\re\include;..\..\..\misc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;HAVE_SELECT;HAVE_IO_H;_CRT_SECURE_NO_DEPRECATE;FD_SETSIZE=1024;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
