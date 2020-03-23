@@ -62,10 +62,10 @@ struct h264_sps {
 	unsigned pic_width_in_mbs;
 	unsigned pic_height_in_map_units;
 
-	unsigned frame_crop_left_offset;
-	unsigned frame_crop_right_offset;
-	unsigned frame_crop_top_offset;
-	unsigned frame_crop_bottom_offset;
+	unsigned frame_crop_left_offset;            /* pixels */
+	unsigned frame_crop_right_offset;           /* pixels */
+	unsigned frame_crop_top_offset;             /* pixels */
+	unsigned frame_crop_bottom_offset;          /* pixels */
 };
 
 struct vidsz;

@@ -276,12 +276,22 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	if (frame_cropping_flag) {
 
-		err  = get_ue_golomb(&gb, &sps->frame_crop_left_offset);
-		err |= get_ue_golomb(&gb, &sps->frame_crop_right_offset);
-		err |= get_ue_golomb(&gb, &sps->frame_crop_top_offset);
-		err |= get_ue_golomb(&gb, &sps->frame_crop_bottom_offset);
+		unsigned frame_crop_left_offset;
+		unsigned frame_crop_right_offset;
+		unsigned frame_crop_top_offset;
+		unsigned frame_crop_bottom_offset;
+
+		err  = get_ue_golomb(&gb, &frame_crop_left_offset);
+		err |= get_ue_golomb(&gb, &frame_crop_right_offset);
+		err |= get_ue_golomb(&gb, &frame_crop_top_offset);
+		err |= get_ue_golomb(&gb, &frame_crop_bottom_offset);
 		if (err)
 			return err;
+
+		sps->frame_crop_left_offset   = 2 * frame_crop_left_offset;
+		sps->frame_crop_right_offset  = 2 * frame_crop_right_offset;
+		sps->frame_crop_top_offset    = 2 * frame_crop_top_offset;
+		sps->frame_crop_bottom_offset = 2 * frame_crop_bottom_offset;
 	}
 
 	/* success */
@@ -304,12 +314,12 @@ void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz)
 		return;
 
 	width = MACROBLOCK_SIZE * sps->pic_width_in_mbs
-		- 2*sps->frame_crop_left_offset
-		- 2*sps->frame_crop_right_offset;
+		- sps->frame_crop_left_offset
+		- sps->frame_crop_right_offset;
 
 	height = MACROBLOCK_SIZE * sps->pic_height_in_map_units
-		- 2*sps->frame_crop_top_offset
-		- 2*sps->frame_crop_bottom_offset;
+		- sps->frame_crop_top_offset
+		- sps->frame_crop_bottom_offset;
 
 	sz->w = width;
 	sz->h = height;
