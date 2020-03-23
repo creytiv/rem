@@ -68,6 +68,8 @@ struct h264_sps {
 	unsigned frame_crop_bottom_offset;
 };
 
+struct vidsz;
 
 int  h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len);
+void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz);
 void h264_sps_print(const struct h264_sps *sps);

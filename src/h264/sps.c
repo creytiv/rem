@@ -9,10 +9,14 @@
 #include <re_fmt.h>
 #include <re_mbuf.h>
 #include <rem_h264.h>
+#include <rem_vid.h>
 
 
-#define MAX_SPS_COUNT           32
-#define MAX_LOG2_MAX_FRAME_NUM  12
+enum {
+	MAX_SPS_COUNT          = 32,
+	MAX_LOG2_MAX_FRAME_NUM = 12,
+	MACROBLOCK_SIZE        = 16,
+};
 
 
 struct getbitcontext {
@@ -268,12 +272,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	frame_cropping_flag = get_bits(&gb, 1);
 
-	re_printf(".... frame_cropping_flag: %d\n",
-		  frame_cropping_flag);
-
-	int width = 16 * sps->pic_width_in_mbs;
-	int height = 16 * sps->pic_height_in_map_units;
-
 	if (frame_cropping_flag) {
 
 		err  = get_ue_golomb(&gb, &sps->frame_crop_left_offset);
@@ -283,22 +281,13 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		if (err)
 			return err;
 
-		width -= 2*sps->frame_crop_left_offset;
-		width -= 2*sps->frame_crop_right_offset;
-
-		height -= 2*sps->frame_crop_top_offset;
-		height -= 2*sps->frame_crop_bottom_offset;
-
 		re_printf(".... sps: Frame cropping:\n");
 
 		re_printf(".... left:   %u\n", sps->frame_crop_left_offset);
 		re_printf(".... right:  %u\n", sps->frame_crop_right_offset);
 		re_printf(".... top:    %u\n", sps->frame_crop_top_offset);
 		re_printf(".... bottom: %u\n", sps->frame_crop_bottom_offset);
-
 	}
-
-	re_printf(".... resolution: %d x %d\n", width, height);
 
 	/* success */
 	sps->profile_idc = profile_idc;
@@ -309,6 +298,26 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		  gb.pos, getbit_get_left(&gb));
 
 	return 0;
+}
+
+
+void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz)
+{
+	unsigned width, height;
+
+	if (!sps || !sz)
+		return;
+
+	width = MACROBLOCK_SIZE * sps->pic_width_in_mbs
+		- 2*sps->frame_crop_left_offset
+		- 2*sps->frame_crop_right_offset;
+
+	height = MACROBLOCK_SIZE * sps->pic_height_in_map_units
+		- 2*sps->frame_crop_top_offset
+		- 2*sps->frame_crop_bottom_offset;
+
+	sz->w = width;
+	sz->h = height;
 }
 
 
