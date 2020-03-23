@@ -16,6 +16,7 @@ enum {
 	MAX_SPS_COUNT          = 32,
 	MAX_LOG2_MAX_FRAME_NUM = 12,
 	MACROBLOCK_SIZE        = 16,
+	MAX_PIXELS             = 1048576,
 };
 
 
@@ -124,7 +125,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	unsigned frame_mbs_only_flag;
 	bool direct_8x8_inference_flag;
 	bool frame_cropping_flag;
-	unsigned w, h;
+	unsigned mb_w_m1;
+	unsigned mb_h_m1;
 	int err;
 
 	if (!sps || !p || !len)
@@ -146,7 +148,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return err;
 
 	if (seq_parameter_set_id >= MAX_SPS_COUNT) {
-		re_printf("sps_id %u out of range\n", seq_parameter_set_id);
+		re_fprintf(stderr, "h264: sps: sps_id %u out of range\n",
+			   seq_parameter_set_id);
 		return EBADMSG;
 	}
 
@@ -198,9 +201,9 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	if (err)
 		return err;
 	if (log2_max_frame_num_minus4 > MAX_LOG2_MAX_FRAME_NUM) {
-		re_printf("sps: log2_max_frame_num_minus4"
-			  " out of range (0-12): %d\n",
-			  log2_max_frame_num_minus4);
+		re_fprintf(stderr, "h264: sps: log2_max_frame_num_minus4"
+			   " out of range (0-12): %d\n",
+			   log2_max_frame_num_minus4);
 		return EBADMSG;
 	}
 
@@ -218,8 +221,9 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	else if (sps->pic_order_cnt_type == 2) {
 	}
 	else {
-		re_printf("sps: WARNING: unknown pic_order_cnt_type (%u)\n",
-			  sps->pic_order_cnt_type);
+		re_fprintf(stderr, "h264: sps: WARNING:"
+			   " unknown pic_order_cnt_type (%u)\n",
+			   sps->pic_order_cnt_type);
 		return ENOTSUP;
 	}
 
@@ -231,8 +235,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return ENODATA;
 	sps->gaps_in_frame_num_value_allowed_flag = get_bits(&gb, 1);
 
-	err  = get_ue_golomb(&gb, &w);
-	err |= get_ue_golomb(&gb, &h);
+	err  = get_ue_golomb(&gb, &mb_w_m1);
+	err |= get_ue_golomb(&gb, &mb_h_m1);
 	if (err)
 		return err;
 
@@ -240,17 +244,15 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return ENODATA;
 	frame_mbs_only_flag = get_bits(&gb, 1);
 
-	if (w >= 1048576 || h >= 1048576) {
-		re_printf("sps: width/height overflow\n");
+	if (mb_w_m1 >= MAX_PIXELS || mb_h_m1 >= MAX_PIXELS) {
+		re_fprintf(stderr, "h264: sps: width/height overflow\n");
 		return EBADMSG;
 	}
 
-	sps->pic_width_in_mbs = w + 1;
-	sps->pic_height_in_map_units = h + 1;
+	sps->pic_width_in_mbs        = mb_w_m1 + 1;
+	sps->pic_height_in_map_units = mb_h_m1 + 1;
 
 	sps->pic_height_in_map_units *= 2 - frame_mbs_only_flag;
-
-	re_printf(".... frame_mbs_only_flag: %u\n", frame_mbs_only_flag);
 
 	if (!frame_mbs_only_flag) {
 
@@ -280,13 +282,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		err |= get_ue_golomb(&gb, &sps->frame_crop_bottom_offset);
 		if (err)
 			return err;
-
-		re_printf(".... sps: Frame cropping:\n");
-
-		re_printf(".... left:   %u\n", sps->frame_crop_left_offset);
-		re_printf(".... right:  %u\n", sps->frame_crop_right_offset);
-		re_printf(".... top:    %u\n", sps->frame_crop_top_offset);
-		re_printf(".... bottom: %u\n", sps->frame_crop_bottom_offset);
 	}
 
 	/* success */
