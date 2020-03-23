@@ -123,6 +123,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	unsigned seq_parameter_set_id;
 	unsigned log2_max_frame_num_minus4;
 	unsigned frame_mbs_only_flag;
+	unsigned chroma_format_idc = 1;
 	bool direct_8x8_inference_flag;
 	bool frame_cropping_flag;
 	unsigned mb_w_m1;
@@ -166,7 +167,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	    profile_idc == 144) {
 
 		unsigned seq_scaling_matrix_present_flag;
-		unsigned chroma_format_idc;
 
 		err = get_ue_golomb(&gb, &chroma_format_idc);
 		if (err)
@@ -281,6 +281,12 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		unsigned frame_crop_top_offset;
 		unsigned frame_crop_bottom_offset;
 
+		int vsub   = (chroma_format_idc == 1) ? 1 : 0;
+		int hsub   = (chroma_format_idc == 1 ||
+			      chroma_format_idc == 2) ? 1 : 0;
+		int sx = 1 << hsub;
+		int sy = (2 - frame_mbs_only_flag) << vsub;
+
 		err  = get_ue_golomb(&gb, &frame_crop_left_offset);
 		err |= get_ue_golomb(&gb, &frame_crop_right_offset);
 		err |= get_ue_golomb(&gb, &frame_crop_top_offset);
@@ -288,10 +294,10 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		if (err)
 			return err;
 
-		sps->frame_crop_left_offset   = 2 * frame_crop_left_offset;
-		sps->frame_crop_right_offset  = 2 * frame_crop_right_offset;
-		sps->frame_crop_top_offset    = 2 * frame_crop_top_offset;
-		sps->frame_crop_bottom_offset = 2 * frame_crop_bottom_offset;
+		sps->frame_crop_left_offset   = sx * frame_crop_left_offset;
+		sps->frame_crop_right_offset  = sx * frame_crop_right_offset;
+		sps->frame_crop_top_offset    = sy * frame_crop_top_offset;
+		sps->frame_crop_bottom_offset = sy * frame_crop_bottom_offset;
 	}
 
 	/* success */
