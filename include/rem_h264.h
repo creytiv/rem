@@ -52,8 +52,8 @@ const char *h264_nal_unit_name(enum h264_nalu nal_type);
 struct h264_sps {
 	uint8_t profile_idc;
 	uint8_t level_idc;
-	unsigned seq_parameter_set_id;
-	unsigned chroma_format_idc;
+	uint8_t seq_parameter_set_id;               /* 0-31 */
+	uint8_t chroma_format_idc;                  /* 0-3 */
 
 	unsigned log2_max_frame_num;
 	unsigned pic_order_cnt_type;

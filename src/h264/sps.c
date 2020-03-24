@@ -171,7 +171,11 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		err = get_ue_golomb(&gb, &chroma_format_idc);
 		if (err)
 			return err;
-		if (chroma_format_idc == 3) {
+
+		if (chroma_format_idc > 3U) {
+			return EBADMSG;
+		}
+		else if (chroma_format_idc == 3) {
 
 			if (getbit_get_left(&gb) < 1)
 				return ENODATA;
