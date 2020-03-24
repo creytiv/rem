@@ -172,9 +172,12 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		if (err)
 			return err;
 		if (chroma_format_idc == 3) {
-			re_fprintf(stderr, "sps: chroma_format_idc == 3"
-				   " not supported\n");
-			return ENOTSUP;
+
+			if (getbit_get_left(&gb) < 1)
+				return ENODATA;
+
+			/* separate_colour_plane_flag */
+			(void)get_bits(&gb, 1);
 		}
 
 		/* bit_depth_luma/chroma */
