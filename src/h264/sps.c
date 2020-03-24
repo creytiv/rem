@@ -233,7 +233,9 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	if (getbit_get_left(&gb) < 1)
 		return ENODATA;
-	sps->gaps_in_frame_num_value_allowed_flag = get_bits(&gb, 1);
+
+	/* gaps_in_frame_num_value_allowed_flag */
+	(void)get_bits(&gb, 1);
 
 	err  = get_ue_golomb(&gb, &mb_w_m1);
 	err |= get_ue_golomb(&gb, &mb_h_m1);
@@ -351,8 +353,6 @@ void h264_sps_print(const struct h264_sps *sps)
 
 	re_printf("max_num_ref_frames                   %u\n",
 		  sps->max_num_ref_frames);
-	re_printf("gaps_in_frame_num_value_allowed_flag %d\n",
-		  sps->gaps_in_frame_num_value_allowed_flag);
 	re_printf("pic_width_in_mbs                     %u\n",
 		  sps->pic_width_in_mbs);
 	re_printf("pic_height_in_map_units              %u\n",
