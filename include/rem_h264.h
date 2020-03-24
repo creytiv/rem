@@ -53,6 +53,7 @@ struct h264_sps {
 	uint8_t profile_idc;
 	uint8_t level_idc;
 	unsigned seq_parameter_set_id;
+	unsigned chroma_format_idc;
 
 	unsigned log2_max_frame_num;
 	unsigned pic_order_cnt_type;
@@ -72,3 +73,4 @@ struct vidsz;
 int  h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len);
 void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz);
 void h264_sps_print(const struct h264_sps *sps);
+const char *h264_sps_chroma_format_name(unsigned chroma_format_idc);

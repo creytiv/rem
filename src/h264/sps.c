@@ -305,6 +305,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	/* success */
 	sps->profile_idc = profile_idc;
 	sps->seq_parameter_set_id = seq_parameter_set_id;
+	sps->chroma_format_idc = chroma_format_idc;
 	sps->log2_max_frame_num = log2_max_frame_num_minus4 + 4;
 
 	re_printf("sps: done. read %zu bits, %zu bits left\n",
@@ -343,6 +344,9 @@ void h264_sps_print(const struct h264_sps *sps)
 	re_printf("profile_idc          %u\n", sps->profile_idc);
 	re_printf("level_idc            %u\n", sps->level_idc);
 	re_printf("seq_parameter_set_id %u\n", sps->seq_parameter_set_id);
+	re_printf("chroma_format_idc    %u (%s)\n",
+		  sps->chroma_format_idc,
+		  h264_sps_chroma_format_name(sps->chroma_format_idc));
 	re_printf("\n");
 
 	re_printf("log2_max_frame_num         %u\n",
@@ -358,4 +362,17 @@ void h264_sps_print(const struct h264_sps *sps)
 	re_printf("pic_height_in_map_units              %u\n",
 		  sps->pic_height_in_map_units);
 	re_printf("\n");
+}
+
+
+const char *h264_sps_chroma_format_name(unsigned chroma_format_idc)
+{
+	switch (chroma_format_idc) {
+
+	case 0: return "monochrome";
+	case 1: return "YUV420";
+	case 2: return "YUV422";
+	case 3: return "YUV444";
+	default: return "???";
+	}
 }
