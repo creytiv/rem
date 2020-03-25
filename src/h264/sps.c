@@ -82,7 +82,7 @@ static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
 	while (1) {
 
 		if (getbit_get_left(gb) < 1)
-			return ENODATA;
+			return EBADMSG;
 
 		if (0 == get_bit(gb))
 			++zeros;
@@ -95,7 +95,7 @@ static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
 	for (i = zeros - 1; i >= 0; i--) {
 
 		if (getbit_get_left(gb) < 1)
-			return ENODATA;
+			return EBADMSG;
 
 		info |= get_bit(gb) << i;
 	}
@@ -138,7 +138,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	getbit_init(&gb, p, len*8);
 
 	if (getbit_get_left(&gb) < 24)
-		return ENODATA;
+		return EBADMSG;
 
 	profile_idc = get_bits(&gb, 8);
 	(void)get_bits(&gb, 8);
@@ -178,7 +178,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		else if (chroma_format_idc == 3) {
 
 			if (getbit_get_left(&gb) < 1)
-				return ENODATA;
+				return EBADMSG;
 
 			/* separate_colour_plane_flag */
 			(void)get_bits(&gb, 1);
@@ -191,7 +191,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 			return err;
 
 		if (getbit_get_left(&gb) < 2)
-			return ENODATA;
+			return EBADMSG;
 
 		/* qpprime_y_zero_transform_bypass_flag */
 		get_bits(&gb, 1);
@@ -239,7 +239,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return err;
 
 	if (getbit_get_left(&gb) < 1)
-		return ENODATA;
+		return EBADMSG;
 
 	/* gaps_in_frame_num_value_allowed_flag */
 	(void)get_bits(&gb, 1);
@@ -250,7 +250,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return err;
 
 	if (getbit_get_left(&gb) < 1)
-		return ENODATA;
+		return EBADMSG;
 	frame_mbs_only_flag = get_bits(&gb, 1);
 
 	if (mb_w_m1 >= MAX_PIXELS || mb_h_m1 >= MAX_PIXELS) {
@@ -266,20 +266,20 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	if (!frame_mbs_only_flag) {
 
 		if (getbit_get_left(&gb) < 1)
-			return ENODATA;
+			return EBADMSG;
 
 		/* mb_adaptive_frame_field_flag */
 		(void)get_bits(&gb, 1);
 	}
 
 	if (getbit_get_left(&gb) < 1)
-		return ENODATA;
+		return EBADMSG;
 
 	direct_8x8_inference_flag = get_bits(&gb, 1);
 	(void)direct_8x8_inference_flag;
 
 	if (getbit_get_left(&gb) < 1)
-		return ENODATA;
+		return EBADMSG;
 
 	frame_cropping_flag = get_bits(&gb, 1);
 
@@ -344,10 +344,15 @@ void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz)
 
 void h264_sps_print(const struct h264_sps *sps)
 {
+	struct vidsz sz;
+
 	if (!sps)
 		return;
 
+	h264_sps_resolution(sps, &sz);
+
 	re_printf("--- SPS ---\n");
+	re_printf("resolution                %u x %u\n", sz.w, sz.h);
 	re_printf("profile_idc               %u\n", sps->profile_idc);
 	re_printf("level_idc                 %u\n", sps->level_idc);
 	re_printf("seq_parameter_set_id      %u\n", sps->seq_parameter_set_id);
