@@ -23,7 +23,7 @@ enum {
 struct getbitcontext {
 	const uint8_t *buffer;
 	size_t pos;
-	size_t size;
+	size_t end;
 };
 
 
@@ -32,13 +32,16 @@ static void getbit_init(struct getbitcontext *s, const uint8_t *buffer,
 {
 	s->buffer = buffer;
 	s->pos    = 0;
-	s->size   = bit_size;
+	s->end    = bit_size;
 }
 
 
 static size_t getbit_get_left(const struct getbitcontext *gb)
 {
-	return gb->size - gb->pos;
+	if (gb->end > gb->pos)
+		return gb->end - gb->pos;
+	else
+		return 0;
 }
 
 
@@ -47,8 +50,9 @@ static unsigned get_bit(struct getbitcontext *gb)
 	const uint8_t *p = gb->buffer;
 	register unsigned tmp;
 
-	if (gb->pos >= gb->size) {
-		re_fprintf(stderr, "sps: get_bit: read past end\n");
+	if (gb->pos >= gb->end) {
+		re_fprintf(stderr, "sps: get_bit: read past end"
+			   " (%zu >= %zu)\n", gb->pos, gb->end);
 		return 0;
 	}
 
@@ -314,9 +318,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	sps->seq_parameter_set_id = seq_parameter_set_id;
 	sps->chroma_format_idc = chroma_format_idc;
 	sps->log2_max_frame_num = log2_max_frame_num_minus4 + 4;
-
-	re_printf("sps: done. read %zu bits, %zu bits left\n",
-		  gb.pos, getbit_get_left(&gb));
 
 	return 0;
 }
