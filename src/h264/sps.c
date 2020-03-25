@@ -45,7 +45,7 @@ static size_t getbit_get_left(const struct getbitcontext *gb)
 static unsigned get_bit(struct getbitcontext *gb)
 {
 	const uint8_t *p = gb->buffer;
-	unsigned tmp;
+	register unsigned tmp;
 
 	if (gb->pos >= gb->size) {
 		re_fprintf(stderr, "sps: get_bit: read past end\n");
@@ -62,7 +62,7 @@ static unsigned get_bit(struct getbitcontext *gb)
 
 static unsigned get_bits(struct getbitcontext *gb, uint8_t bits)
 {
-	unsigned value = 0;
+	register unsigned value = 0;
 	uint8_t i;
 
 	for (i = 0; i < bits; i++) {
