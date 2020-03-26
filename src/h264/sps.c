@@ -16,8 +16,9 @@ enum {
 	MAX_SPS_COUNT          = 32,
 	MAX_LOG2_MAX_FRAME_NUM = 12,
 	MACROBLOCK_SIZE        = 16,
-	MAX_PIXELS             = 1048576,
 };
+
+#define MAX_PIXELS 1048576u
 
 
 struct getbitcontext {
@@ -289,10 +290,10 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	if (frame_cropping_flag) {
 
-		unsigned frame_crop_left_offset;
-		unsigned frame_crop_right_offset;
-		unsigned frame_crop_top_offset;
-		unsigned frame_crop_bottom_offset;
+		unsigned crop_left;
+		unsigned crop_right;
+		unsigned crop_top;
+		unsigned crop_bottom;
 
 		int vsub   = (chroma_format_idc == 1) ? 1 : 0;
 		int hsub   = (chroma_format_idc == 1 ||
@@ -300,17 +301,33 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		int sx = 1 << hsub;
 		int sy = (2 - frame_mbs_only_flag) << vsub;
 
-		err  = get_ue_golomb(&gb, &frame_crop_left_offset);
-		err |= get_ue_golomb(&gb, &frame_crop_right_offset);
-		err |= get_ue_golomb(&gb, &frame_crop_top_offset);
-		err |= get_ue_golomb(&gb, &frame_crop_bottom_offset);
+		unsigned w = MACROBLOCK_SIZE * sps->pic_width_in_mbs;
+		unsigned h = MACROBLOCK_SIZE * sps->pic_height_in_map_units;
+
+		err  = get_ue_golomb(&gb, &crop_left);
+		err |= get_ue_golomb(&gb, &crop_right);
+		err |= get_ue_golomb(&gb, &crop_top);
+		err |= get_ue_golomb(&gb, &crop_bottom);
 		if (err)
 			return err;
 
-		sps->frame_crop_left_offset   = sx * frame_crop_left_offset;
-		sps->frame_crop_right_offset  = sx * frame_crop_right_offset;
-		sps->frame_crop_top_offset    = sy * frame_crop_top_offset;
-		sps->frame_crop_bottom_offset = sy * frame_crop_bottom_offset;
+		if (sx * crop_left  > MAX_PIXELS ||
+		    sx * crop_right > MAX_PIXELS ||
+		    sy * crop_top   > MAX_PIXELS ||
+		    sy * crop_bottom> MAX_PIXELS ||
+		    (crop_left + crop_right ) * sx >= w ||
+		    (crop_top  + crop_bottom) * sy >= h) {
+			re_fprintf(stderr, "h264: sps: crop values invalid"
+				   " %u %u %u %u / %u %u\n",
+				   crop_left, crop_right, crop_top,
+				   crop_bottom, w, h);
+			return EBADMSG;
+		}
+
+		sps->frame_crop_left_offset   = sx * crop_left;
+		sps->frame_crop_right_offset  = sx * crop_right;
+		sps->frame_crop_top_offset    = sy * crop_top;
+		sps->frame_crop_bottom_offset = sy * crop_bottom;
 	}
 
 	/* success */
