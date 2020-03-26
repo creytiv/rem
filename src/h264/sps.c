@@ -21,23 +21,23 @@ enum {
 #define MAX_PIXELS 1048576u
 
 
-struct getbitcontext {
-	const uint8_t *buffer;
+struct getbit {
+	const uint8_t *p;
 	size_t pos;
 	size_t end;
 };
 
 
-static void getbit_init(struct getbitcontext *s, const uint8_t *buffer,
-			size_t bit_size)
+static void getbit_init(struct getbit *gb,
+			const uint8_t *p, size_t bit_size)
 {
-	s->buffer = buffer;
-	s->pos    = 0;
-	s->end    = bit_size;
+	gb->p   = p;
+	gb->pos = 0;
+	gb->end = bit_size;
 }
 
 
-static size_t getbit_get_left(const struct getbitcontext *gb)
+static size_t getbit_get_left(const struct getbit *gb)
 {
 	if (gb->end > gb->pos)
 		return gb->end - gb->pos;
@@ -46,9 +46,9 @@ static size_t getbit_get_left(const struct getbitcontext *gb)
 }
 
 
-static unsigned get_bit(struct getbitcontext *gb)
+static unsigned get_bit(struct getbit *gb)
 {
-	const uint8_t *p = gb->buffer;
+	const uint8_t *p = gb->p;
 	register unsigned tmp;
 
 	if (gb->pos >= gb->end) {
@@ -65,7 +65,7 @@ static unsigned get_bit(struct getbitcontext *gb)
 }
 
 
-static unsigned get_bits(struct getbitcontext *gb, uint8_t bits)
+static unsigned get_bits(struct getbit *gb, uint8_t bits)
 {
 	register unsigned value = 0;
 	uint8_t i;
@@ -78,7 +78,7 @@ static unsigned get_bits(struct getbitcontext *gb, uint8_t bits)
 }
 
 
-static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
+static int get_ue_golomb(struct getbit *gb, unsigned *valp)
 {
 	unsigned zeros = 0;
 	unsigned info;
@@ -123,7 +123,7 @@ static int get_ue_golomb(struct getbitcontext *gb, unsigned *valp)
  */
 int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 {
-	struct getbitcontext gb;
+	struct getbit gb;
 	uint8_t profile_idc;
 	unsigned seq_parameter_set_id;
 	unsigned log2_max_frame_num_minus4;
