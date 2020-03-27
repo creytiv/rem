@@ -22,18 +22,17 @@ enum {
 
 
 struct getbit {
-	const uint8_t *p;
+	const uint8_t *buf;
 	size_t pos;
 	size_t end;
 };
 
 
-static void getbit_init(struct getbit *gb,
-			const uint8_t *p, size_t bit_size)
+static void getbit_init(struct getbit *gb, const uint8_t *buf, size_t size)
 {
-	gb->p   = p;
+	gb->buf = buf;
 	gb->pos = 0;
-	gb->end = bit_size;
+	gb->end = size;
 }
 
 
@@ -48,7 +47,7 @@ static size_t getbit_get_left(const struct getbit *gb)
 
 static unsigned get_bit(struct getbit *gb)
 {
-	const uint8_t *p = gb->p;
+	const uint8_t *p = gb->buf;
 	register unsigned tmp;
 
 	if (gb->pos >= gb->end) {
@@ -129,7 +128,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	unsigned log2_max_frame_num_minus4;
 	unsigned frame_mbs_only_flag;
 	unsigned chroma_format_idc = 1;
-	bool direct_8x8_inference_flag;
 	bool frame_cropping_flag;
 	unsigned mb_w_m1;
 	unsigned mb_h_m1;
@@ -280,8 +278,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	if (getbit_get_left(&gb) < 1)
 		return EBADMSG;
 
-	direct_8x8_inference_flag = get_bits(&gb, 1);
-	(void)direct_8x8_inference_flag;
+	/* direct_8x8_inference_flag */
+	(void)get_bits(&gb, 1);
 
 	if (getbit_get_left(&gb) < 1)
 		return EBADMSG;
