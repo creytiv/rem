@@ -111,6 +111,77 @@ static int get_ue_golomb(struct getbit *gb, unsigned *valp)
 }
 
 
+static int scaling_list(struct getbit *gb,
+			int *scaling_list, size_t sizeofscalinglist,
+			int *usedefaultscalingmatrix)
+{
+	int lastscale = 8;
+	int nextscale = 8;
+	size_t j;
+	int err;
+
+	for (j = 0; j < sizeofscalinglist; j++) {
+
+		if (nextscale != 0) {
+
+			unsigned delta_scale;
+
+			err = get_ue_golomb(gb, &delta_scale);
+			if (err)
+				return err;
+
+			nextscale = (lastscale + delta_scale + 256) % 256;
+
+			*usedefaultscalingmatrix = (j==0 && nextscale==0);
+		}
+
+		scaling_list[j] = (nextscale==0) ? lastscale : nextscale;
+
+		lastscale = scaling_list[j];
+	}
+
+	return 0;
+}
+
+
+static int decode_scaling_matrix(struct getbit *gb, unsigned chroma_format_idc)
+{
+	int scalinglist4x4[16];
+	int usedefaultscalingmatrix4x4[12];
+	int scalinglist8x8[64];
+	int usedefaultscalingmatrix8x8[12];
+	unsigned i;
+	int err;
+
+	for (i = 0; i < ((chroma_format_idc != 3) ? 8 : 12); i++) {
+
+		unsigned seq_scaling_list_present_flag;
+
+		if (getbit_get_left(gb) < 1)
+			return EBADMSG;
+
+		seq_scaling_list_present_flag = get_bits(gb, 1);
+
+		if (seq_scaling_list_present_flag) {
+
+			if (i < 6) {
+				err = scaling_list(gb, scalinglist4x4, 16,
+					   &usedefaultscalingmatrix4x4[i]);
+			}
+			else {
+				err = scaling_list(gb, scalinglist8x8, 64,
+					   &usedefaultscalingmatrix8x8[i]);
+			}
+
+			if (err)
+				return err;
+		}
+	}
+
+	return 0;
+}
+
+
 /**
  * Decode a Sequence Parameter Set (SPS) bitstream
  *
@@ -201,9 +272,10 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 		seq_scaling_matrix_present_flag = get_bits(&gb, 1);
 		if (seq_scaling_matrix_present_flag) {
-			re_fprintf(stderr, "sps: seq_scaling_matrix"
-				   " not supported\n");
-			return ENOTSUP;
+
+			err = decode_scaling_matrix(&gb, chroma_format_idc);
+			if (err)
+				return err;
 		}
 	}
 
