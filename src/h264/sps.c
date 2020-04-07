@@ -18,7 +18,7 @@ enum {
 	MACROBLOCK_SIZE        = 16,
 };
 
-#define MAX_PIXELS 1048576u
+#define MAX_MACROBLOCKS 1048576u
 
 
 struct getbit {
@@ -312,15 +312,16 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		return EBADMSG;
 	frame_mbs_only_flag = get_bit(&gb);
 
-	if (mb_w_m1 >= MAX_PIXELS || mb_h_m1 >= MAX_PIXELS) {
-		re_fprintf(stderr, "h264: sps: width/height overflow\n");
-		return EBADMSG;
-	}
-
 	sps->pic_width_in_mbs        = mb_w_m1 + 1;
 	sps->pic_height_in_map_units = mb_h_m1 + 1;
 
 	sps->pic_height_in_map_units *= 2 - frame_mbs_only_flag;
+
+	if (sps->pic_width_in_mbs >= MAX_MACROBLOCKS ||
+	    sps->pic_height_in_map_units >= MAX_MACROBLOCKS) {
+		re_fprintf(stderr, "h264: sps: width/height overflow\n");
+		return EBADMSG;
+	}
 
 	if (!frame_mbs_only_flag) {
 
@@ -365,11 +366,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		if (err)
 			return err;
 
-		if (sx * crop_left  > MAX_PIXELS ||
-		    sx * crop_right > MAX_PIXELS ||
-		    sy * crop_top   > MAX_PIXELS ||
-		    sy * crop_bottom> MAX_PIXELS ||
-		    (crop_left + crop_right ) * sx >= w ||
+		if ((crop_left + crop_right ) * sx >= w ||
 		    (crop_top  + crop_bottom) * sy >= h) {
 			re_fprintf(stderr, "h264: sps: crop values invalid"
 				   " %u %u %u %u / %u %u\n",
