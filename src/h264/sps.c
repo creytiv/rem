@@ -134,9 +134,8 @@ static int scaling_list(struct getbit *gb,
 static int decode_scaling_matrix(struct getbit *gb, unsigned chroma_format_idc)
 {
 	unsigned scalinglist4x4[16];
-	bool usedefaultscalingmatrix4x4[12];
 	unsigned scalinglist8x8[64];
-	bool usedefaultscalingmatrix8x8[12];
+	bool usedefaultscalingmatrix[12];
 	unsigned i;
 	int err;
 
@@ -153,11 +152,11 @@ static int decode_scaling_matrix(struct getbit *gb, unsigned chroma_format_idc)
 
 			if (i < 6) {
 				err = scaling_list(gb, scalinglist4x4, 16,
-					   &usedefaultscalingmatrix4x4[i]);
+					   &usedefaultscalingmatrix[i]);
 			}
 			else {
 				err = scaling_list(gb, scalinglist8x8, 64,
-					   &usedefaultscalingmatrix8x8[i]);
+					   &usedefaultscalingmatrix[i]);
 			}
 
 			if (err)
