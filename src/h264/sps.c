@@ -99,11 +99,11 @@ static int get_ue_golomb(struct getbit *gb, unsigned *valp)
 
 
 static int scaling_list(struct getbit *gb,
-			int *scaling_list, size_t sizeofscalinglist,
-			int *usedefaultscalingmatrix)
+			unsigned *scaling_list, size_t sizeofscalinglist,
+			bool *usedefaultscalingmatrix)
 {
-	int lastscale = 8;
-	int nextscale = 8;
+	unsigned lastscale = 8;
+	unsigned nextscale = 8;
 	size_t j;
 	int err;
 
@@ -133,10 +133,10 @@ static int scaling_list(struct getbit *gb,
 
 static int decode_scaling_matrix(struct getbit *gb, unsigned chroma_format_idc)
 {
-	int scalinglist4x4[16];
-	int usedefaultscalingmatrix4x4[12];
-	int scalinglist8x8[64];
-	int usedefaultscalingmatrix8x8[12];
+	unsigned scalinglist4x4[16];
+	bool usedefaultscalingmatrix4x4[12];
+	unsigned scalinglist8x8[64];
+	bool usedefaultscalingmatrix8x8[12];
 	unsigned i;
 	int err;
 
