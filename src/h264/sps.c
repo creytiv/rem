@@ -14,7 +14,7 @@
 
 enum {
 	MAX_SPS_COUNT          = 32,
-	MAX_LOG2_MAX_FRAME_NUM = 12,
+	MAX_LOG2_MAX_FRAME_NUM = 16,
 	MACROBLOCK_SIZE        = 16,
 };
 
@@ -182,7 +182,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	struct getbit gb;
 	uint8_t profile_idc;
 	unsigned seq_parameter_set_id;
-	unsigned log2_max_frame_num_minus4;
 	unsigned frame_mbs_only_flag;
 	unsigned chroma_format_idc = 1;
 	bool frame_cropping_flag;
@@ -261,13 +260,16 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 		}
 	}
 
-	err = get_ue_golomb(&gb, &log2_max_frame_num_minus4);
+	err = get_ue_golomb(&gb, &sps->log2_max_frame_num);
 	if (err)
 		return err;
-	if (log2_max_frame_num_minus4 > MAX_LOG2_MAX_FRAME_NUM) {
+
+	sps->log2_max_frame_num += 4;
+
+	if (sps->log2_max_frame_num > MAX_LOG2_MAX_FRAME_NUM) {
 		re_fprintf(stderr, "h264: sps: log2_max_frame_num_minus4"
-			   " out of range (0-12): %d\n",
-			   log2_max_frame_num_minus4);
+			   " out of range (0-12): %u\n",
+			   sps->log2_max_frame_num);
 		return EBADMSG;
 	}
 
@@ -386,7 +388,6 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	sps->profile_idc = profile_idc;
 	sps->seq_parameter_set_id = seq_parameter_set_id;
 	sps->chroma_format_idc = chroma_format_idc;
-	sps->log2_max_frame_num = log2_max_frame_num_minus4 + 4;
 
 	return 0;
 }
