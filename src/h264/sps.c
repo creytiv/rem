@@ -329,38 +329,6 @@ void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz)
 }
 
 
-void h264_sps_print(const struct h264_sps *sps)
-{
-	struct vidsz sz;
-
-	if (!sps)
-		return;
-
-	h264_sps_resolution(sps, &sz);
-
-	re_printf("--- SPS ---\n");
-	re_printf("resolution                %u x %u\n", sz.w, sz.h);
-	re_printf("profile_idc               %u\n", sps->profile_idc);
-	re_printf("level_idc                 %u\n", sps->level_idc);
-	re_printf("seq_parameter_set_id      %u\n", sps->seq_parameter_set_id);
-	re_printf("chroma_format_idc         %u (%s)\n",
-		  sps->chroma_format_idc,
-		  h264_sps_chroma_format_name(sps->chroma_format_idc));
-
-	re_printf("log2_max_frame_num        %u\n",
-		  sps->log2_max_frame_num);
-	re_printf("pic_order_cnt_type        %u\n",
-		  sps->pic_order_cnt_type);
-
-	re_printf("max_num_ref_frames        %u\n",
-		  sps->max_num_ref_frames);
-	re_printf("pic_width_in_mbs          %u\n",
-		  sps->pic_width_in_mbs);
-	re_printf("pic_height_in_map_units   %u\n",
-		  sps->pic_height_in_map_units);
-}
-
-
 const char *h264_sps_chroma_format_name(uint8_t chroma_format_idc)
 {
 	switch (chroma_format_idc) {
