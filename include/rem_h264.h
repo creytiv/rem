@@ -73,4 +73,4 @@ struct vidsz;
 int  h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len);
 void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz);
 void h264_sps_print(const struct h264_sps *sps);
-const char *h264_sps_chroma_format_name(unsigned chroma_format_idc);
+const char *h264_sps_chroma_format_name(uint8_t chroma_format_idc);
