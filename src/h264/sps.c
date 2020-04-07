@@ -392,21 +392,16 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 void h264_sps_resolution(const struct h264_sps *sps, struct vidsz *sz)
 {
-	unsigned width, height;
-
 	if (!sps || !sz)
 		return;
 
-	width = MACROBLOCK_SIZE * sps->pic_width_in_mbs
+	sz->w = MACROBLOCK_SIZE * sps->pic_width_in_mbs
 		- sps->frame_crop_left_offset
 		- sps->frame_crop_right_offset;
 
-	height = MACROBLOCK_SIZE * sps->pic_height_in_map_units
+	sz->h = MACROBLOCK_SIZE * sps->pic_height_in_map_units
 		- sps->frame_crop_top_offset
 		- sps->frame_crop_bottom_offset;
-
-	sz->w = width;
-	sz->h = height;
 }
 
 
