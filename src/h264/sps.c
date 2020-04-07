@@ -10,6 +10,7 @@
 #include <re_mbuf.h>
 #include <rem_h264.h>
 #include <rem_vid.h>
+#include "h264.h"
 
 
 enum {
@@ -19,83 +20,6 @@ enum {
 };
 
 #define MAX_MACROBLOCKS 1048576u
-
-
-struct getbit {
-	const uint8_t *buf;
-	size_t pos;
-	size_t end;
-};
-
-
-static void getbit_init(struct getbit *gb, const uint8_t *buf, size_t size)
-{
-	gb->buf = buf;
-	gb->pos = 0;
-	gb->end = size;
-}
-
-
-static size_t getbit_get_left(const struct getbit *gb)
-{
-	if (gb->end > gb->pos)
-		return gb->end - gb->pos;
-	else
-		return 0;
-}
-
-
-static unsigned get_bit(struct getbit *gb)
-{
-	const uint8_t *p = gb->buf;
-	register unsigned tmp;
-
-	if (gb->pos >= gb->end) {
-		re_fprintf(stderr, "sps: get_bit: read past end"
-			   " (%zu >= %zu)\n", gb->pos, gb->end);
-		return 0;
-	}
-
-	tmp = ((*(p + (gb->pos >> 0x3))) >> (0x7 - (gb->pos & 0x7))) & 0x1;
-
-	++gb->pos;
-
-	return tmp;
-}
-
-
-static int get_ue_golomb(struct getbit *gb, unsigned *valp)
-{
-	unsigned zeros = 0;
-	unsigned info;
-	int i;
-
-	while (1) {
-
-		if (getbit_get_left(gb) < 1)
-			return EBADMSG;
-
-		if (0 == get_bit(gb))
-			++zeros;
-		else
-			break;
-	}
-
-	info = 1 << zeros;
-
-	for (i = zeros - 1; i >= 0; i--) {
-
-		if (getbit_get_left(gb) < 1)
-			return EBADMSG;
-
-		info |= get_bit(gb) << i;
-	}
-
-	if (valp)
-		*valp = info - 1;
-
-	return 0;
-}
 
 
 static int scaling_list(struct getbit *gb,
