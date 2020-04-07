@@ -383,7 +383,7 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 
 	/* success */
 	sps->profile_idc = profile_idc;
-	sps->seq_parameter_set_id = seq_parameter_set_id;
+	sps->seq_parameter_set_id = (uint8_t)seq_parameter_set_id;
 	sps->chroma_format_idc = chroma_format_idc;
 
 	return 0;
@@ -434,7 +434,6 @@ void h264_sps_print(const struct h264_sps *sps)
 		  sps->pic_width_in_mbs);
 	re_printf("pic_height_in_map_units   %u\n",
 		  sps->pic_height_in_map_units);
-	re_printf("\n");
 }
 
 
