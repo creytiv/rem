@@ -191,9 +191,8 @@ int h264_sps_decode(struct h264_sps *sps, const uint8_t *p, size_t len)
 	sps->log2_max_frame_num += 4;
 
 	if (sps->log2_max_frame_num > MAX_LOG2_MAX_FRAME_NUM) {
-		re_fprintf(stderr, "h264: sps: log2_max_frame_num_minus4"
-			   " out of range (0-12): %u\n",
-			   sps->log2_max_frame_num);
+		re_fprintf(stderr, "h264: sps: log2_max_frame_num"
+			   " out of range: %u\n", sps->log2_max_frame_num);
 		return EBADMSG;
 	}
 
