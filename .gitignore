@@ -4,3 +4,5 @@ librem.a
 librem.dylib
 librem.pc
 librem.so
+Win32/*
+mk/win32/rem.vcxproj.user
