@@ -177,6 +177,7 @@ int aubuf_write(struct aubuf *ab, const uint8_t *p, size_t sz)
 void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 {
 	struct le *le;
+	bool filling;
 
 	if (!ab || !p || !sz)
 		return;
@@ -191,12 +192,15 @@ void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 					ab, ab->cur_sz);
 		}
 #endif
+		filling = ab->filling;
 		ab->filling = true;
 		memset(p, 0, sz);
-		goto out;
+		if (filling)
+			goto out;
 	}
-
-	ab->filling = false;
+	else {
+		ab->filling = false;
+	}
 
 	le = ab->afl.head;
 
