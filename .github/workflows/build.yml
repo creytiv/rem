@@ -1,0 +1,41 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04, macos-latest]
+        exclude:
+           - os: macos-latest
+             compiler: gcc
+    env:
+      CC: ${{ matrix.compiler }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: sreimers/pr-dependency-action@v0.3
+      with:
+        name: re
+        repo: https://github.com/baresip/re
+        secret: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: '../.'
+
+    - uses: sreimers/pr-dependency-action@v0.3
+      with:
+        name: retest
+        repo: https://github.com/baresip/retest.git
+        secret: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: '../.'
+
+    - name: retest
+      run: |
+        cd ..
+        make -C re libre.a
+        make -C rem EXTRA_CFLAGS=-Werror CCACHE= librem.a
+        cd retest && make STATIC=1 LIBRE_SO=../re && ./retest -r
