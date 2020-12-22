@@ -13,6 +13,7 @@ PROJECT   := rem
 VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
 OPT_SPEED := 1
 
+ifndef LIBRE_MK
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
 	echo "../re/mk/re.mk")
 ifeq ($(LIBRE_MK),)
@@ -22,6 +23,7 @@ endif
 ifeq ($(LIBRE_MK),)
 LIBRE_MK  := $(shell [ -f /usr/local/share/re/re.mk ] && \
 	echo "/usr/local/share/re/re.mk")
+endif
 endif
 
 include $(LIBRE_MK)
