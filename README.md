@@ -3,8 +3,9 @@ librem README
 
 
 librem is a Audio and video processing media library
-Copyright (C) 2010 - 2019 Creytiv.com
-Copyright (C) 2020 - 2021 Baresip Foundation (https://github.com/baresip)
+
+- Copyright (C) 2010 - 2019 Creytiv.com
+- Copyright (C) 2020 - 2021 Baresip Foundation (https://github.com/baresip)
 
 [![Build](https://github.com/baresip/rem/actions/workflows/build.yml/badge.svg)](https://github.com/baresip/rem/actions/workflows/build.yml)
 
