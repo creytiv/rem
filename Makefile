@@ -9,6 +9,14 @@ VER_MAJOR := 1
 VER_MINOR := 0
 VER_PATCH := 0
 
+# Libtool similar ABI versioning
+# https://github.com/baresip/re/wiki/ABI-Versioning
+ABI_CUR   := 0
+ABI_REV   := 0
+ABI_AGE   := 0
+
+ABI_MAJOR := $(shell expr $(ABI_CUR) - $(ABI_AGE))
+
 PROJECT   := rem
 VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
 OPT_SPEED := 1
@@ -69,8 +77,13 @@ endif
 
 MODMKS	:= $(patsubst %,src/%/mod.mk,$(MODULES))
 SHARED  := librem$(LIB_SUFFIX)
+SHARED_SONAME  := $(SHARED).$(ABI_MAJOR)
+SHARED_FILE    := $(SHARED).$(ABI_MAJOR).$(ABI_AGE).$(ABI_REV)
 STATIC	:= librem.a
 
+ifeq ($(OS),linux)
+SH_LFLAGS      += -Wl,-soname,$(SHARED_SONAME)
+endif
 
 include $(MODMKS)
 
@@ -136,7 +149,9 @@ install: $(SHARED) $(STATIC) librem.pc
 		$(DESTDIR)$(INCDIR)
 	$(INSTALL) -m 0644 $(shell find include -name "*.h") \
 		$(DESTDIR)$(INCDIR)
-	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 0755 $(SHARED) $(DESTDIR)$(LIBDIR)/$(SHARED_FILE)
+	cd $(DESTDIR)$(LIBDIR) && ln -sf $(SHARED_FILE) $(SHARED) && \
+		ln -sf $(SHARED_FILE) $(SHARED_SONAME)
 	$(INSTALL) -m 0755 $(STATIC) $(DESTDIR)$(LIBDIR)
 	$(INSTALL) -m 0644 librem.pc $(DESTDIR)$(LIBDIR)/pkgconfig
 
