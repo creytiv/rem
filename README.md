@@ -4,8 +4,9 @@ librem README
 
 librem is a Audio and video processing media library
 Copyright (C) 2010 - 2019 Creytiv.com
+Copyright (C) 2020 - 2021 Baresip Foundation (https://github.com/baresip)
 
-[![Build Status](https://travis-ci.org/creytiv/rem.svg?branch=master)](https://travis-ci.org/creytiv/rem)
+[![Build](https://github.com/baresip/rem/actions/workflows/build.yml/badge.svg)](https://github.com/baresip/rem/actions/workflows/build.yml)
 
 
 ## Features
@@ -25,7 +26,7 @@ Copyright (C) 2010 - 2019 Creytiv.com
 
 ## Building
 
-librem is using GNU makefiles, and [libre](https://github.com/creytiv/re)
+librem is using GNU makefiles, and [libre](https://github.com/baresip/re)
 must be installed before building.
 
 
@@ -37,13 +38,6 @@ $ sudo make install
 $ sudo ldconfig
 ```
 
-
-## Documentation
-
-The online documentation generated with doxygen is available in
-the main [website](http://creytiv.com/doxygen/rem-dox/html/)
-
-
 ## License
 
 The librem project is using the BSD license.
@@ -52,10 +46,7 @@ The librem project is using the BSD license.
 ## Contributing
 
 Patches can sent via Github
-[Pull-Requests](https://github.com/creytiv/rem/pulls) or to the RE devel
-[mailing-list](http://lists.creytiv.com/mailman/listinfo/re-devel).
-Currently we only accept small patches.
-Please send private feedback to libre [at] creytiv.com
+[Pull-Requests](https://github.com/baresip/rem/pulls)
 
 
 ## Modules
@@ -109,21 +100,17 @@ Generic modules:
 
 ## Supported platforms
 
-Same as [libre](https://github.com/creytiv/re)
+Same as [libre](https://github.com/baresip/re)
 
 
 ## Related projects
 
-* [libre](https://github.com/creytiv/re)
-* [retest](https://github.com/creytiv/retest)
-* [baresip](https://github.com/alfredh/baresip)
+* [libre](https://github.com/baresip/re)
+* [retest](https://github.com/baresip/retest)
+* [baresip](https://github.com/baresip/baresip)
 
 
 
 ## References
 
-http://creytiv.com/rem.html
-
-https://github.com/creytiv/rem
-
-http://lists.creytiv.com/mailman/listinfo/re-devel
+https://github.com/baresip
