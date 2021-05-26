@@ -6,6 +6,7 @@
 
 
 #include "rem_au.h"
+#include "rem_auframe.h"
 #include "rem_aubuf.h"
 #include "rem_auconv.h"
 #include "rem_aufile.h"

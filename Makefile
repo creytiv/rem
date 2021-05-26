@@ -40,7 +40,7 @@ include $(LIBRE_MK)
 MODULES += fir goertzel
 MODULES += g711
 MODULES += aubuf aufile auresamp autone dtmf
-MODULES += au auconv aulevel
+MODULES += au auconv aulevel auframe
 
 ifneq ($(HAVE_LIBPTHREAD),)
 MODULES += aumix vidmix
