@@ -13,6 +13,7 @@ size_t aufmt_sample_size(enum aufmt fmt)
 	switch (fmt) {
 
 	case AUFMT_S16LE:   return sizeof(int16_t);
+	case AUFMT_RAW:     return 1;
 	case AUFMT_PCMA:    return 1;
 	case AUFMT_PCMU:    return 1;
 	case AUFMT_FLOAT:   return sizeof(float);
@@ -31,6 +32,7 @@ const char *aufmt_name(enum aufmt fmt)
 	case AUFMT_PCMU:    return "PCMU";
 	case AUFMT_FLOAT:   return "FLOAT";
 	case AUFMT_S24_3LE: return "S24_3LE";
+	case AUFMT_RAW:     return "RAW";
 	default:            return "???";
 	}
 }

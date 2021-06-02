@@ -12,6 +12,7 @@ enum aufmt {
 	AUFMT_PCMU,   /**< G.711 U-law       */
 	AUFMT_FLOAT,  /**< Float 32 bit (CPU endian)                   */
 	AUFMT_S24_3LE,/**< Signed 24bit Little Endian in 3bytes format */
+	AUFMT_RAW,    /**< RAW PCM                                     */
 };
 
 size_t      aufmt_sample_size(enum aufmt fmt);
