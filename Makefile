@@ -132,7 +132,7 @@ ifneq ($(RANLIB),)
 	@$(RANLIB) $@
 endif
 
-librem.pc:
+librem.pc: Makefile
 	@echo 'prefix='$(PREFIX) > librem.pc
 	@echo 'exec_prefix=$${prefix}' >> librem.pc
 	@echo 'libdir=$${prefix}/lib' >> librem.pc
