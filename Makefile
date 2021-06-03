@@ -9,6 +9,10 @@ VER_MAJOR := 1
 VER_MINOR := 0
 VER_PATCH := 0
 
+# Development version, comment out on a release
+# Increment for breaking changes (dev2, dev3...)
+VER_PRE   := dev
+
 # Libtool similar ABI versioning
 # https://github.com/baresip/re/wiki/ABI-Versioning
 ABI_CUR   := 0
@@ -18,8 +22,13 @@ ABI_AGE   := 0
 ABI_MAJOR := $(shell expr $(ABI_CUR) - $(ABI_AGE))
 
 PROJECT   := rem
+ifeq ($(VER_PRE),)
 VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
+else
+VERSION   := $(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)-$(VER_PRE)
+endif
 OPT_SPEED := 1
+LIBRE_MIN := 2.0.1-dev
 
 ifndef LIBRE_MK
 LIBRE_MK  := $(shell [ -f ../re/mk/re.mk ] && \
@@ -35,6 +44,19 @@ endif
 endif
 
 include $(LIBRE_MK)
+
+# Dependency Checks
+LIBRE_PKG_PATH  := $(shell [ -f ../re/libre.pc ] && echo "../re/")
+
+ifneq ($(PKG_CONFIG),)
+LIBRE_PKG := $(shell PKG_CONFIG_PATH=$(LIBRE_PKG_PATH) \
+	pkg-config --exists "libre >= $(LIBRE_MIN)" && echo "yes")
+
+ifeq ($(LIBRE_PKG),)
+$(error bad libre version, required version is ">= $(LIBRE_MIN)". \
+	LIBRE_MK: $(LIBRE_MK))
+endif
+endif
 
 # List of modules
 MODULES += fir goertzel
@@ -98,14 +120,14 @@ all: $(SHARED) $(STATIC)
 -include $(OBJS:.o=.d)
 
 
-$(SHARED): $(OBJS)
+$(SHARED): $(OBJS) librem.pc
 	@echo "  LD      $@"
-	@$(LD) $(LFLAGS) $(SH_LFLAGS) $^ -L$(LIBRE_SO) -lre $(LIBS) -o $@
+	@$(LD) $(LFLAGS) $(SH_LFLAGS) $(OBJS) -L$(LIBRE_SO) -lre $(LIBS) -o $@
 
 
-$(STATIC): $(OBJS)
+$(STATIC): $(OBJS) librem.pc
 	@echo "  AR      $@"
-	@$(AR) $(AFLAGS) $@ $^
+	@$(AR) $(AFLAGS) $@ $(OBJS)
 ifneq ($(RANLIB),)
 	@$(RANLIB) $@
 endif
@@ -120,7 +142,7 @@ librem.pc:
 	@echo 'Description: Audio and video processing media library' \
 		>> librem.pc
 	@echo 'Version: '$(VERSION) >> librem.pc
-	@echo 'URL: http://creytiv.com/rem.html' >> librem.pc
+	@echo 'URL: https://github.com/baresip/rem' >> librem.pc
 	@echo 'Libs: -L$${libdir} -lrem -lre' >> librem.pc
 	@echo 'Cflags: -I$${includedir}' >> librem.pc
 
