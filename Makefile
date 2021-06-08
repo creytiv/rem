@@ -46,7 +46,22 @@ endif
 include $(LIBRE_MK)
 
 # Dependency Checks
+ifeq ($(LIBRE_PKG_PATH),)
+LIBRE_PKG_PATH  := $(shell [ -f $(PKG_CONFIG_PATH)/libre.pc ] && \
+	echo "$(PKG_CONFIG_PATH)")
+endif
+
+ifeq ($(LIBRE_PKG_PATH),)
+ifeq ($(LIBRE_SO),)
+LIBRE_SO	:= $(patsubst %/share/re/re.mk,%/lib,$(LIBRE_MK))
+endif
+LIBRE_PKG_PATH  := $(shell [ -f $(LIBRE_SO)/pkgconfig/libre.pc ] && \
+	echo "$(LIBRE_SO)/pkgconfig")
+endif
+
+ifeq ($(LIBRE_PKG_PATH),)
 LIBRE_PKG_PATH  := $(shell [ -f ../re/libre.pc ] && echo "../re/")
+endif
 
 ifneq ($(PKG_CONFIG),)
 LIBRE_PKG := $(shell PKG_CONFIG_PATH=$(LIBRE_PKG_PATH) \
