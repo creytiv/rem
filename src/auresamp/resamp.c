@@ -26,6 +26,12 @@ static const int16_t fir_48_8[] = {
 	714,   -380,  -1204,  -1268,   -738,   -123,    198,    238
 };
 
+/* 16kHz sample-rate, 4kHz cutoff and 32kHz sample-rate, 8 kHz cutoff */
+static const int16_t fir_16_4[] = {
+		22, 60, -41, -157, -9, 322, 195, -490, -613, 539, 1362, -229,
+		-2657, -1101, 6031, 13167, 13167, 6031, -1101, -2657, -229,
+		1362, 539, -613, -490, 195, 322, -9, -157, -41, 60, 22
+};
 
 static void upsample_mono2mono(int16_t *outv, const int16_t *inv,
 			       size_t inc, unsigned ratio)
@@ -224,6 +230,11 @@ int auresamp_setup(struct auresamp *rs, uint32_t irate, unsigned ich,
 			rs->tapv = fir_48_8;
 			rs->tapc = ARRAY_SIZE(fir_48_8);
 		}
+		else if ((orate == 16000 && irate == 8000) ||
+                         (orate == 32000 && irate == 16000)) {
+			rs->tapv = fir_16_4;
+			rs->tapc = ARRAY_SIZE(fir_16_4);
+		}
 		else {
 			rs->tapv = fir_48_4;
 			rs->tapc = ARRAY_SIZE(fir_48_4);
@@ -253,6 +264,11 @@ int auresamp_setup(struct auresamp *rs, uint32_t irate, unsigned ich,
 		if (irate == 48000 && orate == 16000) {
 			rs->tapv = fir_48_8;
 			rs->tapc = ARRAY_SIZE(fir_48_8);
+		}
+		else if ((irate == 16000 && orate == 8000) ||
+                         (irate == 32000 && orate == 16000)) {
+			rs->tapv = fir_16_4;
+			rs->tapc = ARRAY_SIZE(fir_16_4);
 		}
 		else {
 			rs->tapv = fir_48_4;
