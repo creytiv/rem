@@ -64,12 +64,14 @@ LIBRE_PKG_PATH  := $(shell [ -f ../re/libre.pc ] && echo "../re/")
 endif
 
 ifneq ($(PKG_CONFIG),)
+ifneq ($(MAKECMDGOALS),clean)
 LIBRE_PKG := $(shell PKG_CONFIG_PATH=$(LIBRE_PKG_PATH) \
 	pkg-config --exists "libre >= $(LIBRE_MIN)" && echo "yes")
 
 ifeq ($(LIBRE_PKG),)
 $(error bad libre version, required version is ">= $(LIBRE_MIN)". \
 	LIBRE_MK: $(LIBRE_MK))
+endif
 endif
 endif
 
