@@ -47,6 +47,10 @@ include $(LIBRE_MK)
 
 # Dependency Checks
 ifeq ($(LIBRE_PKG_PATH),)
+LIBRE_PKG_PATH  := $(shell [ -f ../re/libre.pc ] && echo "../re/")
+endif
+
+ifeq ($(LIBRE_PKG_PATH),)
 LIBRE_PKG_PATH  := $(shell [ -f $(PKG_CONFIG_PATH)/libre.pc ] && \
 	echo "$(PKG_CONFIG_PATH)")
 endif
@@ -59,18 +63,16 @@ LIBRE_PKG_PATH  := $(shell [ -f $(LIBRE_SO)/pkgconfig/libre.pc ] && \
 	echo "$(LIBRE_SO)/pkgconfig")
 endif
 
-ifeq ($(LIBRE_PKG_PATH),)
-LIBRE_PKG_PATH  := $(shell [ -f ../re/libre.pc ] && echo "../re/")
-endif
-
 ifneq ($(PKG_CONFIG),)
-ifneq ($(MAKECMDGOALS),clean)
+ifeq ($(findstring $(MAKECMDGOALS), clean distclean),)
 LIBRE_PKG := $(shell PKG_CONFIG_PATH=$(LIBRE_PKG_PATH) \
-	pkg-config --exists "libre >= $(LIBRE_MIN)" && echo "yes")
+	pkg-config --exists "libre >= $(LIBRE_MIN)" --modversion && \
+	echo "yes")
 
 ifeq ($(LIBRE_PKG),)
 $(error bad libre version, required version is ">= $(LIBRE_MIN)". \
-	LIBRE_MK: $(LIBRE_MK))
+	LIBRE_MK: $(LIBRE_MK) \
+	LIBRE_PKG_PATH: "$(LIBRE_PKG_PATH)")
 endif
 endif
 endif
