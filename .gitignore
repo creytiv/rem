@@ -4,3 +4,7 @@ librem.a
 librem.dylib
 librem.pc
 librem.so
+# Windows build folder
+Win32/*
+# Visual studio config
+mk/win32/*.vcxproj.user
