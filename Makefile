@@ -66,7 +66,7 @@ endif
 ifneq ($(PKG_CONFIG),)
 ifeq ($(findstring $(MAKECMDGOALS), clean distclean),)
 LIBRE_PKG := $(shell PKG_CONFIG_PATH=$(LIBRE_PKG_PATH) \
-	pkg-config --exists "libre >= $(LIBRE_MIN)" --modversion && \
+	pkg-config --exists "libre >= $(LIBRE_MIN)" --print-errors && \
 	echo "yes")
 
 ifeq ($(LIBRE_PKG),)
