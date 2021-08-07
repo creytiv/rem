@@ -168,7 +168,7 @@ static void *aumix_thread(void *arg)
 				if (csrc == src)
 					continue;
 #endif
-				if (src->muted)
+				if (csrc->muted)
 					continue;
 
 				for (i=0; i<mix->frame_size; i++)
