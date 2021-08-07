@@ -23,6 +23,7 @@ uint32_t aumix_source_count(const struct aumix *mix);
 int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 		       aumix_frame_h *fh, void *arg);
 void aumix_source_enable(struct aumix_source *src, bool enable);
+void aumix_source_mute(struct aumix_source *src, bool mute);
 int  aumix_source_put(struct aumix_source *src, const int16_t *sampv,
 		      size_t sampc);
 void aumix_source_flush(struct aumix_source *src);

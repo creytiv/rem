@@ -38,6 +38,7 @@ struct aumix_source {
 	struct aumix *mix;
 	aumix_frame_h *fh;
 	void *arg;
+	bool muted;
 };
 
 
@@ -167,6 +168,9 @@ static void *aumix_thread(void *arg)
 				if (csrc == src)
 					continue;
 #endif
+				if (src->muted)
+					continue;
+
 				for (i=0; i<mix->frame_size; i++)
 					mix_frame[i] += csrc->frame[i];
 			}
@@ -321,6 +325,7 @@ int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 	src->mix = mem_ref(mix);
 	src->fh  = fh ? fh : dummy_frame_handler;
 	src->arg = arg;
+	src->muted = false;
 
 	sz = mix->frame_size*2;
 
@@ -341,6 +346,20 @@ int aumix_source_alloc(struct aumix_source **srcp, struct aumix *mix,
 		*srcp = src;
 
 	return err;
+}
+
+/**
+ * Mute/unmute aumix source
+ *
+ * @param src    Audio mixer source
+ * @param mute   True to mute, false to unmute
+ */
+void aumix_source_mute(struct aumix_source *src, bool mute)
+{
+	if (!src)
+		return;
+
+	src->muted = mute;
 }
 
 
