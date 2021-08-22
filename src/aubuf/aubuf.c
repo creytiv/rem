@@ -5,10 +5,13 @@
  */
 #include <string.h>
 #include <re.h>
+#include <rem_au.h>
+#include <rem_auframe.h>
 #include <rem_aubuf.h>
 
 
 #define AUBUF_DEBUG 0
+#define AUDIO_TIMEBASE 1000000U
 
 
 /** Locked audio-buffer with almost zero-copy */
@@ -30,18 +33,19 @@ struct aubuf {
 };
 
 
-struct auframe {
+struct frame {
 	struct le le;
 	struct mbuf *mb;
+	struct auframe af;
 };
 
 
-static void auframe_destructor(void *arg)
+static void frame_destructor(void *arg)
 {
-	struct auframe *af = arg;
+	struct frame *f = arg;
 
-	list_unlink(&af->le);
-	mem_deref(af->mb);
+	list_unlink(&f->le);
+	mem_deref(f->mb);
 }
 
 
@@ -98,25 +102,28 @@ int aubuf_alloc(struct aubuf **abp, size_t min_sz, size_t max_sz)
  *
  * @param ab Audio buffer
  * @param mb Mbuffer with PCM samples
+ * @param af Audio frame (optional)
  *
  * @return 0 for success, otherwise error code
  */
-int aubuf_append(struct aubuf *ab, struct mbuf *mb)
+int aubuf_append_auframe(struct aubuf *ab, struct mbuf *mb, struct auframe *af)
 {
-	struct auframe *af;
+	struct frame *f;
 
 	if (!ab || !mb)
 		return EINVAL;
 
-	af = mem_zalloc(sizeof(*af), auframe_destructor);
-	if (!af)
+	f = mem_zalloc(sizeof(*f), frame_destructor);
+	if (!f)
 		return ENOMEM;
 
-	af->mb = mem_ref(mb);
+	f->mb = mem_ref(mb);
+	if (af)
+		f->af = *af;
 
 	lock_write_get(ab->lock);
 
-	list_append(&ab->afl, &af->le, af);
+	list_append(&ab->afl, &f->le, f);
 	ab->cur_sz += mbuf_get_left(mb);
 
 	if (ab->max_sz && ab->cur_sz > ab->max_sz) {
@@ -125,10 +132,10 @@ int aubuf_append(struct aubuf *ab, struct mbuf *mb)
 		(void)re_printf("aubuf: %p overrun (cur=%zu)\n",
 				ab, ab->cur_sz);
 #endif
-		af = list_ledata(ab->afl.head);
-		if (af) {
-			ab->cur_sz -= mbuf_get_left(af->mb);
-			mem_deref(af);
+		f = list_ledata(ab->afl.head);
+		if (f) {
+			ab->cur_sz -= mbuf_get_left(f->mb);
+			mem_deref(f);
 		}
 	}
 
@@ -142,23 +149,34 @@ int aubuf_append(struct aubuf *ab, struct mbuf *mb)
  * Write PCM samples to the audio buffer
  *
  * @param ab Audio buffer
- * @param p  Pointer to PCM data
- * @param sz Number of bytes to write
+ * @param af Audio frame
  *
  * @return 0 for success, otherwise error code
  */
-int aubuf_write(struct aubuf *ab, const uint8_t *p, size_t sz)
+int aubuf_write_auframe(struct aubuf *ab, struct auframe *af)
 {
-	struct mbuf *mb = mbuf_alloc(sz);
+	struct mbuf *mb;
+	size_t sz;
+	size_t sample_size;
 	int err;
+
+	if (!ab || !af)
+		return EINVAL;
+	sample_size = aufmt_sample_size(af->fmt);
+	if (sample_size)
+		sz = af->sampc * aufmt_sample_size(af->fmt);
+	else
+		sz = af->sampc;
+
+	mb = mbuf_alloc(sz);
 
 	if (!mb)
 		return ENOMEM;
 
-	(void)mbuf_write_mem(mb, p, sz);
+	(void)mbuf_write_mem(mb, af->sampv, sz);
 	mb->pos = 0;
 
-	err = aubuf_append(ab, mb);
+	err = aubuf_append_auframe(ab, mb, af);
 
 	mem_deref(mb);
 
@@ -171,16 +189,26 @@ int aubuf_write(struct aubuf *ab, const uint8_t *p, size_t sz)
  * in the audio buffer, silence will be read.
  *
  * @param ab Audio buffer
- * @param p  Buffer where PCM samples are read into
- * @param sz Number of bytes to read
+ * @param af Audio frame (af.sampv, af.sampc and af.fmt needed)
  */
-void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
+void aubuf_read_auframe(struct aubuf *ab, struct auframe *af)
 {
 	struct le *le;
+	size_t sz;
+	size_t sample_size;
+	uint8_t *p;
 	bool filling;
 
-	if (!ab || !p || !sz)
+	if (!ab || !af)
 		return;
+
+	sample_size = aufmt_sample_size(af->fmt);
+	if (sample_size)
+		sz = af->sampc * sample_size;
+	else
+		sz = af->sampc;
+
+	p = af->sampv;
 
 	lock_write_get(ab->lock);
 
@@ -205,18 +233,26 @@ void aubuf_read(struct aubuf *ab, uint8_t *p, size_t sz)
 	le = ab->afl.head;
 
 	while (le) {
-		struct auframe *af = le->data;
+		struct frame *f = le->data;
 		size_t n;
 
 		le = le->next;
 
-		n = min(mbuf_get_left(af->mb), sz);
+		n = min(mbuf_get_left(f->mb), sz);
 
-		(void)mbuf_read_mem(af->mb, p, n);
+		(void)mbuf_read_mem(f->mb, p, n);
 		ab->cur_sz -= n;
 
-		if (!mbuf_get_left(af->mb))
-			mem_deref(af);
+		af->srate     = f->af.srate;
+		af->ch	      = f->af.ch;
+		af->timestamp = f->af.timestamp;
+
+		if (af->srate && af->ch && sample_size)
+			f->af.timestamp += n * AUDIO_TIMEBASE /
+					   (af->srate * af->ch * sample_size);
+
+		if (!mbuf_get_left(f->mb))
+			mem_deref(f);
 
 		if (n == sz)
 			break;
