@@ -34,11 +34,16 @@
     <ClCompile Include="..\..\src\auconv\auconv.c" />
     <ClCompile Include="..\..\src\aufile\aufile.c" />
     <ClCompile Include="..\..\src\aufile\wave.c" />
+    <ClCompile Include="..\..\src\auframe\auframe.c" />
+    <ClCompile Include="..\..\src\aulevel\aulevel.c" />
     <ClCompile Include="..\..\src\auresamp\resamp.c" />
     <ClCompile Include="..\..\src\autone\tone.c" />
     <ClCompile Include="..\..\src\au\fmt.c" />
     <ClCompile Include="..\..\src\fir\fir.c" />
     <ClCompile Include="..\..\src\g711\g711.c" />
+    <ClCompile Include="..\..\src\h264\getbit.c" />
+    <ClCompile Include="..\..\src\h264\nal.c" />
+    <ClCompile Include="..\..\src\h264\sps.c" />
     <ClCompile Include="..\..\src\vidconv\vconv.c" />
     <ClCompile Include="..\..\src\vid\draw.c" />
     <ClCompile Include="..\..\src\vid\fmt.c" />
@@ -97,6 +102,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>4142;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)%(RelativeDir)%(Filename).obj</ObjectFileName>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Lib>
       <AdditionalOptions>Iphlpapi.lib %(AdditionalOptions)</AdditionalOptions>

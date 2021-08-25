@@ -37,6 +37,15 @@
     <Filter Include="src\vidconv">
       <UniqueIdentifier>{68ad1019-ff82-4811-a9df-cfe0eabeea34}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\h264">
+      <UniqueIdentifier>{14f15124-fb62-4e8c-b72a-f5030e8c26eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\auframe">
+      <UniqueIdentifier>{d945f852-21f4-486e-ad0f-fcc3afe287a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\aulevel">
+      <UniqueIdentifier>{8ea230dd-39a5-4a91-a990-adb62cfc5037}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\rem.h">
@@ -133,5 +142,20 @@
     </ClCompile>
     <ClCompile Include="..\..\src\goertzel\goertzel.c" />
     <ClCompile Include="..\..\src\dtmf\dec.c" />
+    <ClCompile Include="..\..\src\h264\getbit.c">
+      <Filter>src\h264</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\h264\nal.c">
+      <Filter>src\h264</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\h264\sps.c">
+      <Filter>src\h264</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\auframe\auframe.c">
+      <Filter>src\auframe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\aulevel\aulevel.c">
+      <Filter>src\aulevel</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
