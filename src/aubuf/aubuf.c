@@ -400,8 +400,6 @@ static bool sort_handler(struct le *le1, struct le *le2, void *arg)
  * Reorder aubuf by auframe->timestamp
  *
  * @param ab Audio buffer
- *
- * @return Number of bytes in the audio buffer
  */
 void aubuf_sort_auframe(struct aubuf *ab)
 {
