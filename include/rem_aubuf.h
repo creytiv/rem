@@ -10,6 +10,7 @@ int  aubuf_write_auframe(struct aubuf *ab, struct auframe *af);
 int  aubuf_append_auframe(struct aubuf *ab, struct mbuf *mb,
 			  struct auframe *af);
 void aubuf_read_auframe(struct aubuf *ab, struct auframe *af);
+void aubuf_sort_auframe(struct aubuf *ab);
 int  aubuf_get(struct aubuf *ab, uint32_t ptime, uint8_t *p, size_t sz);
 void aubuf_flush(struct aubuf *ab);
 int  aubuf_debug(struct re_printf *pf, const struct aubuf *ab);

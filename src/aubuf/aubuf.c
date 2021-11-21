@@ -382,3 +382,28 @@ size_t aubuf_cur_size(const struct aubuf *ab)
 
 	return sz;
 }
+
+
+static bool sort_handler(struct le *le1, struct le *le2, void *arg)
+{
+	struct frame *frame1 = le1->data;
+	struct frame *frame2 = le2->data;
+	(void)arg;
+
+	/* NOTE: important to use less than OR equal to, otherwise
+	   the list_sort function may be stuck in a loop */
+	return frame1->af.timestamp <= frame2->af.timestamp;
+}
+
+
+/**
+ * Reorder aubuf by auframe->timestamp
+ *
+ * @param ab Audio buffer
+ *
+ * @return Number of bytes in the audio buffer
+ */
+void aubuf_sort_auframe(struct aubuf *ab)
+{
+	list_sort(&ab->afl, sort_handler, NULL);
+}
