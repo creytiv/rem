@@ -271,6 +271,43 @@ static void yuyv422_to_yuv420p(unsigned xoffs, unsigned width, double rw,
 }
 
 
+static void yuyv422_to_nv12(unsigned xoffs, unsigned width, double rw,
+			       unsigned yd, unsigned ys, unsigned ys2,
+			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			       unsigned lsd,
+			       const uint8_t *sd0, const uint8_t *sd1,
+			       const uint8_t *sd2, unsigned lss
+			       )
+{
+	unsigned x, xd, xs;
+	unsigned id, is, is2;
+
+	(void)sd1;
+	(void)sd2;
+
+	for (x=0; x<width; x+=2) {
+
+		xd  = x + xoffs;
+
+		xs  = ((unsigned)(x * rw * 2)) & ~3;
+
+		id  = xd + yd*lsd;
+		is  = xs + ys*lss;
+		is2 = xs + ys2*lss;
+
+		dd0[id]         = sd0[is];
+		dd0[id+1]       = sd0[is + 2];
+		dd0[id + lsd]   = sd0[is2];
+		dd0[id+1 + lsd] = sd0[is2 + 2];
+
+		id = xd + yd*lsd/2;
+
+		dd1[id] = sd0[is + 1];
+		dd1[id + 1] = sd0[is + 3];
+	}
+}
+
+
 static void uyvy422_to_yuv420p(unsigned xoffs, unsigned width, double rw,
 			       unsigned yd, unsigned ys, unsigned ys2,
 			       uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
@@ -754,7 +791,8 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
  */
 	{yuv420p_to_yuv420p,  NULL,     NULL,     yuv420p_to_rgb32, NULL,
 	 yuv420p_to_rgb565, yuv420p_to_rgb555, yuv420p_to_nv12},
-	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL, NULL, NULL, NULL},
+	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL, NULL, NULL, NULL,
+	 yuyv422_to_nv12},
 	{uyvy422_to_yuv420p,  NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{rgb32_to_yuv420p,    NULL,     NULL,     NULL, NULL, NULL, NULL,
 	 NULL, NULL, rgb32_to_yuv444p},
