@@ -97,6 +97,16 @@ int aubuf_alloc(struct aubuf **abp, size_t min_sz, size_t max_sz)
 }
 
 
+static bool frame_less_equal(struct le *le1, struct le *le2, void *arg)
+{
+	struct frame *frame1 = le1->data;
+	struct frame *frame2 = le2->data;
+	(void)arg;
+
+	return frame1->af.timestamp <= frame2->af.timestamp;
+}
+
+
 /**
  * Append a PCM-buffer to the end of the audio buffer
  *
@@ -123,7 +133,7 @@ int aubuf_append_auframe(struct aubuf *ab, struct mbuf *mb, struct auframe *af)
 
 	lock_write_get(ab->lock);
 
-	list_append(&ab->afl, &f->le, f);
+	list_insert_sorted(&ab->afl, frame_less_equal, NULL, &f->le, f);
 	ab->cur_sz += mbuf_get_left(mb);
 
 	if (ab->max_sz && ab->cur_sz > ab->max_sz) {
@@ -384,18 +394,6 @@ size_t aubuf_cur_size(const struct aubuf *ab)
 }
 
 
-static bool sort_handler(struct le *le1, struct le *le2, void *arg)
-{
-	struct frame *frame1 = le1->data;
-	struct frame *frame2 = le2->data;
-	(void)arg;
-
-	/* NOTE: important to use less than OR equal to, otherwise
-	   the list_sort function may be stuck in a loop */
-	return frame1->af.timestamp <= frame2->af.timestamp;
-}
-
-
 /**
  * Reorder aubuf by auframe->timestamp
  *
@@ -403,5 +401,5 @@ static bool sort_handler(struct le *le1, struct le *le2, void *arg)
  */
 void aubuf_sort_auframe(struct aubuf *ab)
 {
-	list_sort(&ab->afl, sort_handler, NULL);
+	list_sort(&ab->afl, frame_less_equal, NULL);
 }
