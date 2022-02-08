@@ -14,3 +14,9 @@ Win32/*
 
 # Visual studio config
 mk/win32/*.vcxproj.user
+
+# ctags
+tags
+
+# Vim swp files
+*.swp
