@@ -78,10 +78,7 @@ static void source_destructor(void *arg)
 {
 	struct vidmix_source *src = arg;
 
-	if (src->run) {
-		src->run = false;
-		pthread_join(src->thread, NULL);
-	}
+	vidmix_source_stop(src);
 
 	if (src->le.list) {
 		pthread_rwlock_wrlock(&src->mix->rwlock);
@@ -538,7 +535,9 @@ void vidmix_source_stop(struct vidmix_source *src)
 		return;
 
 	if (src->run) {
+		pthread_mutex_lock(&src->mutex);
 		src->run = false;
+		pthread_mutex_unlock(&src->mutex);
 		pthread_join(src->thread, NULL);
 	}
 }
