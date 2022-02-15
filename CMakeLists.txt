@@ -35,6 +35,7 @@ add_library(${PROJECT_NAME}
   src/h264/getbit.c
   src/h264/nal.c
   src/h264/sps.c
+  src/h265/nal.c
   src/vid/draw.c
   src/vid/fmt.c
   src/vid/frame.c
