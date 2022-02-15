@@ -51,3 +51,4 @@ int  h265_nal_encode_mbuf(struct mbuf *mb, const struct h265_nal *nal);
 int  h265_nal_decode(struct h265_nal *nal, const uint8_t *p);
 void h265_nal_print(const struct h265_nal *nal);
 const char *h265_nalunit_name(enum h265_naltype type);
+bool h265_is_keyframe(enum h265_naltype type);
