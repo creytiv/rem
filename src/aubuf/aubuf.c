@@ -188,7 +188,9 @@ int aubuf_write_auframe(struct aubuf *ab, struct auframe *af)
 
 	err = aubuf_append_auframe(ab, mb, af);
 
+	lock_write_get(ab->lock);
 	mem_deref(mb);
+	lock_rel(ab->lock);
 
 	return err;
 }
