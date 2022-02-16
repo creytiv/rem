@@ -732,5 +732,7 @@ void vidmix_source_put(struct vidmix_source *src, const struct vidframe *frame)
 		pthread_rwlock_unlock(&src->mix->rwlock);
 	}
 
+	pthread_rwlock_wrlock(&src->mix->rwlock);
 	vidframe_copy(src->frame_rx, frame);
+	pthread_rwlock_unlock(&src->mix->rwlock);
 }
