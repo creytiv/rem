@@ -52,3 +52,12 @@ int  h265_nal_decode(struct h265_nal *nal, const uint8_t *p);
 void h265_nal_print(const struct h265_nal *nal);
 const char *h265_nalunit_name(enum h265_naltype type);
 bool h265_is_keyframe(enum h265_naltype type);
+
+
+typedef int (h265_packet_h)(bool marker, uint64_t rtp_ts,
+			    const uint8_t *hdr, size_t hdr_len,
+			    const uint8_t *pld, size_t pld_len,
+			    void *arg);
+
+int h265_packetize(uint64_t rtp_ts, const uint8_t *buf, size_t len,
+		   size_t pktsize, h265_packet_h *pkth, void *arg);
