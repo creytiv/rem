@@ -4,7 +4,7 @@
 # Copyright (C) 2010 - 2022 Alfred E. Heggestad
 #
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 
 project(rem VERSION 1.0.0)
 include_directories(
@@ -13,7 +13,7 @@ include_directories(
   /usr/local/include/re
 )
 link_directories(/usr/local/lib)
-add_compile_definitions(VERSION="${PROJECT_VERSION}")
+add_definitions(-DVERSION="${PROJECT_VERSION}" -DHAVE_INTTYPES_H)
 
 add_library(${PROJECT_NAME}
   src/aac/aac.c
