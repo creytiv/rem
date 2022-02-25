@@ -4,16 +4,49 @@
 # Copyright (C) 2010 - 2022 Alfred E. Heggestad
 #
 
+##############################################################################
+#
+# Versioning
+#
+
 cmake_minimum_required(VERSION 3.10)
 
-project(rem VERSION 1.0.0)
+project(rem VERSION 1.0.0 LANGUAGES C)
+
+
+##############################################################################
+#
+# Compile options
+#
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_C_STANDARD 11)
+
+if(NOT MSVC)
+  add_compile_options(
+    -Waggregate-return
+    -Wall
+    -Wbad-function-cast
+    -Wcast-align
+    -Wdeclaration-after-statement
+    -Wextra
+    -Wmissing-declarations
+    -Wmissing-prototypes
+    -Wnested-externs
+    -Wold-style-definition
+    -Wshadow
+    -Wstrict-prototypes
+    -Wvla
+  )
+endif()
+
 include_directories(
   include
   /usr/local/include
   /usr/local/include/re
 )
 link_directories(/usr/local/lib)
-add_definitions(-DVERSION="${PROJECT_VERSION}" -DHAVE_INTTYPES_H)
+add_definitions(-DVERSION="${PROJECT_VERSION}")
 
 add_library(${PROJECT_NAME}
   src/aac/aac.c
@@ -42,5 +75,10 @@ add_library(${PROJECT_NAME}
   src/vidconv/vconv.c
   src/vidmix/vidmix.c
 )
+
+##############################################################################
+#
+# Main target object
+#
 
 target_link_libraries(${PROJECT_NAME} -lre -lpthread)
