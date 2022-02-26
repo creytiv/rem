@@ -13,6 +13,11 @@ cmake_minimum_required(VERSION 3.10)
 
 project(rem VERSION 1.0.0 LANGUAGES C)
 
+##############################################################################
+#
+# Module Includes
+#
+include(CheckIncludeFile)
 
 ##############################################################################
 #
@@ -38,6 +43,11 @@ if(NOT MSVC)
     -Wstrict-prototypes
     -Wvla
   )
+endif()
+
+check_include_file(unistd.h HAVE_UNISTD_H)
+if(HAVE_UNISTD_H)
+  add_definitions(-DHAVE_UNISTD_H)
 endif()
 
 include_directories(
