@@ -42,6 +42,7 @@ endif()
 
 include_directories(
   include
+  ../re/include
   /usr/local/include
   /usr/local/include/re
 )
