@@ -97,6 +97,31 @@ int aubuf_alloc(struct aubuf **abp, size_t min_sz, size_t max_sz)
 }
 
 
+/**
+ * Resize audio buffer (flushes aubuf)
+ *
+ * @param ab     Audio buffer
+ * @param min_sz Minimum buffer size
+ * @param max_sz Maximum buffer size (0 for no max size)
+ *
+ * @return 0 for success, otherwise error code
+ */
+int aubuf_resize(struct aubuf *ab, size_t min_sz, size_t max_sz)
+{
+	if (!ab || !min_sz)
+		return EINVAL;
+
+	lock_write_get(ab->lock);
+	ab->wish_sz = min_sz;
+	ab->max_sz  = max_sz;
+	lock_rel(ab->lock);
+
+	aubuf_flush(ab);
+
+	return 0;
+}
+
+
 static bool frame_less_equal(struct le *le1, struct le *le2, void *arg)
 {
 	struct frame *frame1 = le1->data;
