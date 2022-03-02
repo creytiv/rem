@@ -35,7 +35,25 @@
  *
  * @return RMS value from 0 to 32768
  */
-static double calc_rms(const int16_t *data, size_t len)
+static double calc_rms_s16(const int16_t *data, size_t len)
+{
+	double sum = 0;
+	size_t i;
+
+	if (!data || !len)
+		return .0;
+
+	for (i = 0; i < len; i++) {
+		const double sample = data[i];
+
+		sum += sample * sample;
+	}
+
+	return sqrt(sum / (double)len);
+}
+
+
+static double calc_rms_s32(const int32_t *data, size_t len)
 {
 	double sum = 0;
 	size_t i;
@@ -84,7 +102,8 @@ static double calc_rms_float(const float *data, size_t len)
  */
 double aulevel_calc_dbov(int fmt, const void *sampv, size_t sampc)
 {
-	static const double peak = 32767.0;
+	static const double peak_s16 = 32767.0;
+	static const double peak_s32 = 2147483647.0;
 	double rms, dbov;
 
 	if (!sampv || !sampc)
@@ -93,7 +112,11 @@ double aulevel_calc_dbov(int fmt, const void *sampv, size_t sampc)
 	switch (fmt) {
 
 	case AUFMT_S16LE:
-		rms = calc_rms(sampv, sampc) / peak;
+		rms = calc_rms_s16(sampv, sampc) / peak_s16;
+		break;
+
+	case AUFMT_S32LE:
+		rms = calc_rms_s32(sampv, sampc) / peak_s32;
 		break;
 
 	case AUFMT_FLOAT:

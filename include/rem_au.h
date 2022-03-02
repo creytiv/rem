@@ -8,6 +8,7 @@
 /** Audio formats */
 enum aufmt {
 	AUFMT_S16LE,  /**< Signed 16-bit PCM */
+	AUFMT_S32LE,  /**< Signed 32-bit PCM */
 	AUFMT_PCMA,   /**< G.711 A-law       */
 	AUFMT_PCMU,   /**< G.711 U-law       */
 	AUFMT_FLOAT,  /**< Float 32 bit (CPU endian)                   */
