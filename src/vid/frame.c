@@ -29,8 +29,6 @@ size_t vidframe_size(enum vidfmt fmt, const struct vidsz *sz)
 	case VID_FMT_UYVY422: return sz->w * sz->h * 2;
 	case VID_FMT_RGB32:   return sz->w * sz->h * 4;
 	case VID_FMT_ARGB:    return sz->w * sz->h * 4;
-	case VID_FMT_RGB565:  return sz->w * sz->h * 2;
-	case VID_FMT_RGB555:  return sz->w * sz->h * 2;
 	case VID_FMT_NV12:    return sz->w * sz->h * 3 / 2;
 	case VID_FMT_NV21:    return sz->w * sz->h * 3 / 2;
 	case VID_FMT_YUV444P: return sz->w * sz->h * 3;
@@ -110,12 +108,6 @@ void vidframe_init_buf(struct vidframe *vf, enum vidfmt fmt,
 	case VID_FMT_RGB32:
 	case VID_FMT_ARGB:
 		vf->linesize[0] = sz->w * 4;
-		vf->data[0] = buf;
-		break;
-
-	case VID_FMT_RGB565:
-	case VID_FMT_RGB555:
-		vf->linesize[0] = sz->w * 2;
 		vf->data[0] = buf;
 		break;
 

@@ -12,8 +12,6 @@ enum vidfmt {
 	VID_FMT_UYVY422,      /* packed YUV  4:2:2   16bpp                 */
 	VID_FMT_RGB32,        /* packed RGBA 8:8:8:8 32bpp (native endian) */
 	VID_FMT_ARGB,         /* packed RGBA 8:8:8:8 32bpp (big endian)    */
-	VID_FMT_RGB565,       /* packed RGB  5:6:5   16bpp (native endian) */
-	VID_FMT_RGB555,       /* packed RGB  5:5:5   16bpp (native endian) */
 	VID_FMT_NV12,         /* planar YUV  4:2:0   12bpp UV interleaved  */
 	VID_FMT_NV21,         /* planar YUV  4:2:0   12bpp VU interleaved  */
 	VID_FMT_YUV444P,      /* planar YUV  4:4:4   24bpp                 */
