@@ -156,6 +156,18 @@ static inline void yuv2rgb(uint8_t *rgb, uint8_t y, int ruv, int guv, int buv)
 }
 
 
+static inline void yuv2rgb565(uint8_t *rgb, uint8_t y,
+			      int ruv, int guv, int buv)
+{
+	int r = saturate_u8(y + ruv) >> 3;
+	int g = saturate_u8(y + guv) >> 2;
+	int b = saturate_u8(y + buv) >> 3;
+
+	rgb[1] = r << 3 | g >> 3;
+	rgb[0] = g << 5 | b;
+}
+
+
 static inline void _yuv2rgb(uint8_t *rgb, uint8_t y, uint8_t u, uint8_t v)
 {
 	int ruv, guv, buv;
@@ -411,6 +423,47 @@ static void yuv420p_to_rgb32(unsigned xoffs, unsigned width, double rw,
 }
 
 
+static void yuv420p_to_rgb565(unsigned xoffs, unsigned width, double rw,
+			      unsigned yd, unsigned ys, unsigned ys2,
+			      uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
+			      unsigned lsd,
+			      const uint8_t *ds0, const uint8_t *ds1,
+			      const uint8_t *ds2, unsigned lss)
+{
+	unsigned x, xd, xs, xs2;
+	unsigned id, is;
+
+	(void)dd1;
+	(void)dd2;
+
+	for (x=0; x<width; x+=2) {
+
+		int ruv, guv, buv;
+		uint8_t u, v;
+
+		xd  = (x + xoffs) * 2;
+
+		xs  = (unsigned)(x * rw);
+		xs2 = (unsigned)((x+1) * rw);
+
+		id = (xd + yd*lsd);
+		is  = (xs>>1) + (ys>>1)*lss/2;
+
+		u = ds1[is];
+		v = ds2[is];
+
+		ruv = CRV[v];
+		guv = CGV[v] + CGU[u];
+		buv = CBU[u];
+
+		yuv2rgb565(&dd0[id],         ds0[xs  + ys*lss],  ruv, guv,buv);
+		yuv2rgb565(&dd0[id+2],       ds0[xs2 + ys*lss],  ruv, guv,buv);
+		yuv2rgb565(&dd0[id   + lsd], ds0[xs  + ys2*lss], ruv, guv,buv);
+		yuv2rgb565(&dd0[id+2 + lsd], ds0[xs2 + ys2*lss], ruv, guv,buv);
+	}
+}
+
+
 static void nv12_to_yuv420p(unsigned xoffs, unsigned width, double rw,
 			    unsigned yd, unsigned ys, unsigned ys2,
 			    uint8_t *dd0, uint8_t *dd1, uint8_t *dd2,
@@ -647,12 +700,13 @@ static line_h *conv_table[MAX_SRC][MAX_DST] = {
  * Dst:  YUV420P              YUYV422   UYVY422   RGB32
  */
 	{yuv420p_to_yuv420p,  NULL,     NULL,     yuv420p_to_rgb32, NULL,
-	 yuv420p_to_nv12},
+	 yuv420p_to_rgb565, yuv420p_to_nv12},
 	{yuyv422_to_yuv420p,  NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{uyvy422_to_yuv420p,  NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{rgb32_to_yuv420p,    NULL,     NULL,     NULL, NULL, NULL, NULL,
-	 rgb32_to_yuv444p},
+	 NULL, rgb32_to_yuv444p},
 	{rgb32_to_yuv420p,    NULL,     NULL,     NULL, NULL, NULL, NULL},
+	{NULL,                NULL,     NULL,     NULL, NULL, NULL, NULL},
 	{nv12_to_yuv420p,     NULL,     NULL,     nv12_to_rgb32,
 	 NULL, NULL, NULL},
 	{nv21_to_yuv420p,     NULL,     NULL,     nv21_to_rgb32,
